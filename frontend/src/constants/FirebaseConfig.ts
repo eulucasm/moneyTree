@@ -1,9 +1,10 @@
 // Firebase Config Constants
 export const FirebaseConfig = {
-  apiKey: "AIzaSyClDbzPIQqBiJiCojpOaFrEuxZrALtAjpw",
-  authDomain: "financilife-2d8d0.firebaseapp.com",
-  projectId: "financilife-2d8d0",
-  storageBucket: "financilife-2d8d0.firebasestorage.app",
-  messagingSenderId: "230025976166",
-  appId: "1:230025976166:web:0d6c1f076968bb1242d0a7"
+  apiKey: process.env.EXPO_PUBLIC_FIREBASE_API_KEY || "",
+  authDomain: process.env.EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN || "",
+  projectId: process.env.EXPO_PUBLIC_FIREBASE_PROJECT_ID || "",
+  storageBucket: process.env.EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET || "",
+  messagingSenderId: process.env.EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID || "",
+  appId: process.env.EXPO_PUBLIC_FIREBASE_APP_ID || "",
+  measurementId: process.env.EXPO_PUBLIC_FIREBASE_MEASUREMENT_ID || ""
 };

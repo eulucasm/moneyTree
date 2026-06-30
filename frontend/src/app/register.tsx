@@ -13,17 +13,19 @@ export default function RegisterScreen() {
   
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
-  const [age, setAge] = useState('');
+  const [birthDate, setBirthDate] = useState('');
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   
   const [isFirstNameFocused, setIsFirstNameFocused] = useState(false);
   const [isLastNameFocused, setIsLastNameFocused] = useState(false);
-  const [isAgeFocused, setIsAgeFocused] = useState(false);
+  const [isBirthDateFocused, setIsBirthDateFocused] = useState(false);
   const [isPhoneFocused, setIsPhoneFocused] = useState(false);
   const [isEmailFocused, setIsEmailFocused] = useState(false);
   const [isPasswordFocused, setIsPasswordFocused] = useState(false);
+  const [isConfirmPasswordFocused, setIsConfirmPasswordFocused] = useState(false);
   const [loading, setLoading] = useState(false);
 
   // Toast state
@@ -37,25 +39,62 @@ export default function RegisterScreen() {
     setToastVisible(true);
   };
 
+  const validateBirthDate = (dateStr: string) => {
+    const regex = /^(\d{2})\/(\d{2})\/(\d{4})$/;
+    if (!regex.test(dateStr)) return false;
+    const parts = dateStr.match(regex);
+    if (!parts) return false;
+    const day = parseInt(parts[1], 10);
+    const month = parseInt(parts[2], 10);
+    const year = parseInt(parts[3], 10);
+    
+    if (year < 1900 || year > new Date().getFullYear()) return false;
+    if (month < 1 || month > 12) return false;
+    
+    const date = new Date(year, month - 1, day);
+    return date.getFullYear() === year && date.getMonth() === month - 1 && date.getDate() === day;
+  };
+
   const handleRegister = async () => {
-    if (!firstName.trim() || !lastName.trim() || !age.trim() || !email.trim() || !password.trim()) {
+    if (!firstName.trim() || !lastName.trim() || !birthDate.trim() || !phone.trim() || !email.trim() || !password.trim() || !confirmPassword.trim()) {
       showToast('Por favor, preencha todos os campos obrigatórios.', 'error');
       return;
     }
-    const ageNum = parseInt(age.trim(), 10);
-    if (isNaN(ageNum) || ageNum <= 0) {
-      showToast('Por favor, insira uma idade válida.', 'error');
+    
+    if (!validateBirthDate(birthDate.trim())) {
+      showToast('Por favor, insira uma data de nascimento válida (DD/MM/AAAA).', 'error');
       return;
     }
-    if (password.length < 8) {
-      showToast('A senha deve ter pelo menos 8 caracteres.', 'error');
+
+    if (password.length < 8 || password.length > 16) {
+      showToast('A senha deve ter entre 8 e 16 caracteres.', 'error');
       return;
     }
+
     const hasUppercase = /[A-Z]/.test(password);
     const hasLowercase = /[a-z]/.test(password);
     const hasNumber = /[0-9]/.test(password);
-    if (!hasUppercase || !hasLowercase || !hasNumber) {
-      showToast('A senha deve conter letras maiúsculas, minúsculas e números.', 'error');
+    const hasSpecial = /[^A-Za-z0-9]/.test(password);
+
+    if (!hasUppercase) {
+      showToast('A senha deve conter pelo menos uma letra maiúscula.', 'error');
+      return;
+    }
+    if (!hasLowercase) {
+      showToast('A senha deve conter pelo menos uma letra minúscula.', 'error');
+      return;
+    }
+    if (!hasNumber) {
+      showToast('A senha deve conter pelo menos um número.', 'error');
+      return;
+    }
+    if (!hasSpecial) {
+      showToast('A senha deve conter pelo menos um caractere especial.', 'error');
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      showToast('As senhas digitadas não coincidem.', 'error');
       return;
     }
 
@@ -71,8 +110,8 @@ export default function RegisterScreen() {
       updateUserProfile({
         firstName: firstName.trim(),
         lastName: lastName.trim(),
-        age: age.trim(),
-        phone: phone.trim() ? phone.trim() : undefined,
+        birthDate: birthDate.trim(),
+        phone: phone.trim(),
         loginType: 'email',
         createdAt: currentPeriod,
         role: (email.trim().toLowerCase() === 'eulucasm@icloud.com' || email.trim().toLowerCase() === 'lucaspoletis@gmail.com') ? 'admin' : 'user',
@@ -165,30 +204,30 @@ export default function RegisterScreen() {
                 </View>
               </View>
 
-              {/* Campo Idade */}
+              {/* Campo Data de Nascimento */}
               <View style={styles.inputContainer}>
-                <Text style={styles.label}>Idade</Text>
+                <Text style={styles.label}>Data de Nascimento *</Text>
                 <View style={styles.inputWrapper}>
                   <Calendar size={18} color="#6C757D" style={styles.inputIcon} />
                   <TextInput
                     style={[
                       styles.input,
-                      isAgeFocused && styles.inputFocused
+                      isBirthDateFocused && styles.inputFocused
                     ]}
-                    placeholder="Digite sua idade"
+                    placeholder="Ex: DD/MM/AAAA"
                     placeholderTextColor={Theme.light.textMuted}
-                    value={age}
-                    onChangeText={setAge}
-                    onFocus={() => setIsAgeFocused(true)}
-                    onBlur={() => setIsAgeFocused(false)}
+                    value={birthDate}
+                    onChangeText={setBirthDate}
+                    onFocus={() => setIsBirthDateFocused(true)}
+                    onBlur={() => setIsBirthDateFocused(false)}
                     keyboardType="numeric"
                   />
                 </View>
               </View>
 
-              {/* Campo Celular (Opcional) */}
+              {/* Campo Celular */}
               <View style={styles.inputContainer}>
-                <Text style={styles.label}>Celular (Opcional)</Text>
+                <Text style={styles.label}>Celular *</Text>
                 <View style={styles.inputWrapper}>
                   <Phone size={18} color="#6C757D" style={styles.inputIcon} />
                   <TextInput
@@ -209,7 +248,7 @@ export default function RegisterScreen() {
 
               {/* Campo E-mail */}
               <View style={styles.inputContainer}>
-                <Text style={styles.label}>E-mail</Text>
+                <Text style={styles.label}>E-mail *</Text>
                 <View style={styles.inputWrapper}>
                   <Mail size={18} color="#6C757D" style={styles.inputIcon} />
                   <TextInput
@@ -231,7 +270,7 @@ export default function RegisterScreen() {
 
               {/* Campo Senha */}
               <View style={styles.inputContainer}>
-                <Text style={styles.label}>Senha (mínimo de 8 caracteres, com A-Z, a-z, 0-9)</Text>
+                <Text style={styles.label}>Senha * (8-16 caracteres, A-Z, a-z, 0-9 e especial)</Text>
                 <View style={styles.inputWrapper}>
                   <Key size={18} color="#6C757D" style={styles.inputIcon} />
                   <TextInput
@@ -246,6 +285,28 @@ export default function RegisterScreen() {
                     secureTextEntry={true}
                     onFocus={() => setIsPasswordFocused(true)}
                     onBlur={() => setIsPasswordFocused(false)}
+                    autoCapitalize="none"
+                  />
+                </View>
+              </View>
+
+              {/* Campo Confirmação de Senha */}
+              <View style={styles.inputContainer}>
+                <Text style={styles.label}>Confirmar Senha *</Text>
+                <View style={styles.inputWrapper}>
+                  <Key size={18} color="#6C757D" style={styles.inputIcon} />
+                  <TextInput
+                    style={[
+                      styles.input,
+                      isConfirmPasswordFocused && styles.inputFocused
+                    ]}
+                    placeholder="Repita sua senha"
+                    placeholderTextColor={Theme.light.textMuted}
+                    value={confirmPassword}
+                    onChangeText={setConfirmPassword}
+                    secureTextEntry={true}
+                    onFocus={() => setIsConfirmPasswordFocused(true)}
+                    onBlur={() => setIsConfirmPasswordFocused(false)}
                     autoCapitalize="none"
                   />
                 </View>

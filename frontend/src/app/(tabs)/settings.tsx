@@ -156,6 +156,8 @@ export default function SettingsScreen() {
   const [lastName, setLastName] = useState(userProfile?.lastName || 'Macedo');
   const [city, setCity] = useState(userProfile?.city || 'Campinas');
   const [state, setState] = useState(userProfile?.state || 'SP');
+  const [phone, setPhone] = useState(userProfile?.phone || '');
+  const [birthDate, setBirthDate] = useState(userProfile?.birthDate || '');
   const [loginType, setLoginType] = useState<UserProfile['loginType']>(userProfile?.loginType || 'google');
   const [password, setPassword] = useState(userProfile?.password || '');
   const [showPassword, setShowPassword] = useState(false);
@@ -172,21 +174,47 @@ export default function SettingsScreen() {
       setLastName(userProfile.lastName);
       setCity(userProfile.city);
       setState(userProfile.state);
+      setPhone(userProfile.phone || '');
+      setBirthDate(userProfile.birthDate || '');
       setLoginType(userProfile.loginType);
       setPassword(userProfile.password || '');
     }
   }, [userProfile]);
 
+  const validateBirthDate = (dateStr: string) => {
+    const regex = /^(\d{2})\/(\d{2})\/(\d{4})$/;
+    if (!regex.test(dateStr)) return false;
+    const parts = dateStr.match(regex);
+    if (!parts) return false;
+    const day = parseInt(parts[1], 10);
+    const month = parseInt(parts[2], 10);
+    const year = parseInt(parts[3], 10);
+    
+    if (year < 1900 || year > new Date().getFullYear()) return false;
+    if (month < 1 || month > 12) return false;
+    
+    const date = new Date(year, month - 1, day);
+    return date.getFullYear() === year && date.getMonth() === month - 1 && date.getDate() === day;
+  };
+
   const handleSaveProfile = () => {
-    if (!firstName.trim() || !lastName.trim()) {
-      showAlert('Erro', 'Nome e Sobrenome são obrigatórios.');
+    if (!firstName.trim() || !lastName.trim() || !phone.trim() || !birthDate.trim()) {
+      showAlert('Erro', 'Nome, Sobrenome, Celular e Data de Nascimento são obrigatórios.');
       return;
     }
+    
+    if (!validateBirthDate(birthDate.trim())) {
+      showAlert('Erro', 'Por favor, insira uma data de nascimento válida (DD/MM/AAAA).');
+      return;
+    }
+
     updateUserProfile({
       firstName,
       lastName,
       city,
       state,
+      phone,
+      birthDate,
       loginType,
       password: loginType === 'email' ? password : '',
     });
@@ -474,6 +502,29 @@ export default function SettingsScreen() {
                   placeholder="Ex: SP"
                   maxLength={2}
                   autoCapitalize="characters"
+                />
+              </View>
+            </View>
+
+            <View style={styles.formRow}>
+              <View style={styles.formField}>
+                <Text style={styles.label}>Celular</Text>
+                <TextInput
+                  style={styles.input}
+                  value={phone}
+                  onChangeText={setPhone}
+                  placeholder="Ex: (11) 99999-9999"
+                  keyboardType="phone-pad"
+                />
+              </View>
+              <View style={styles.formField}>
+                <Text style={styles.label}>Data de Nascimento</Text>
+                <TextInput
+                  style={styles.input}
+                  value={birthDate}
+                  onChangeText={setBirthDate}
+                  placeholder="Ex: DD/MM/AAAA"
+                  keyboardType="numeric"
                 />
               </View>
             </View>

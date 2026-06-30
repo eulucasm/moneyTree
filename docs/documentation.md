@@ -1,4 +1,4 @@
-# Cérebro do Projeto - FinanciLife (moneyTree)
+# Cérebro do Projeto - Money Tree (VerdeCo)
 
 Este é o documento central de documentação e contexto do projeto.
 
@@ -56,38 +56,39 @@ Abaixo estão as "Skills" (comportamentos de IA) que pautam o projeto:
 
 ```mermaid
 gantt
-    title Roadmap do Projeto FinanciLife
+    title Roadmap do Projeto Money Tree
     dateFormat  YYYY-MM-DD
     section Fase 1 - Setup e Arquitetura
-    Configuração do Monorepo & Documentação :active, task1, 2026-06-29, 2d
-    Setup do Backend Node.js                  :         task2, after task1, 3d
-    Setup do Expo React Native               :         task3, after task1, 3d
+    Configuração do Monorepo & Documentação :done, task1, 2026-06-29, 2d
+    Setup do Backend Node.js                  :done, task2, 2026-06-29, 2d
+    Setup do Expo React Native               :done, task3, 2026-06-29, 2d
     section Fase 2 - Core & Banco de Dados
-    Modelagem do BD (Prisma)                 :         task4, after task2, 4d
-    Autenticação (JWT)                       :         task5, after task4, 3d
+    Modelagem do BD (Prisma)                 :done, task4, 2026-06-29, 2d
+    Autenticação (JWT)                       :done, task5, 2026-06-29, 2d
     section Fase 3 - Frontend UI
-    Design System (Glassmorphism)            :         task6, after task3, 4d
-    Dashboard e Telas Base                   :         task7, after task6, 5d
+    Design System (Glassmorphism)            :active, task6, 2026-06-30, 4d
+    Dashboard e Telas Base                   :active, task7, 2026-06-30, 5d
 ```
 
-**Fase Atual:** Fase 1 (Setup e Documentação Inicial).
+**Fase Atual:** Fase 3 (Desenvolvimento e Polimento do Frontend / Integração).
 
 ---
 
 ## 2.6. 📦 O Que Já Foi Desenvolvido
 
-- `README.md` — Descritivo principal, identidade visual e documentação de telas do projeto (herdado do `Descritivo_antigo_app.md`).
+- `README.md` — Descritivo principal, identidade visual e documentação de telas do projeto.
 - `docs/documentation.md` — Este arquivo, base central do cérebro do projeto.
 - `skill/GUIA_DOCUMENTACAO.md` — Guia usado como template para documentação.
+- `backend/` — API REST em Node.js com Express, TypeScript, Prisma ORM e suporte a autenticação real/mock do Firebase.
+- `frontend/` — App em React Native (Expo) com abas (Dashboard, Orçamento, Faturas, Histórico, Gráficos, Ajustes e Admin), Zustand e motor de sincronização local-nuvem.
 
 ---
 
 ## 2.7. ⏳ O Que Ainda Falta (Pendências)
 
-- [ ] Definir a estrutura do monorepo (ou separação de pastas `api` e `app`).
-- [ ] Inicializar o Backend Node.js (package.json, dependências, tsconfig).
-- [ ] Inicializar o Frontend Expo.
-- [ ] Modelar o banco de dados (Tabelas de Usuários, Transações, Cartões, Metas) usando as colunas da planilha do usuário como base/norte.
+- [ ] Importar/Migrar dados reais históricos da planilha `New Contas 2025.xlsx` para testes avançados locais.
+- [ ] Validar fluxos de transação de ponta a ponta e tratar cenários de rede offline/online no app.
+- [ ] Revisão fina de UI/UX e micro-animações do tema Glassmorphism.
 
 ---
 
@@ -95,6 +96,8 @@ gantt
 
 - **Decisão (29/06/2026):** Arquitetura Backend. O Next.js permite um ecossistema unificado, mas como há o requisito forte de app Web *e* Mobile com persistência consistente e escalável, decidiu-se usar um Backend Node separado e puro para entregar as APIs, garantindo que o App Mobile (Expo) não consuma rotas acopladas a views da web.
 - **Decisão (29/06/2026):** Banco de dados PostgreSQL escolhido por sua consistência com dados financeiros estruturados.
+- **Decisão (30/06/2026):** Hospedagem do banco PostgreSQL na Supabase. Devido a restrições de rede local (IPv4) com a porta direta IPv6 da Supabase, foi adotado o uso de Connection Pooler (Supavisor) na porta `5432` com host pooler IPv4 (`aws-1-sa-east-1.pooler.supabase.com`) no backend.
+- **Decisão (30/06/2026):** Segurança de Credenciais. Para evitar exposição de chaves no repositório Git, as credenciais do Firebase no frontend foram migradas para variáveis de ambiente locais usando o padrão do Expo (`EXPO_PUBLIC_...`) no arquivo `frontend/.env`.
 
 ---
 
@@ -104,3 +107,7 @@ gantt
 | :--- | :--- | :--- | :--- |
 | 29/06/2026 | Inicialização do Repositório Git e Commit Inicial | Humano/IA | ✅ Concluída |
 | 29/06/2026 | Criação do `docs/documentation.md` com Brainstorm e Arquitetura | IA | ✅ Concluída |
+| 30/06/2026 | Auditoria técnica do monorepo, validação de tipos e alinhamento com a planilha | IA | ✅ Concluída |
+| 30/06/2026 | Cadastro de novos usuários (celular, data nasc), validações de senha complexa, confirmação de senha, suporte BD/API e ajustes de perfil | IA | ✅ Concluída |
+| 30/06/2026 | Integração e migração do banco de dados local para PostgreSQL na nuvem (Supabase via Connection Pooler IPv4) | IA | ✅ Concluída |
+| 30/06/2026 | Migração das credenciais hardcoded do Firebase no frontend para variáveis de ambiente locais (.env) | IA | ✅ Concluída |

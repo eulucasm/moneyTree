@@ -1,6 +1,6 @@
-# FinanciLife (VerdeCo) - Documentação de Funcionalidades e Identidade Visual
+# Money Tree (VerdeCo) - Documentação de Funcionalidades e Identidade Visual
 
-Este documento apresenta as diretrizes de design, identidade visual e um mapeamento detalhado das funcionalidades por tela do aplicativo FinanciLife.
+Este documento apresenta as diretrizes de design, identidade visual e um mapeamento detalhado das funcionalidades por tela do aplicativo Money Tree.
 
 ---
 

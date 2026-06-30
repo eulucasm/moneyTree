@@ -87,6 +87,8 @@ app.get('/api/user/profile', authMiddleware, async (req: AuthenticatedRequest, r
           status: 'active',
           savingsGoal: 0,
           language: 'pt',
+          phone: '',
+          birthDate: '',
           createdAt: new Date().toISOString().substring(0, 7), // "YYYY-MM"
         },
       });
@@ -103,6 +105,8 @@ app.get('/api/user/profile', authMiddleware, async (req: AuthenticatedRequest, r
       status: user.status,
       savingsGoal: user.savingsGoal,
       language: user.language,
+      phone: user.phone || '',
+      birthDate: user.birthDate || '',
       createdAt: user.createdAt,
     });
   } catch (err: any) {
@@ -114,7 +118,7 @@ app.get('/api/user/profile', authMiddleware, async (req: AuthenticatedRequest, r
 // 2. PUT /api/user/profile - Update profile
 app.put('/api/user/profile', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
   const userId = req.userId!;
-  const { firstName, lastName, city, state, loginType, activePlan, role, status, savingsGoal, language } = req.body;
+  const { firstName, lastName, city, state, loginType, activePlan, role, status, savingsGoal, language, phone, birthDate } = req.body;
 
   try {
     const user = await prisma.user.upsert({
@@ -130,6 +134,8 @@ app.put('/api/user/profile', authMiddleware, async (req: AuthenticatedRequest, r
         status,
         savingsGoal: savingsGoal !== undefined ? parseFloat(savingsGoal) : undefined,
         language,
+        phone,
+        birthDate,
       },
       create: {
         id: userId,
@@ -143,6 +149,8 @@ app.put('/api/user/profile', authMiddleware, async (req: AuthenticatedRequest, r
         status: status || 'active',
         savingsGoal: savingsGoal !== undefined ? parseFloat(savingsGoal) : 0,
         language: language || 'pt',
+        phone: phone || '',
+        birthDate: birthDate || '',
         createdAt: new Date().toISOString().substring(0, 7),
       },
     });
@@ -250,6 +258,8 @@ app.get('/api/sync', authMiddleware, async (req: AuthenticatedRequest, res: Resp
         activePlan: user.activePlan,
         role: user.role,
         status: user.status,
+        phone: user.phone || '',
+        birthDate: user.birthDate || '',
         createdAt: user.createdAt,
       },
       updatedAt: user.updatedAt.getTime(),
@@ -326,6 +336,8 @@ app.post('/api/sync', authMiddleware, async (req: AuthenticatedRequest, res: Res
           status: prof.status !== undefined ? prof.status : undefined,
           savingsGoal: parseFloat(savingsGoal),
           language,
+          phone: prof.phone !== undefined ? prof.phone : undefined,
+          birthDate: prof.birthDate !== undefined ? prof.birthDate : undefined,
         },
         create: {
           id: userId,
@@ -339,6 +351,8 @@ app.post('/api/sync', authMiddleware, async (req: AuthenticatedRequest, res: Res
           status: prof.status || 'active',
           savingsGoal: parseFloat(savingsGoal),
           language,
+          phone: prof.phone || '',
+          birthDate: prof.birthDate || '',
           createdAt: prof.createdAt || new Date().toISOString().substring(0, 7),
         },
       });
@@ -485,6 +499,8 @@ app.get('/api/admin/users', authMiddleware, adminMiddleware, async (req: Authent
         activePlan: true,
         role: true,
         status: true,
+        phone: true,
+        birthDate: true,
         createdAt: true,
       }
     });
@@ -501,6 +517,8 @@ app.get('/api/admin/users', authMiddleware, adminMiddleware, async (req: Authent
         activePlan: u.activePlan,
         role: u.role,
         status: u.status,
+        phone: u.phone || '',
+        birthDate: u.birthDate || '',
         createdAt: u.createdAt,
       }
     }));

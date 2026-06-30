@@ -7,7 +7,7 @@ export interface UserProfile {
   password?: string;
   activePlan: 'free' | 'pro' | 'premium';
   createdAt?: string; // Format: "YYYY-MM"
-  age?: string;
+  birthDate?: string;
   phone?: string;
   role?: 'admin' | 'user';
   status?: 'active' | 'suspended';

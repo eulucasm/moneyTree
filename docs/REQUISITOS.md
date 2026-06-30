@@ -1,4 +1,4 @@
-# 📝 Requisitos e Funcionalidades Mapeadas - FinanciLife
+# 📝 Requisitos e Funcionalidades Mapeadas - Money Tree
 
 Este documento lista todas as funcionalidades identificadas até o momento, divididas por módulo. Ele serve como o **Product Requirements Document (PRD)** inicial para aprovação e evolução.
 
