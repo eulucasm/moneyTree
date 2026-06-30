@@ -20,6 +20,8 @@ import {
   Cloud
 } from 'lucide-react-native';
 import { router } from 'expo-router';
+import { auth } from '../../services/firebase';
+import { EmailAuthProvider, reauthenticateWithCredential, updatePassword } from 'firebase/auth';
 
 const showAlert = (
   title: string,
@@ -45,6 +47,30 @@ const showAlert = (
   } else {
     Alert.alert(title, message, buttons);
   }
+};
+
+const formatPhone = (value: string) => {
+  const digits = value.replace(/\D/g, '');
+  if (digits.length === 0) return '';
+  if (digits.length <= 2) {
+    return `(${digits}`;
+  }
+  if (digits.length <= 7) {
+    return `(${digits.slice(0, 2)}) ${digits.slice(2)}`;
+  }
+  return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7, 11)}`;
+};
+
+const formatDateMask = (value: string) => {
+  const digits = value.replace(/\D/g, '').slice(0, 8);
+  if (digits.length === 0) return '';
+  if (digits.length <= 2) {
+    return digits;
+  }
+  if (digits.length <= 4) {
+    return `${digits.slice(0, 2)}/${digits.slice(2)}`;
+  }
+  return `${digits.slice(0, 2)}/${digits.slice(2, 4)}/${digits.slice(4)}`;
 };
 
 export default function SettingsScreen() {
@@ -154,6 +180,7 @@ export default function SettingsScreen() {
   };
 
   // Form states
+  const [isEditing, setIsEditing] = useState(false);
   const [firstName, setFirstName] = useState(userProfile?.firstName || 'Lucas');
   const [lastName, setLastName] = useState(userProfile?.lastName || 'Macedo');
   const [city, setCity] = useState(userProfile?.city || 'Campinas');
@@ -163,6 +190,12 @@ export default function SettingsScreen() {
   const [loginType, setLoginType] = useState<UserProfile['loginType']>(userProfile?.loginType || 'google');
   const [password, setPassword] = useState(userProfile?.password || '');
   const [showPassword, setShowPassword] = useState(false);
+  
+  // Password change states
+  const [oldPassword, setOldPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [showOldPassword, setShowOldPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
 
   // Backup states
   const [backupInput, setBackupInput] = useState('');
@@ -176,8 +209,8 @@ export default function SettingsScreen() {
       setLastName(userProfile.lastName);
       setCity(userProfile.city);
       setState(userProfile.state);
-      setPhone(userProfile.phone || '');
-      setBirthDate(userProfile.birthDate || '');
+      setPhone(formatPhone(userProfile.phone || ''));
+      setBirthDate(formatDateMask(userProfile.birthDate || ''));
       setLoginType(userProfile.loginType);
       setPassword(userProfile.password || '');
     }
@@ -199,7 +232,7 @@ export default function SettingsScreen() {
     return date.getFullYear() === year && date.getMonth() === month - 1 && date.getDate() === day;
   };
 
-  const handleSaveProfile = () => {
+  const handleSaveProfile = async () => {
     if (!firstName.trim() || !lastName.trim() || !phone.trim() || !birthDate.trim()) {
       showAlert('Erro', 'Nome, Sobrenome, Celular e Data de Nascimento são obrigatórios.');
       return;
@@ -210,6 +243,50 @@ export default function SettingsScreen() {
       return;
     }
 
+    let finalPassword = userProfile?.password || '';
+
+    // If newPassword is provided, attempt reauthentication and change password
+    if (loginType === 'email' && newPassword.trim()) {
+      if (!oldPassword.trim()) {
+        showAlert('Erro', 'Para alterar a senha, você deve informar a senha antiga.');
+        return;
+      }
+
+      if (newPassword.length < 6) {
+        showAlert('Erro', 'A nova senha deve ter no mínimo 6 caracteres.');
+        return;
+      }
+
+      const currentUser = auth.currentUser;
+      const isRealAuth = currentUser && currentUser.email && !currentUser.email.includes('mock');
+
+      if (isRealAuth) {
+        try {
+          const credential = EmailAuthProvider.credential(currentUser.email!, oldPassword);
+          await reauthenticateWithCredential(currentUser, credential);
+          await updatePassword(currentUser, newPassword);
+          finalPassword = newPassword;
+        } catch (err: any) {
+          console.error('[Settings] Reauth/Password change failed:', err);
+          let friendlyError = 'A senha antiga informada está incorreta ou ocorreu um erro de rede.';
+          if (err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential') {
+            friendlyError = 'A senha antiga informada está incorreta.';
+          } else if (err.code === 'auth/weak-password') {
+            friendlyError = 'A nova senha informada é muito fraca.';
+          }
+          showAlert('Erro', friendlyError);
+          return;
+        }
+      } else {
+        // Mock mode: compare against existing password in userProfile
+        if (oldPassword !== userProfile?.password) {
+          showAlert('Erro', 'A senha antiga informada está incorreta.');
+          return;
+        }
+        finalPassword = newPassword;
+      }
+    }
+
     updateUserProfile({
       firstName,
       lastName,
@@ -218,8 +295,12 @@ export default function SettingsScreen() {
       phone,
       birthDate,
       loginType,
-      password: loginType === 'email' ? password : '',
+      password: finalPassword,
     });
+    
+    setOldPassword('');
+    setNewPassword('');
+    setIsEditing(false);
     showAlert('Sucesso!', 'Informações de perfil salvas com sucesso.');
   };
 
@@ -468,21 +549,41 @@ export default function SettingsScreen() {
               <View style={styles.formField}>
                 <Text style={[styles.label, { color: colors.text }]}>Nome</Text>
                 <TextInput
-                  style={[styles.input, { borderColor: colors.borderGlass, color: colors.text, backgroundColor: colorScheme === 'dark' ? 'rgba(255,255,255,0.02)' : '#FFFFFF' }]}
+                  style={[
+                    styles.input,
+                    { 
+                      borderColor: isEditing ? colors.borderGlass : 'transparent',
+                      color: isEditing ? colors.text : colors.textMuted,
+                      backgroundColor: isEditing 
+                        ? (colorScheme === 'dark' ? 'rgba(255,255,255,0.02)' : '#FFFFFF') 
+                        : (colorScheme === 'dark' ? 'rgba(255,255,255,0.005)' : '#F8F9FA')
+                    }
+                  ]}
                   placeholderTextColor={colors.textMuted}
                   value={firstName}
                   onChangeText={setFirstName}
                   placeholder="Seu nome"
+                  editable={isEditing}
                 />
               </View>
               <View style={styles.formField}>
                 <Text style={[styles.label, { color: colors.text }]}>Sobrenome</Text>
                 <TextInput
-                  style={[styles.input, { borderColor: colors.borderGlass, color: colors.text, backgroundColor: colorScheme === 'dark' ? 'rgba(255,255,255,0.02)' : '#FFFFFF' }]}
+                  style={[
+                    styles.input,
+                    { 
+                      borderColor: isEditing ? colors.borderGlass : 'transparent',
+                      color: isEditing ? colors.text : colors.textMuted,
+                      backgroundColor: isEditing 
+                        ? (colorScheme === 'dark' ? 'rgba(255,255,255,0.02)' : '#FFFFFF') 
+                        : (colorScheme === 'dark' ? 'rgba(255,255,255,0.005)' : '#F8F9FA')
+                    }
+                  ]}
                   placeholderTextColor={colors.textMuted}
                   value={lastName}
                   onChangeText={setLastName}
                   placeholder="Seu sobrenome"
+                  editable={isEditing}
                 />
               </View>
             </View>
@@ -491,23 +592,43 @@ export default function SettingsScreen() {
               <View style={styles.formField}>
                 <Text style={[styles.label, { color: colors.text }]}>Cidade</Text>
                 <TextInput
-                  style={[styles.input, { borderColor: colors.borderGlass, color: colors.text, backgroundColor: colorScheme === 'dark' ? 'rgba(255,255,255,0.02)' : '#FFFFFF' }]}
+                  style={[
+                    styles.input,
+                    { 
+                      borderColor: isEditing ? colors.borderGlass : 'transparent',
+                      color: isEditing ? colors.text : colors.textMuted,
+                      backgroundColor: isEditing 
+                        ? (colorScheme === 'dark' ? 'rgba(255,255,255,0.02)' : '#FFFFFF') 
+                        : (colorScheme === 'dark' ? 'rgba(255,255,255,0.005)' : '#F8F9FA')
+                    }
+                  ]}
                   placeholderTextColor={colors.textMuted}
                   value={city}
                   onChangeText={setCity}
                   placeholder="Sua cidade"
+                  editable={isEditing}
                 />
               </View>
               <View style={styles.formField}>
                 <Text style={[styles.label, { color: colors.text }]}>Estado (UF)</Text>
                 <TextInput
-                  style={[styles.input, { borderColor: colors.borderGlass, color: colors.text, backgroundColor: colorScheme === 'dark' ? 'rgba(255,255,255,0.02)' : '#FFFFFF' }]}
+                  style={[
+                    styles.input,
+                    { 
+                      borderColor: isEditing ? colors.borderGlass : 'transparent',
+                      color: isEditing ? colors.text : colors.textMuted,
+                      backgroundColor: isEditing 
+                        ? (colorScheme === 'dark' ? 'rgba(255,255,255,0.02)' : '#FFFFFF') 
+                        : (colorScheme === 'dark' ? 'rgba(255,255,255,0.005)' : '#F8F9FA')
+                    }
+                  ]}
                   placeholderTextColor={colors.textMuted}
                   value={state}
                   onChangeText={setState}
                   placeholder="Ex: SP"
                   maxLength={2}
                   autoCapitalize="characters"
+                  editable={isEditing}
                 />
               </View>
             </View>
@@ -516,23 +637,43 @@ export default function SettingsScreen() {
               <View style={styles.formField}>
                 <Text style={[styles.label, { color: colors.text }]}>Celular</Text>
                 <TextInput
-                  style={[styles.input, { borderColor: colors.borderGlass, color: colors.text, backgroundColor: colorScheme === 'dark' ? 'rgba(255,255,255,0.02)' : '#FFFFFF' }]}
+                  style={[
+                    styles.input,
+                    { 
+                      borderColor: isEditing ? colors.borderGlass : 'transparent',
+                      color: isEditing ? colors.text : colors.textMuted,
+                      backgroundColor: isEditing 
+                        ? (colorScheme === 'dark' ? 'rgba(255,255,255,0.02)' : '#FFFFFF') 
+                        : (colorScheme === 'dark' ? 'rgba(255,255,255,0.005)' : '#F8F9FA')
+                    }
+                  ]}
                   placeholderTextColor={colors.textMuted}
                   value={phone}
-                  onChangeText={setPhone}
+                  onChangeText={(text) => setPhone(formatPhone(text))}
                   placeholder="Ex: (11) 99999-9999"
                   keyboardType="phone-pad"
+                  editable={isEditing}
                 />
               </View>
               <View style={styles.formField}>
                 <Text style={[styles.label, { color: colors.text }]}>Data de Nascimento</Text>
                 <TextInput
-                  style={[styles.input, { borderColor: colors.borderGlass, color: colors.text, backgroundColor: colorScheme === 'dark' ? 'rgba(255,255,255,0.02)' : '#FFFFFF' }]}
+                  style={[
+                    styles.input,
+                    { 
+                      borderColor: isEditing ? colors.borderGlass : 'transparent',
+                      color: isEditing ? colors.text : colors.textMuted,
+                      backgroundColor: isEditing 
+                        ? (colorScheme === 'dark' ? 'rgba(255,255,255,0.02)' : '#FFFFFF') 
+                        : (colorScheme === 'dark' ? 'rgba(255,255,255,0.005)' : '#F8F9FA')
+                    }
+                  ]}
                   placeholderTextColor={colors.textMuted}
                   value={birthDate}
-                  onChangeText={setBirthDate}
+                  onChangeText={(text) => setBirthDate(formatDateMask(text))}
                   placeholder="Ex: DD/MM/AAAA"
                   keyboardType="numeric"
+                  editable={isEditing}
                 />
               </View>
             </View>
@@ -543,6 +684,7 @@ export default function SettingsScreen() {
               <View style={styles.selectorPills}>
                 <TouchableOpacity
                   activeOpacity={0.8}
+                  disabled={!isEditing}
                   onPress={() => setLoginType('google')}
                   style={[
                     styles.pill,
@@ -559,6 +701,7 @@ export default function SettingsScreen() {
                 </TouchableOpacity>
                 <TouchableOpacity
                   activeOpacity={0.8}
+                  disabled={!isEditing}
                   onPress={() => setLoginType('email')}
                   style={[
                     styles.pill,
@@ -576,43 +719,106 @@ export default function SettingsScreen() {
               </View>
             </View>
 
-            {/* Password input (only visible/active for Email Login) */}
-            {loginType === 'email' ? (
-              <View style={styles.formField}>
-                <Text style={[styles.label, { color: colors.text }]}>Senha de Acesso</Text>
-                <View style={[styles.passwordInputWrapper, { borderColor: colors.borderGlass, backgroundColor: colorScheme === 'dark' ? 'rgba(255,255,255,0.02)' : '#FFFFFF' }]}>
-                  <TextInput
-                    style={[styles.passwordInput, { color: colors.text }]}
-                    placeholderTextColor={colors.textMuted}
-                    value={password}
-                    onChangeText={setPassword}
-                    placeholder="Sua senha secreta"
-                    secureTextEntry={!showPassword}
-                  />
-                  <TouchableOpacity 
-                    onPress={() => setShowPassword(!showPassword)}
-                    style={styles.showPasswordButton}
-                  >
-                    <Key size={18} color={colors.textMuted} />
-                  </TouchableOpacity>
-                </View>
-              </View>
-            ) : (
-              <View style={[styles.googleNotice, { backgroundColor: colorScheme === 'dark' ? 'rgba(16,185,129,0.05)' : '#E8F5E9', borderColor: colors.borderGlass }]}>
-                <Lock size={16} color={colorScheme === 'dark' ? '#10B981' : '#0E5A36'} style={{ marginRight: 8 }} />
-                <Text style={[styles.googleNoticeText, { color: colorScheme === 'dark' ? '#10B981' : '#0E5A36' }]}>
-                  Login integrado via Google. A senha está desativada para a sua segurança.
-                </Text>
+            {/* Password Section (Only visible for Email Login) */}
+            {loginType === 'email' && (
+              <View style={{ width: '100%', gap: 16, marginTop: 16 }}>
+                {!isEditing ? (
+                  // Read-only view
+                  <View style={styles.formField}>
+                    <Text style={[styles.label, { color: colors.text }]}>Senha de Acesso</Text>
+                    <View style={[
+                      styles.passwordInputWrapper, 
+                      { 
+                        borderColor: 'transparent',
+                        backgroundColor: colorScheme === 'dark' ? 'rgba(255,255,255,0.005)' : '#F8F9FA'
+                      }
+                    ]}>
+                      <TextInput
+                        style={[styles.passwordInput, { color: colors.textMuted }]}
+                        value="********"
+                        editable={false}
+                      />
+                    </View>
+                  </View>
+                ) : (
+                  // Edit view: show Old Password and New Password inputs
+                  <View style={{ flexDirection: isLargeScreen ? 'row' : 'column', gap: 16, width: '100%' }}>
+                    <View style={{ flex: 1 }}>
+                      <Text style={[styles.label, { color: colors.text }]}>Senha Antiga</Text>
+                      <View style={[
+                        styles.passwordInputWrapper, 
+                        { 
+                          borderColor: colors.borderGlass,
+                          backgroundColor: colorScheme === 'dark' ? 'rgba(255,255,255,0.02)' : '#FFFFFF'
+                        }
+                      ]}>
+                        <TextInput
+                          style={[styles.passwordInput, { color: colors.text }]}
+                          placeholderTextColor={colors.textMuted}
+                          value={oldPassword}
+                          onChangeText={setOldPassword}
+                          placeholder="Senha antiga"
+                          secureTextEntry={!showOldPassword}
+                          editable={isEditing}
+                        />
+                        <TouchableOpacity 
+                          onPress={() => setShowOldPassword(!showOldPassword)}
+                          style={styles.showPasswordButton}
+                        >
+                          <Key size={18} color={colors.textMuted} />
+                        </TouchableOpacity>
+                      </View>
+                    </View>
+                    <View style={{ flex: 1 }}>
+                      <Text style={[styles.label, { color: colors.text }]}>Nova Senha</Text>
+                      <View style={[
+                        styles.passwordInputWrapper, 
+                        { 
+                          borderColor: colors.borderGlass,
+                          backgroundColor: colorScheme === 'dark' ? 'rgba(255,255,255,0.02)' : '#FFFFFF'
+                        }
+                      ]}>
+                        <TextInput
+                          style={[styles.passwordInput, { color: colors.text }]}
+                          placeholderTextColor={colors.textMuted}
+                          value={newPassword}
+                          onChangeText={setNewPassword}
+                          placeholder="Nova senha (mín. 6)"
+                          secureTextEntry={!showNewPassword}
+                          editable={isEditing}
+                        />
+                        <TouchableOpacity 
+                          onPress={() => setShowNewPassword(!showNewPassword)}
+                          style={styles.showPasswordButton}
+                        >
+                          <Key size={18} color={colors.textMuted} />
+                        </TouchableOpacity>
+                      </View>
+                    </View>
+                  </View>
+                )}
               </View>
             )}
 
-            <TouchableOpacity
-              activeOpacity={0.8}
-              onPress={handleSaveProfile}
-              style={styles.buttonPrimary}
-            >
-              <Text style={styles.buttonPrimaryText}>Salvar Informações</Text>
-            </TouchableOpacity>
+            <View style={{ marginTop: 8 }}>
+              {isEditing ? (
+                <TouchableOpacity
+                  activeOpacity={0.8}
+                  onPress={handleSaveProfile}
+                  style={[styles.buttonPrimary, { backgroundColor: '#10B981' }]}
+                >
+                  <Text style={[styles.buttonPrimaryText, { color: '#FFFFFF' }]}>Salvar</Text>
+                </TouchableOpacity>
+              ) : (
+                <TouchableOpacity
+                  activeOpacity={0.8}
+                  onPress={() => setIsEditing(true)}
+                  style={[styles.buttonPrimary, { backgroundColor: colorScheme === 'dark' ? 'rgba(255,255,255,0.08)' : '#F1F3F5' }]}
+                >
+                  <Text style={[styles.buttonPrimaryText, { color: colorScheme === 'dark' ? '#10B981' : '#0F5132' }]}>Editar Dados</Text>
+                </TouchableOpacity>
+              )}
+            </View>
           </GlassCard>
 
            {/* Backup & System Data */}
@@ -699,7 +905,7 @@ export default function SettingsScreen() {
             <Text style={[styles.cardDescription, { color: colors.textMuted }]}>
               {userProfile?.activePlan === 'premium' 
                 ? 'Você está utilizando o plano Premium do Money Tree. Aproveite todos os recursos liberados para sua gestão.'
-                : 'Você está utilizando o plano Básico do Money Tree. Adquira o Premium para liberar sincronização em nuvem e recursos extras.'}
+                : 'Você está utilizando o plano Básico do Money Tree. A assinatura e a alteração de planos estarão disponíveis em breve.'}
             </Text>
             <View style={styles.activePlanBadgeContainer}>
               <Text style={[styles.activePlanLabel, { color: colors.text }]}>Plano Atual:</Text>
@@ -712,13 +918,21 @@ export default function SettingsScreen() {
                 </Text>
               </View>
             </View>
-            <TouchableOpacity
-              activeOpacity={0.8}
-              onPress={() => router.push('/plans' as any)}
-              style={[styles.changePlanButton, { borderColor: colors.borderGlass }]}
-            >
-              <Text style={styles.changePlanButtonText}>Adquirir Outro Plano</Text>
-            </TouchableOpacity>
+
+            {/* Informação sobre recursos futuros em breve */}
+            <View style={[
+              styles.googleNotice, 
+              { 
+                backgroundColor: colorScheme === 'dark' ? 'rgba(16,185,129,0.05)' : '#E8F5E9', 
+                borderColor: colors.borderGlass,
+                marginTop: 8
+              }
+            ]}>
+              <Sparkles size={16} color={colorScheme === 'dark' ? '#10B981' : '#0E5A36'} style={{ marginRight: 8 }} />
+              <Text style={[styles.googleNoticeText, { color: colorScheme === 'dark' ? '#10B981' : '#0E5A36', fontWeight: '500' }]}>
+                Novos Planos: Em breve! Estamos preparando recursos premium adicionais e integração de pagamentos direto no app.
+              </Text>
+            </View>
           </GlassCard>
 
           {/* Languages Section */}

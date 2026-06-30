@@ -8,6 +8,30 @@ import { auth } from '../services/firebase';
 import { useFinancials } from '../context/FinancialContext';
 import Toast from '../components/Toast';
 
+const formatPhone = (value: string) => {
+  const digits = value.replace(/\D/g, '');
+  if (digits.length === 0) return '';
+  if (digits.length <= 2) {
+    return `(${digits}`;
+  }
+  if (digits.length <= 7) {
+    return `(${digits.slice(0, 2)}) ${digits.slice(2)}`;
+  }
+  return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7, 11)}`;
+};
+
+const formatDateMask = (value: string) => {
+  const digits = value.replace(/\D/g, '').slice(0, 8);
+  if (digits.length === 0) return '';
+  if (digits.length <= 2) {
+    return digits;
+  }
+  if (digits.length <= 4) {
+    return `${digits.slice(0, 2)}/${digits.slice(2)}`;
+  }
+  return `${digits.slice(0, 2)}/${digits.slice(2, 4)}/${digits.slice(4)}`;
+};
+
 export default function RegisterScreen() {
   const { updateUserProfile } = useFinancials();
   
@@ -217,7 +241,7 @@ export default function RegisterScreen() {
                     placeholder="Ex: DD/MM/AAAA"
                     placeholderTextColor={Theme.light.textMuted}
                     value={birthDate}
-                    onChangeText={setBirthDate}
+                    onChangeText={(text) => setBirthDate(formatDateMask(text))}
                     onFocus={() => setIsBirthDateFocused(true)}
                     onBlur={() => setIsBirthDateFocused(false)}
                     keyboardType="numeric"
@@ -238,7 +262,7 @@ export default function RegisterScreen() {
                     placeholder="Ex: (11) 99999-9999"
                     placeholderTextColor={Theme.light.textMuted}
                     value={phone}
-                    onChangeText={setPhone}
+                    onChangeText={(text) => setPhone(formatPhone(text))}
                     onFocus={() => setIsPhoneFocused(true)}
                     onBlur={() => setIsPhoneFocused(false)}
                     keyboardType="phone-pad"
