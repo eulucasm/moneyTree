@@ -1,0 +1,68 @@
+{
+  "common": {
+    "entries": "Ingresos",
+    "exits": "Gastos",
+    "recurring": "Recurrentes",
+    "installments": "Cuotas",
+    "savings": "Ahorro",
+    "balance": "Saldo",
+    "forecast": "Previsión de Sobra",
+    "surplus": "Sobrado del Mes Pasado",
+    "placedInSavings": "Colocado en Ahorro",
+    "savingsFromPreviousMonth": "Ahorro del Mes Anterior",
+    "totalSavings": "Total en Ahorro",
+    "status": "Estado",
+    "paid": "Pagado",
+    "pending": "Pendiente",
+    "description": "Descripción",
+    "value": "Valor",
+    "actions": "Acciones",
+    "add": "Añadir",
+    "edit": "Editar",
+    "delete": "Eliminar",
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "selectMonth": "Seleccionar Mes",
+    "cards": "Tarjetas",
+    "installments_title": "Cuotas del Mes",
+    "settings": "Ajustes",
+    "language": "Idioma",
+    "theme": "Tema",
+    "confirmDelete": "¿Estás seguro de que quieres eliminar?",
+    "cleanData": "Limpiar Todos los Datos",
+    "cleanDataConfirm": "Esto borrará permanentemente todos los registros locales. ¿Confirmar?"
+  },
+  "dashboard": {
+    "title": "Money Tree",
+    "overview": "Visión General",
+    "recentTransactions": "Transacciones Recientes",
+    "noTransactions": "Ninguna transacción registrada",
+    "cashFlow": "Flujo de Caja",
+    "categories": "Categorías",
+    "monthSelector": "Selector de Período"
+  },
+  "installments": {
+    "title": "Gestionar Cuotas",
+    "newInstallment": "Nuevo Pago a Cuotas",
+    "productName": "Nombre del Producto/Servicio",
+    "totalValue": "Valor Total",
+    "numberOfInstallments": "Nº de Cuotas",
+    "startDate": "Mes de la 1ª Cuota",
+    "cardUsed": "Tarjeta Utilizada",
+    "monthlyValue": "Valor Mensual de la Cuota",
+    "installmentProgress": "Progreso de Cuotas",
+    "nubank": "Nubank",
+    "mercadopago": "Mercado Pago",
+    "caixa": "Caixa",
+    "bradesco": "Bradesco",
+    "other": "Otros"
+  },
+  "settings": {
+    "languages": {
+      "pt": "Português",
+      "en": "English",
+      "es": "Español",
+      "fr": "Français"
+    }
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "name": "moneytree-root",
+  "version": "1.0.0",
+  "description": "Root workspace command runner for Money Tree",
+  "scripts": {
+    "dev": "concurrently --kill-others \"npm run dev --prefix backend\" \"npm run web --prefix frontend\"",
+    "install:all": "npm install --prefix backend && npm install --prefix frontend"
+  },
+  "dependencies": {
+    "concurrently": "^8.2.2"
+  }
+}

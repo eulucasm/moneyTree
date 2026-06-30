@@ -1,0 +1,111 @@
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id                   String              @id // Firebase auth uid
+  firstName            String
+  lastName             String
+  city                 String
+  state                String
+  loginType            String
+  activePlan           String
+  role                 String              @default("user")
+  status               String              @default("active")
+  savingsGoal          Float               @default(0)
+  language             String              @default("pt")
+  createdAt            String              // "YYYY-MM"
+  updatedAt            DateTime            @updatedAt
+  
+  entries              Entry[]
+  exits                Exit[]
+  recurrings           Recurring[]
+  purchases            Purchase[]
+  savingsItems         SavingsItem[]
+  creditCards          CreditCard[]
+  installmentStatusMap InstallmentStatus[]
+}
+
+model Entry {
+  id          String   @id
+  userId      String
+  description String
+  value       Float
+  date        String   // "YYYY-MM-DD"
+  status      String   // "ok" | "pending"
+  
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Exit {
+  id          String   @id
+  userId      String
+  description String
+  value       Float
+  date        String   // "YYYY-MM-DD"
+  status      String   // "ok" | "pending"
+  category    String   // "fixed" | "variable"
+  dueDate     Int?
+  
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Recurring {
+  id          String   @id
+  userId      String
+  description String
+  value       Float
+  
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Purchase {
+  id           String   @id
+  userId       String
+  description  String
+  totalValue   Float
+  installments Int
+  startDate    String   // "YYYY-MM-DD"
+  cardUsed     String
+  
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model SavingsItem {
+  id          String   @id
+  userId      String
+  monthStr    String   // "YYYY-MM"
+  type        String   // "poupança" | "caixinha"
+  bank        String
+  amount      Float
+  description String
+  
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model CreditCard {
+  id              String   @id
+  userId          String
+  name            String
+  limit           Float
+  color           String?
+  dueDate         Int?
+  bestPurchaseDay Int?
+  
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model InstallmentStatus {
+  id          String   @id @default(uuid())
+  userId      String
+  purchaseId  String
+  date        String   // "YYYY-MM"
+  status      String   // "ok" | "pending"
+  
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}

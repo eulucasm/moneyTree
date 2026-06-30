@@ -1,0 +1,68 @@
+{
+  "common": {
+    "entries": "Entradas",
+    "exits": "Saídas",
+    "recurring": "Recorrentes",
+    "installments": "Parcelados",
+    "savings": "Poupança",
+    "balance": "Saldo",
+    "forecast": "Previsão de Sobra",
+    "surplus": "Sobrou do Mês Passado",
+    "placedInSavings": "Colocado na Poupança",
+    "savingsFromPreviousMonth": "Poupança do Mês Anterior",
+    "totalSavings": "Total em Poupança",
+    "status": "Status",
+    "paid": "Pago",
+    "pending": "Pendente",
+    "description": "Descrição",
+    "value": "Valor",
+    "actions": "Ações",
+    "add": "Adicionar",
+    "edit": "Editar",
+    "delete": "Deletar",
+    "save": "Salvar",
+    "cancel": "Cancelar",
+    "selectMonth": "Selecionar Mês",
+    "cards": "Cartões",
+    "installments_title": "Parcelas do Mês",
+    "settings": "Configurações",
+    "language": "Idioma",
+    "theme": "Tema",
+    "confirmDelete": "Tem certeza que deseja deletar?",
+    "cleanData": "Limpar Todos os Dados",
+    "cleanDataConfirm": "Isso irá apagar todos os registros locais permanentemente. Confirmar?"
+  },
+  "dashboard": {
+    "title": "Money Tree",
+    "overview": "Visão Geral",
+    "recentTransactions": "Transações Recentes",
+    "noTransactions": "Nenhuma transação cadastrada",
+    "cashFlow": "Fluxo de Caixa",
+    "categories": "Categorias",
+    "monthSelector": "Seletor de Período"
+  },
+  "installments": {
+    "title": "Gerenciar Parcelas",
+    "newInstallment": "Novo Parcelamento",
+    "productName": "Nome do Produto/Serviço",
+    "totalValue": "Valor Total",
+    "numberOfInstallments": "Nº de Parcelas",
+    "startDate": "Mês da 1ª Parcela",
+    "cardUsed": "Cartão Utilizado",
+    "monthlyValue": "Valor Mensal da Parcela",
+    "installmentProgress": "Progresso do Parcelamento",
+    "nubank": "Nubank",
+    "mercadopago": "Mercado Pago",
+    "caixa": "Caixa",
+    "bradesco": "Bradesco",
+    "other": "Outros"
+  },
+  "settings": {
+    "languages": {
+      "pt": "Português",
+      "en": "English",
+      "es": "Español",
+      "fr": "Français"
+    }
+  }
+}

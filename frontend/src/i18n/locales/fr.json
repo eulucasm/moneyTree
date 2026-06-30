@@ -1,0 +1,68 @@
+{
+  "common": {
+    "entries": "Revenus",
+    "exits": "Dépenses",
+    "recurring": "Récurrentes",
+    "installments": "Mensualités",
+    "savings": "Épargne",
+    "balance": "Solde",
+    "forecast": "Prévision d'Excédent",
+    "surplus": "Excédent du Mois Dernier",
+    "placedInSavings": "Placé en Épargne",
+    "savingsFromPreviousMonth": "Épargne du Mois Précédent",
+    "totalSavings": "Total Épargne",
+    "status": "Statut",
+    "paid": "Payé",
+    "pending": "En attente",
+    "description": "Description",
+    "value": "Valeur",
+    "actions": "Actions",
+    "add": "Ajouter",
+    "edit": "Modifier",
+    "delete": "Supprimer",
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "selectMonth": "Sélectionner le Mois",
+    "cards": "Cartes",
+    "installments_title": "Mensualités du Mois",
+    "settings": "Paramètres",
+    "language": "Langue",
+    "theme": "Thème",
+    "confirmDelete": "Êtes-vous sûr de vouloir supprimer?",
+    "cleanData": "Effacer toutes les Données",
+    "cleanDataConfirm": "Cela effacera définitivement tous les enregistrements locaux. Confirmer?"
+  },
+  "dashboard": {
+    "title": "Money Tree",
+    "overview": "Aperçu",
+    "recentTransactions": "Transactions Récentes",
+    "noTransactions": "Aucune transaction enregistrée",
+    "cashFlow": "Flux de Trésorerie",
+    "categories": "Catégories",
+    "monthSelector": "Sélecteur de Période"
+  },
+  "installments": {
+    "title": "Gérer les Mensualités",
+    "newInstallment": "Nouvel Achat Échelonné",
+    "productName": "Nom du Produit/Service",
+    "totalValue": "Valeur Totale",
+    "numberOfInstallments": "Nombre de Mensualités",
+    "startDate": "Mois de la 1ère Mensualité",
+    "cardUsed": "Carte Utilisée",
+    "monthlyValue": "Montant Mensuel de la Mensualité",
+    "installmentProgress": "Progression des Mensualités",
+    "nubank": "Nubank",
+    "mercadopago": "Mercado Pago",
+    "caixa": "Caixa",
+    "bradesco": "Bradesco",
+    "other": "Autre"
+  },
+  "settings": {
+    "languages": {
+      "pt": "Português",
+      "en": "English",
+      "es": "Español",
+      "fr": "Français"
+    }
+  }
+}

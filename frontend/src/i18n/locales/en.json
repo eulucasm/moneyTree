@@ -1,0 +1,68 @@
+{
+  "common": {
+    "entries": "Inflows",
+    "exits": "Outflows",
+    "recurring": "Recurring",
+    "installments": "Installments",
+    "savings": "Savings",
+    "balance": "Balance",
+    "forecast": "Forecast Leftover",
+    "surplus": "Surplus Last Month",
+    "placedInSavings": "Placed in Savings",
+    "savingsFromPreviousMonth": "Previous Month Savings",
+    "totalSavings": "Total Savings",
+    "status": "Status",
+    "paid": "Paid",
+    "pending": "Pending",
+    "description": "Description",
+    "value": "Value",
+    "actions": "Actions",
+    "add": "Add",
+    "edit": "Edit",
+    "delete": "Delete",
+    "save": "Save",
+    "cancel": "Cancel",
+    "selectMonth": "Select Month",
+    "cards": "Cards",
+    "installments_title": "Month Installments",
+    "settings": "Settings",
+    "language": "Language",
+    "theme": "Theme",
+    "confirmDelete": "Are you sure you want to delete?",
+    "cleanData": "Clear All Data",
+    "cleanDataConfirm": "This will permanently erase all local records. Confirm?"
+  },
+  "dashboard": {
+    "title": "Money Tree",
+    "overview": "Overview",
+    "recentTransactions": "Recent Transactions",
+    "noTransactions": "No transactions registered",
+    "cashFlow": "Cash Flow",
+    "categories": "Categories",
+    "monthSelector": "Period Selector"
+  },
+  "installments": {
+    "title": "Manage Installments",
+    "newInstallment": "New Installment",
+    "productName": "Product/Service Name",
+    "totalValue": "Total Value",
+    "numberOfInstallments": "No. of Installments",
+    "startDate": "1st Installment Month",
+    "cardUsed": "Card Used",
+    "monthlyValue": "Monthly Installment Value",
+    "installmentProgress": "Installment Progress",
+    "nubank": "Nubank",
+    "mercadopago": "Mercado Pago",
+    "caixa": "Caixa",
+    "bradesco": "Bradesco",
+    "other": "Other"
+  },
+  "settings": {
+    "languages": {
+      "pt": "Português",
+      "en": "English",
+      "es": "Español",
+      "fr": "Français"
+    }
+  }
+}
