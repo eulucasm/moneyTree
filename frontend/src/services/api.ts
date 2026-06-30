@@ -7,6 +7,9 @@ const getBaseUrl = () => {
       return 'http://localhost:3000';
     }
   }
+  if (process.env.EXPO_PUBLIC_API_URL) {
+    return process.env.EXPO_PUBLIC_API_URL;
+  }
   return __DEV__ ? 'http://localhost:3000' : 'https://moneytree-backend.vercel.app';
 };
 
