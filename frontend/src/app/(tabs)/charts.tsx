@@ -148,7 +148,7 @@ export default function ChartsScreen() {
                   onPress={() => setSelectedPeriod(item.monthStr)}
                   style={[
                     styles.barColumnContainer,
-                    isSelected && styles.barColumnContainerActive
+                    isSelected && (colorScheme === 'dark' ? { backgroundColor: 'rgba(255, 255, 255, 0.05)', borderColor: 'rgba(255, 255, 255, 0.1)' } : styles.barColumnContainerActive)
                   ]}
                 >
                   <View style={styles.barBarsRow}>
@@ -231,7 +231,7 @@ export default function ChartsScreen() {
 
               {/* Legends with detail values */}
               <View style={styles.categoryList}>
-                <View style={[styles.categoryRow, { borderBottomColor: colors.borderGlass }]}>
+                <View style={[styles.categoryRow, { backgroundColor: colors.surface, borderColor: colors.borderGlass }]}>
                   <View style={[styles.catIconBox, { backgroundColor: colorScheme === 'dark' ? 'rgba(15, 81, 50, 0.2)' : '#E8F5E9' }]}>
                     <View style={[styles.catDot, { backgroundColor: colorScheme === 'dark' ? '#10B981' : '#0F5132' }]} />
                   </View>
@@ -242,7 +242,7 @@ export default function ChartsScreen() {
                   <Text style={[styles.catPct, { color: colors.text }]}>{renderPercentageIndicator(fixedPercent)}</Text>
                 </View>
 
-                <View style={[styles.categoryRow, { borderBottomColor: colors.borderGlass }]}>
+                <View style={[styles.categoryRow, { backgroundColor: colors.surface, borderColor: colors.borderGlass }]}>
                   <View style={[styles.catIconBox, { backgroundColor: colorScheme === 'dark' ? 'rgba(245, 158, 11, 0.2)' : '#FEF3C7' }]}>
                     <View style={[styles.catDot, { backgroundColor: '#F59E0B' }]} />
                   </View>
@@ -253,7 +253,7 @@ export default function ChartsScreen() {
                   <Text style={[styles.catPct, { color: colors.text }]}>{renderPercentageIndicator(variablePercent)}</Text>
                 </View>
 
-                <View style={[styles.categoryRow, { borderBottomColor: colors.borderGlass }]}>
+                <View style={[styles.categoryRow, { backgroundColor: colors.surface, borderColor: colors.borderGlass }]}>
                   <View style={[styles.catIconBox, { backgroundColor: colorScheme === 'dark' ? 'rgba(14, 165, 233, 0.2)' : '#E0F2FE' }]}>
                     <View style={[styles.catDot, { backgroundColor: '#0EA5E9' }]} />
                   </View>
@@ -264,7 +264,7 @@ export default function ChartsScreen() {
                   <Text style={[styles.catPct, { color: colors.text }]}>{renderPercentageIndicator(recurringPercent)}</Text>
                 </View>
 
-                <View style={[styles.categoryRow, { borderBottomColor: colors.borderGlass }]}>
+                <View style={[styles.categoryRow, { backgroundColor: colors.surface, borderColor: colors.borderGlass }]}>
                   <View style={[styles.catIconBox, { backgroundColor: colorScheme === 'dark' ? 'rgba(139, 92, 246, 0.2)' : '#F3E8FF' }]}>
                     <View style={[styles.catDot, { backgroundColor: '#8B5CF6' }]} />
                   </View>
@@ -304,8 +304,8 @@ export default function ChartsScreen() {
                     { bottom: `${Math.min((savingsGoal / maxSavingsVal) * 100, 95)}%` as DimensionValue }
                   ]}
                 >
-                  <View style={styles.goalLineBadge}>
-                    <Text style={styles.goalLineBadgeText}>Meta</Text>
+                  <View style={[styles.goalLineBadge, { backgroundColor: colorScheme === 'dark' ? 'rgba(16, 185, 129, 0.15)' : '#E6F4EA', borderColor: '#10B981' }]}>
+                    <Text style={[styles.goalLineBadgeText, { color: colorScheme === 'dark' ? '#10B981' : '#137333' }]}>Meta</Text>
                   </View>
                 </View>
               )}

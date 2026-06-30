@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, Modal, TouchableOpacity, ScrollView, Animated, 
 import { X, AlertCircle, AlertTriangle, Info, BellRing } from 'lucide-react-native';
 import GlassCard from './GlassCard';
 import { AppNotification, useNotificationUIStore, useNotifications } from '../hooks/useNotifications';
+import { useTheme } from '../hooks/useTheme';
 
 interface NotificationModalProps {
   visible: boolean;
@@ -17,6 +18,7 @@ export default function NotificationModal({ visible, onClose }: NotificationModa
   const dismissNotification = useNotificationUIStore(s => s.dismiss);
   const fadeAnim = React.useRef(new Animated.Value(0)).current;
   const slideAnim = React.useRef(new Animated.Value(20)).current;
+  const { theme: colorScheme, colors } = useTheme();
 
   useEffect(() => {
     if (visible) {
@@ -48,9 +50,11 @@ export default function NotificationModal({ visible, onClose }: NotificationModa
     }
   };
 
+  const isDark = colorScheme === 'dark';
+
   return (
     <Modal visible={visible} transparent={true} animationType="none" onRequestClose={onClose}>
-      <Animated.View style={[styles.overlay, { opacity: fadeAnim }]}>
+      <Animated.View style={[styles.overlay, { opacity: fadeAnim, backgroundColor: isDark ? 'rgba(0, 0, 0, 0.6)' : 'rgba(233, 236, 239, 0.6)' }]}>
         <TouchableOpacity style={styles.backdrop} activeOpacity={1} onPress={onClose} />
         
         <Animated.View 
@@ -58,26 +62,28 @@ export default function NotificationModal({ visible, onClose }: NotificationModa
             styles.container, 
             { 
               transform: [{ translateY: slideAnim }],
-              width: isMobile ? '90%' : 400 
+              width: isMobile ? '90%' : 400,
+              backgroundColor: colors.surface,
+              borderColor: colors.borderGlass,
             }
           ]}
         >
-          <View style={styles.header}>
+          <View style={[styles.header, { backgroundColor: colors.surface, borderBottomColor: colors.borderGlass }]}>
             <View style={styles.headerLeft}>
-              <BellRing color="#0F5132" size={20} />
-              <Text style={styles.title}>Notificações</Text>
+              <BellRing color={colors.text} size={20} />
+              <Text style={[styles.title, { color: colors.text }]}>Notificações</Text>
             </View>
-            <TouchableOpacity onPress={onClose} style={styles.closeBtn}>
-              <X color="#495057" size={20} />
+            <TouchableOpacity onPress={onClose} style={[styles.closeBtn, { backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : '#F8F9FA' }]}>
+              <X color={colors.textMuted} size={20} />
             </TouchableOpacity>
           </View>
 
           <ScrollView style={styles.list} contentContainerStyle={{ paddingBottom: 16 }}>
             {notifications.length === 0 ? (
               <View style={styles.emptyState}>
-                <BellRing color="#ADB5BD" size={32} />
-                <Text style={styles.emptyText}>Tudo limpo por aqui!</Text>
-                <Text style={styles.emptySub}>Nenhuma notificação nova no momento.</Text>
+                <BellRing color={colors.textMuted} size={32} />
+                <Text style={[styles.emptyText, { color: colors.textSecondary }]}>Tudo limpo por aqui!</Text>
+                <Text style={[styles.emptySub, { color: colors.textMuted }]}>Nenhuma notificação nova no momento.</Text>
               </View>
             ) : (
               notifications.map((notif) => (
@@ -88,13 +94,13 @@ export default function NotificationModal({ visible, onClose }: NotificationModa
                   <View style={styles.notifHeader}>
                     <View style={styles.notifTitleRow}>
                       {getIcon(notif.type)}
-                      <Text style={styles.notifTitle}>{notif.title}</Text>
+                      <Text style={[styles.notifTitle, { color: colors.text }]}>{notif.title}</Text>
                     </View>
                     <TouchableOpacity onPress={() => dismissNotification(notif.id)} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-                      <X color="#ADB5BD" size={16} />
+                      <X color={colors.textMuted} size={16} />
                     </TouchableOpacity>
                   </View>
-                  <Text style={styles.notifMessage}>{notif.message}</Text>
+                  <Text style={[styles.notifMessage, { color: colors.textSecondary }]}>{notif.message}</Text>
                 </GlassCard>
               ))
             )}
@@ -108,7 +114,6 @@ export default function NotificationModal({ visible, onClose }: NotificationModa
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(233, 236, 239, 0.6)',
     justifyContent: 'flex-start',
     alignItems: 'center',
     paddingTop: 80, // Space below header
@@ -117,7 +122,6 @@ const styles = StyleSheet.create({
     ...StyleSheet.absoluteFill as any,
   },
   container: {
-    backgroundColor: '#FFFFFF',
     borderRadius: 24,
     maxHeight: '80%',
     shadowColor: '#000',
@@ -126,7 +130,6 @@ const styles = StyleSheet.create({
     shadowRadius: 24,
     elevation: 8,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.4)',
     overflow: 'hidden',
   },
   header: {
@@ -136,8 +139,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#F8F9FA',
-    backgroundColor: '#FFFFFF',
   },
   headerLeft: {
     flexDirection: 'row',
@@ -147,11 +148,9 @@ const styles = StyleSheet.create({
   title: {
     fontFamily: 'Inter-SemiBold',
     fontSize: 18,
-    color: '#212529',
   },
   closeBtn: {
     padding: 4,
-    backgroundColor: '#F8F9FA',
     borderRadius: 12,
   },
   list: {
@@ -166,19 +165,16 @@ const styles = StyleSheet.create({
   emptyText: {
     fontFamily: 'Inter-SemiBold',
     fontSize: 16,
-    color: '#495057',
     marginTop: 8,
   },
   emptySub: {
     fontFamily: 'Inter-Regular',
     fontSize: 14,
-    color: '#ADB5BD',
     textAlign: 'center',
   },
   notificationCard: {
     padding: 16,
     marginBottom: 12,
-    backgroundColor: 'rgba(255, 255, 255, 0.7)',
   },
   notifHeader: {
     flexDirection: 'row',
@@ -196,12 +192,10 @@ const styles = StyleSheet.create({
   notifTitle: {
     fontFamily: 'Inter-SemiBold',
     fontSize: 15,
-    color: '#212529',
   },
   notifMessage: {
     fontFamily: 'Inter-Regular',
     fontSize: 14,
-    color: '#495057',
     lineHeight: 20,
     paddingLeft: 32, // align with text
   }

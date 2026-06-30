@@ -160,7 +160,7 @@ export default function HistoryScreen() {
                   </TouchableOpacity>
 
                   {/* Detalhes Rápidos de Resumo */}
-                  <View style={styles.summaryMetricsRow}>
+                  <View style={[styles.summaryMetricsRow, { backgroundColor: colorScheme === 'dark' ? 'rgba(255,255,255,0.02)' : '#F8F9FA', borderColor: colors.borderGlass }]}>
                     <View style={styles.miniMetric}>
                       <Text style={[styles.miniLabel, { color: colors.textMuted }]}>Entradas</Text>
                       <Text style={styles.miniValGreen}>
@@ -184,7 +184,7 @@ export default function HistoryScreen() {
                   {/* Link visual para consulta detalhada */}
                   <TouchableOpacity 
                     onPress={() => setSelectedMonthDetails(item)}
-                    style={styles.viewDetailedLink}
+                    style={[styles.viewDetailedLink, { borderTopColor: colors.borderGlass }]}
                     activeOpacity={0.7}
                   >
                     <Text style={[styles.viewDetailedLinkText, { color: colorScheme === 'dark' ? '#10B981' : '#0F5132' }]}>Ver histórico detalhado</Text>
@@ -205,7 +205,7 @@ export default function HistoryScreen() {
         visible={selectedMonthDetails !== null}
         onRequestClose={() => setSelectedMonthDetails(null)}
       >
-        <View style={styles.modalBg}>
+        <View style={[styles.modalBg, { backgroundColor: colorScheme === 'dark' ? 'rgba(0,0,0,0.6)' : 'rgba(33, 37, 41, 0.4)' }]}>
           <View style={[styles.modalContainer, { maxWidth: 600, backgroundColor: colors.surface, borderColor: colors.borderGlass }]}>
             <View style={[styles.modalHeader, { borderBottomColor: colors.borderGlass }]}>
               <View style={styles.modalTitleContainer}>
@@ -214,7 +214,7 @@ export default function HistoryScreen() {
                   Consulta - {selectedMonthDetails?.name} {selectedMonthDetails?.year}
                 </Text>
               </View>
-              <TouchableOpacity onPress={() => setSelectedMonthDetails(null)} style={styles.closeModalBtn}>
+              <TouchableOpacity onPress={() => setSelectedMonthDetails(null)} style={[styles.closeModalBtn, { backgroundColor: colorScheme === 'dark' ? 'rgba(255,255,255,0.05)' : '#F8F9FA' }]}>
                 <X color={colors.text} size={20} />
               </TouchableOpacity>
             </View>
@@ -268,7 +268,7 @@ export default function HistoryScreen() {
                       <Text style={[styles.noTransactionsText, { color: colors.textMuted }]}>Nenhuma entrada registrada neste período.</Text>
                     ) : (
                       entries.filter(e => e.date === selectedMonthDetails.monthStr).map(entry => (
-                        <View key={entry.id} style={[styles.transactionRow, { borderBottomColor: colors.borderGlass }]}>
+                        <View key={entry.id} style={[styles.transactionRow, { backgroundColor: colorScheme === 'dark' ? 'rgba(255,255,255,0.02)' : '#F8F9FA', borderColor: colors.borderGlass }]}>
                           <Text style={[styles.transactionDesc, { color: colors.text }]}>{entry.description}</Text>
                           <Text style={styles.transactionValGreen}>+ {formatCurrency(entry.value)}</Text>
                         </View>
@@ -290,18 +290,18 @@ export default function HistoryScreen() {
                       getMonthlyOutflowsList(selectedMonthDetails.monthStr, userCreatedAt).map(outflow => {
                         const cardColor = getCardColorHex(outflow.cardUsed);
                         return (
-                          <View key={outflow.id} style={[styles.transactionRow, { borderBottomColor: colors.borderGlass }]}>
+                          <View key={outflow.id} style={[styles.transactionRow, { backgroundColor: colorScheme === 'dark' ? 'rgba(255,255,255,0.02)' : '#F8F9FA', borderColor: colors.borderGlass }]}>
                             <View style={styles.transactionDescCol}>
                               <Text style={[styles.transactionDesc, { color: colors.text }]}>{outflow.description}</Text>
                               <View style={styles.transactionTypeRow}>
                                 {outflow.type === 'fixed' && (
-                                  <Text style={styles.typeBadgeFixed}>Fixa</Text>
+                                  <Text style={[styles.typeBadgeFixed, colorScheme === 'dark' && { color: colors.textSecondary, backgroundColor: 'rgba(255,255,255,0.05)' }]}>Fixa</Text>
                                 )}
                                 {outflow.type === 'variable' && (
-                                  <Text style={styles.typeBadgeVar}>Variável</Text>
+                                  <Text style={[styles.typeBadgeVar, colorScheme === 'dark' && { color: '#F97316', backgroundColor: 'rgba(249, 115, 22, 0.15)' }]}>Variável</Text>
                                 )}
                                 {outflow.type === 'recurring' && (
-                                  <Text style={styles.typeBadgeRec}><RefreshCw size={8} /> Assinatura</Text>
+                                  <Text style={[styles.typeBadgeRec, colorScheme === 'dark' && { color: '#10B981', backgroundColor: 'rgba(16, 185, 129, 0.15)' }]}><RefreshCw size={8} /> Assinatura</Text>
                                 )}
                                 {outflow.type === 'installment' && (
                                   <View style={[styles.typeBadgeInstContainer, { backgroundColor: cardColor + '15', borderColor: cardColor + '30' }]}>

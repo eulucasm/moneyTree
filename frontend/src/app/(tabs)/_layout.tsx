@@ -162,15 +162,16 @@ function CustomHeader() {
             <Animated.View style={[
               styles.avatar, 
               { transform: [{ scale: avatarScale }] },
+              colorScheme === 'dark' ? { backgroundColor: 'rgba(16, 185, 129, 0.1)', borderColor: 'rgba(16, 185, 129, 0.3)' } : null,
               userProfile?.activePlan === 'premium' && {
-                backgroundColor: '#FEF3C7',
+                backgroundColor: colorScheme === 'dark' ? '#78350F' : '#FEF3C7',
                 borderColor: '#F59E0B'
               }
             ]}>
               <Text style={[
                 styles.avatarText,
-                userProfile?.activePlan === 'premium' && { color: '#B45309' },
-                { color: colors.text }
+                { color: colorScheme === 'dark' ? '#10B981' : '#0F5132' },
+                userProfile?.activePlan === 'premium' && { color: colorScheme === 'dark' ? '#FBBF24' : '#B45309' }
               ]}>
                 {initials}
               </Text>
@@ -220,11 +221,13 @@ export default function TabLayout() {
   const { user, authInitialized } = useFinancials();
   const { width } = useWindowDimensions();
   const isLargeScreen = width >= 768;
+  const colorScheme = useColorScheme();
+  const colors = Theme[colorScheme];
 
   // if (!authInitialized) {
   //   return (
-  //     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#F8F9FA' }}>
-  //       <Text style={{ fontSize: 16, color: '#0F5132', fontWeight: 'bold' }}>Carregando...</Text>
+  //     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.background }}>
+  //       <Text style={{ fontSize: 16, color: colors.text, fontWeight: 'bold' }}>Carregando...</Text>
   //     </View>
   //   );
   // }
@@ -236,9 +239,13 @@ export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
-        tabBarStyle: isLargeScreen ? { display: 'none' } : styles.bottomTabBar,
-        tabBarActiveTintColor: '#0F5132',
-        tabBarInactiveTintColor: '#6C757D',
+        tabBarStyle: isLargeScreen ? { display: 'none' } : {
+          ...styles.bottomTabBar,
+          backgroundColor: colorScheme === 'dark' ? 'rgba(21, 29, 48, 0.95)' : 'rgba(255, 255, 255, 0.95)',
+          borderColor: colorScheme === 'dark' ? 'rgba(255,255,255,0.08)' : 'rgba(15, 81, 50, 0.08)',
+        },
+        tabBarActiveTintColor: colorScheme === 'dark' ? '#10B981' : '#0F5132',
+        tabBarInactiveTintColor: colorScheme === 'dark' ? '#475569' : '#6C757D',
         tabBarLabelStyle: { fontSize: 11, fontWeight: '600', marginBottom: 4 },
         header: () => <CustomHeader />,
       }}>
@@ -389,7 +396,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#DC3545',
     borderRadius: 5,
     borderWidth: 2,
-    borderColor: '#FFFFFF',
+    borderColor: 'transparent',
   },
   avatar: {
     width: 40,

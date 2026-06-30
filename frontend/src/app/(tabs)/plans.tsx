@@ -97,6 +97,7 @@ export default function PlansScreen() {
                 key={p.key}
                 style={[
                   styles.planCard,
+                  { backgroundColor: colors.surface, borderColor: colors.borderGlass },
                   isActive && { borderColor: p.color, borderWidth: 2 },
                   isLargeScreen && { flex: 1 },
                 ]}
@@ -139,7 +140,7 @@ export default function PlansScreen() {
                     <Text style={styles.actionButtonText}>Adquirir {p.name}</Text>
                   </TouchableOpacity>
                 ) : (
-                  <View style={styles.activePlaceholder}>
+                  <View style={[styles.activePlaceholder, { backgroundColor: colorScheme === 'dark' ? 'rgba(255,255,255,0.02)' : '#F8F9FA', borderColor: colors.borderGlass }]}>
                     <Text style={[styles.activePlaceholderText, { color: p.color }]}>
                       Seu Plano Atual
                     </Text>

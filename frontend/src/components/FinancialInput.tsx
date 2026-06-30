@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { StyleSheet, Text, TextInput, View, TextInputProps } from 'react-native';
+import { useTheme } from '../hooks/useTheme';
 
 interface FinancialInputProps extends TextInputProps {
   label: string;
@@ -19,6 +20,7 @@ export const FinancialInput: React.FC<FinancialInputProps> = ({
   ...props
 }) => {
   const [isFocused, setIsFocused] = useState(false);
+  const { theme: colorScheme, colors } = useTheme();
 
   const formatDisplayValue = (val: string | undefined): string => {
     if (val === undefined || val === null || val === '') return '';
@@ -52,16 +54,21 @@ export const FinancialInput: React.FC<FinancialInputProps> = ({
 
   return (
     <View style={styles.container}>
-      <Text style={styles.label}>{label}</Text>
+      <Text style={[styles.label, { color: colors.text }]}>{label}</Text>
       <TextInput
-        placeholderTextColor="#adb5bd"
+        placeholderTextColor={colors.textMuted}
         placeholder={placeholder || (isCurrency ? 'R$ 0,00' : undefined)}
         keyboardType={isCurrency ? 'numeric' : keyboardType}
         value={displayValue}
         onChangeText={isCurrency ? handleChangeText : onChangeText}
         style={[
           styles.input,
-          isFocused ? styles.inputFocused : styles.inputNormal,
+          { 
+            backgroundColor: colorScheme === 'dark' ? 'rgba(255,255,255,0.03)' : '#F8F9FA',
+            color: colors.text,
+            borderColor: isFocused ? '#10B981' : colors.borderGlass,
+          },
+          isFocused && { backgroundColor: colorScheme === 'dark' ? 'rgba(255,255,255,0.05)' : '#FFFFFF' },
           error ? styles.inputError : null,
           style,
         ]}
@@ -86,26 +93,16 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   label: {
-    color: '#495057', 
     fontSize: 14,
     fontWeight: '600',
     marginBottom: 6,
   },
   input: {
-    backgroundColor: '#F8F9FA',
     borderRadius: 10,
-    color: '#212529',
     fontSize: 16,
     paddingHorizontal: 14,
     paddingVertical: 12,
     borderWidth: 1,
-  },
-  inputNormal: {
-    borderColor: '#DEE2E6',
-  },
-  inputFocused: {
-    borderColor: '#10B981',
-    backgroundColor: '#FFFFFF',
   },
   inputError: {
     borderColor: '#DC3545', 
@@ -118,3 +115,4 @@ const styles = StyleSheet.create({
 });
 
 export default FinancialInput;
+

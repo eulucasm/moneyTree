@@ -1,5 +1,6 @@
 import React from 'react';
-import { StyleSheet, View, ViewStyle, StyleProp, useColorScheme } from 'react-native';
+import { StyleSheet, View, ViewStyle, StyleProp } from 'react-native';
+import { useColorScheme } from './useColorScheme';
 import Theme from '../constants/Colors';
 
 interface GlassCardProps {
@@ -13,8 +14,8 @@ export const GlassCard: React.FC<GlassCardProps> = ({
   style,
   borderActive = false,
 }) => {
-  const systemColorScheme = useColorScheme() === 'dark' ? 'dark' : 'light';
-  const colors = Theme[systemColorScheme];
+  const colorScheme = useColorScheme();
+  const colors = Theme[colorScheme];
 
   return (
     <View style={[

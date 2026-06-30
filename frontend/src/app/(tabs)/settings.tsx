@@ -436,9 +436,9 @@ export default function SettingsScreen() {
                 <TouchableOpacity 
                   activeOpacity={0.8}
                   onPress={handleLogout}
-                  style={[styles.logoutButton, { borderColor: colors.borderGlass }]}
+                  style={[styles.logoutButton, { backgroundColor: colorScheme === 'dark' ? 'rgba(220, 53, 69, 0.05)' : '#FFFFFF', borderColor: '#DC3545' }]}
                 >
-                  <Text style={[styles.logoutButtonText, { color: colorScheme === 'dark' ? colors.text : '#DC3545' }]}>Sair da Conta</Text>
+                  <Text style={[styles.logoutButtonText, { color: '#DC3545' }]}>Sair da Conta</Text>
                 </TouchableOpacity>
               </View>
             ) : (
@@ -547,12 +547,12 @@ export default function SettingsScreen() {
                   style={[
                     styles.pill,
                     { borderColor: colors.borderGlass },
-                    loginType === 'google' ? styles.pillActive : { backgroundColor: colorScheme === 'dark' ? 'rgba(255,255,255,0.02)' : '#F8F9FA' }
+                    loginType === 'google' ? [styles.pillActive, colorScheme === 'dark' && { backgroundColor: 'rgba(16, 185, 129, 0.15)' }] : { backgroundColor: colorScheme === 'dark' ? 'rgba(255,255,255,0.02)' : '#F8F9FA' }
                   ]}
                 >
                   <Text style={[
                     styles.pillText,
-                    loginType === 'google' ? styles.pillTextActive : [styles.pillTextInactive, { color: colors.textMuted }]
+                    loginType === 'google' ? [styles.pillTextActive, colorScheme === 'dark' && { color: '#10B981' }] : [styles.pillTextInactive, { color: colors.textMuted }]
                   ]}>
                     Google OAuth
                   </Text>
@@ -563,12 +563,12 @@ export default function SettingsScreen() {
                   style={[
                     styles.pill,
                     { borderColor: colors.borderGlass },
-                    loginType === 'email' ? styles.pillActive : { backgroundColor: colorScheme === 'dark' ? 'rgba(255,255,255,0.02)' : '#F8F9FA' }
+                    loginType === 'email' ? [styles.pillActive, colorScheme === 'dark' && { backgroundColor: 'rgba(16, 185, 129, 0.15)' }] : { backgroundColor: colorScheme === 'dark' ? 'rgba(255,255,255,0.02)' : '#F8F9FA' }
                   ]}
                 >
                   <Text style={[
                     styles.pillText,
-                    loginType === 'email' ? styles.pillTextActive : [styles.pillTextInactive, { color: colors.textMuted }]
+                    loginType === 'email' ? [styles.pillTextActive, colorScheme === 'dark' && { color: '#10B981' }] : [styles.pillTextInactive, { color: colors.textMuted }]
                   ]}>
                     E-mail e Senha
                   </Text>
@@ -654,7 +654,7 @@ export default function SettingsScreen() {
                     setIsImportVisible(!isImportVisible);
                   }
                 }}
-                style={[styles.backupButtonOutline, { borderColor: colors.borderGlass }]}
+                style={[styles.backupButtonOutline, { backgroundColor: colorScheme === 'dark' ? 'rgba(255, 255, 255, 0.02)' : '#FFFFFF', borderColor: colors.borderGlass }]}
               >
                 <Upload size={18} color={colors.text} style={{ marginRight: 8 }} />
                 <Text style={[styles.backupButtonOutlineText, { color: colors.text }]}>
@@ -717,7 +717,7 @@ export default function SettingsScreen() {
               onPress={() => router.push('/plans' as any)}
               style={[styles.changePlanButton, { borderColor: colors.borderGlass }]}
             >
-              <Text style={[styles.changePlanButtonText, { color: colors.text }]}>Adquirir Outro Plano</Text>
+              <Text style={styles.changePlanButtonText}>Adquirir Outro Plano</Text>
             </TouchableOpacity>
           </GlassCard>
 
@@ -738,7 +738,7 @@ export default function SettingsScreen() {
                     style={[
                       styles.langItem,
                       { borderBottomColor: colors.borderGlass },
-                      isSelected ? styles.langItemSelected : styles.langItemUnselected,
+                      isSelected ? [styles.langItemSelected, colorScheme === 'dark' && { backgroundColor: 'rgba(16, 185, 129, 0.15)' }] : { backgroundColor: colors.surface, borderColor: colors.borderGlass },
                     ]}
                   >
                     <Text style={[
@@ -768,7 +768,7 @@ export default function SettingsScreen() {
             <TouchableOpacity
               activeOpacity={0.8}
               onPress={handleCleanData}
-              style={styles.dangerButton}
+              style={[styles.dangerButton, { backgroundColor: colorScheme === 'dark' ? 'rgba(220, 53, 69, 0.05)' : '#FFF5F5' }]}
             >
               <Text style={styles.dangerButtonText}>{t('common.cleanData')}</Text>
             </TouchableOpacity>
@@ -788,7 +788,7 @@ export default function SettingsScreen() {
             <TouchableOpacity
               activeOpacity={0.8}
               onPress={handleDeleteAccount}
-              style={styles.dangerButton}
+              style={[styles.dangerButton, { backgroundColor: colorScheme === 'dark' ? 'rgba(220, 53, 69, 0.05)' : '#FFF5F5' }]}
             >
               <Text style={styles.dangerButtonText}>Excluir Conta</Text>
             </TouchableOpacity>
@@ -829,7 +829,7 @@ export default function SettingsScreen() {
             {!!customConfirm.cancelText && (
               <TouchableOpacity
                 activeOpacity={0.8}
-                style={[styles.alertCancelButton, { borderColor: colors.borderGlass }]}
+                style={[styles.alertCancelButton, { backgroundColor: colorScheme === 'dark' ? 'rgba(255, 255, 255, 0.05)' : '#F8F9FA', borderColor: colors.borderGlass }]}
                 onPress={() => setCustomConfirm(prev => ({ ...prev, visible: false }))}
               >
                 <Text style={[styles.alertCancelButtonText, { color: colors.textMuted }]}>

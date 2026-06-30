@@ -268,14 +268,14 @@ export default function InstallmentsScreen() {
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       {/* Month Selector Bar (Floating style matching budget.tsx) */}
-      <View style={[styles.selectorBar, { backgroundColor: colorScheme === 'dark' ? '#151D30' : '#E8F5E9', borderBottomColor: colorScheme === 'dark' ? 'rgba(255,255,255,0.05)' : '#C8E6C9' }]}>
-        <TouchableOpacity onPress={handlePrevMonth} style={styles.selectorBtn}>
+      <View style={[styles.selectorBar, { backgroundColor: colorScheme === 'dark' ? '#151D30' : '#E8F5E9', borderColor: colorScheme === 'dark' ? 'rgba(255,255,255,0.05)' : '#C8E6C9' }]}>
+        <TouchableOpacity onPress={handlePrevMonth} style={[styles.selectorBtn, { backgroundColor: colorScheme === 'dark' ? 'rgba(255,255,255,0.05)' : '#F1F3F5' }]}>
           <ChevronLeft color={colorScheme === 'dark' ? colors.text : "#0F5132"} size={24} />
         </TouchableOpacity>
         <Text style={[styles.selectorText, { color: colors.text }]}>
           {monthsNames[currentMonth - 1]} {currentYear}
         </Text>
-        <TouchableOpacity onPress={handleNextMonth} style={styles.selectorBtn}>
+        <TouchableOpacity onPress={handleNextMonth} style={[styles.selectorBtn, { backgroundColor: colorScheme === 'dark' ? 'rgba(255,255,255,0.05)' : '#F1F3F5' }]}>
           <ChevronRight color={colorScheme === 'dark' ? colors.text : "#0F5132"} size={24} />
         </TouchableOpacity>
       </View>
@@ -292,7 +292,7 @@ export default function InstallmentsScreen() {
             </Text>
           </View>
           <TouchableOpacity 
-            style={[styles.manageCardsBtn, { backgroundColor: colorScheme === 'dark' ? 'rgba(255,255,255,0.05)' : '#E8F5E9' }]}
+            style={[styles.manageCardsBtn, { backgroundColor: colorScheme === 'dark' ? 'rgba(255,255,255,0.05)' : '#E8F5E9', borderColor: colorScheme === 'dark' ? 'rgba(255,255,255,0.1)' : '#A7F3D0' }]}
             onPress={() => setCardModalVisible(true)}
             activeOpacity={0.7}
           >
@@ -364,7 +364,7 @@ export default function InstallmentsScreen() {
           ) : (
             filteredInstallments.map((item) => {
               return (
-                <GlassCard key={item.id} style={[styles.purchaseItem, { opacity: item.status === 'ok' ? 0.6 : 1.0 }]}>
+                <GlassCard key={item.id} style={[styles.purchaseItem, { backgroundColor: colors.surface, borderColor: colors.borderGlass, opacity: item.status === 'ok' ? 0.6 : 1.0 }]}>
                   <View style={styles.purchaseLeft}>
                     <TouchableOpacity 
                       onPress={() => {
@@ -431,7 +431,7 @@ export default function InstallmentsScreen() {
         visible={modalVisible}
         onRequestClose={() => setModalVisible(false)}
       >
-        <View style={styles.modalBg}>
+        <View style={[styles.modalBg, { backgroundColor: colorScheme === 'dark' ? 'rgba(0,0,0,0.6)' : 'rgba(33, 37, 41, 0.4)' }]}>
           <View style={[styles.modalContainer, { backgroundColor: colors.surface, borderColor: colors.borderGlass }]}>
             <View style={[styles.modalHeader, { borderBottomColor: colors.borderGlass }]}>
               <View style={styles.modalTitleContainer}>
@@ -505,7 +505,7 @@ export default function InstallmentsScreen() {
         visible={cardModalVisible}
         onRequestClose={() => setCardModalVisible(false)}
       >
-        <View style={styles.modalBg}>
+        <View style={[styles.modalBg, { backgroundColor: colorScheme === 'dark' ? 'rgba(0,0,0,0.6)' : 'rgba(33, 37, 41, 0.4)' }]}>
           <View style={[styles.modalContainer, { maxWidth: 500, backgroundColor: colors.surface, borderColor: colors.borderGlass }]}>
             <View style={[styles.modalHeader, { borderBottomColor: colors.borderGlass }]}>
               <Text style={[styles.modalTitle, { color: colors.text }]}>Gerenciar Cartões de Crédito</Text>

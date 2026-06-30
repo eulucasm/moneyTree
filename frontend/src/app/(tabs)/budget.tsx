@@ -227,14 +227,14 @@ export default function BudgetScreen() {
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       {/* Month Selector Bar */}
-      <View style={[styles.selectorBar, { backgroundColor: colorScheme === 'dark' ? '#151D30' : '#E8F5E9', borderBottomColor: colorScheme === 'dark' ? 'rgba(255, 255, 255, 0.05)' : '#C8E6C9' }]}>
-        <TouchableOpacity onPress={handlePrevMonth} style={styles.selectorBtn}>
+      <View style={[styles.selectorBar, { backgroundColor: colorScheme === 'dark' ? '#151D30' : '#E8F5E9', borderColor: colorScheme === 'dark' ? 'rgba(255, 255, 255, 0.05)' : '#C8E6C9' }]}>
+        <TouchableOpacity onPress={handlePrevMonth} style={[styles.selectorBtn, { backgroundColor: colorScheme === 'dark' ? 'rgba(255, 255, 255, 0.05)' : '#F1F3F5' }]}>
           <ChevronLeft color={colorScheme === 'dark' ? colors.text : "#0F5132"} size={24} />
         </TouchableOpacity>
         <Text style={[styles.selectorText, { color: colors.text }]}>
           {monthsNames[currentMonth - 1]} {currentYear}
         </Text>
-        <TouchableOpacity onPress={handleNextMonth} style={styles.selectorBtn}>
+        <TouchableOpacity onPress={handleNextMonth} style={[styles.selectorBtn, { backgroundColor: colorScheme === 'dark' ? 'rgba(255, 255, 255, 0.05)' : '#F1F3F5' }]}>
           <ChevronRight color={colorScheme === 'dark' ? colors.text : "#0F5132"} size={24} />
         </TouchableOpacity>
       </View>
@@ -653,18 +653,18 @@ export default function BudgetScreen() {
           setFormError('');
         }}
       >
-        <View style={styles.modalBg}>
-          <View style={styles.modalContainer}>
-            <View style={styles.modalHeader}>
+        <View style={[styles.modalBg, { backgroundColor: colorScheme === 'dark' ? 'rgba(0,0,0,0.6)' : 'rgba(33, 37, 41, 0.4)' }]}>
+          <View style={[styles.modalContainer, { backgroundColor: colors.surface, borderColor: colors.borderGlass, borderWidth: 1 }]}>
+            <View style={[styles.modalHeader, { borderBottomColor: colors.borderGlass }]}>
               <View style={styles.modalTitleContainer}>
                 {addModalType === 'entry' ? (
                   <ArrowUpRight color="#10B981" size={24} />
                 ) : addModalType === 'installment' ? (
-                  <CreditCard color="#0F5132" size={24} />
+                  <CreditCard color={colors.text} size={24} />
                 ) : (
                   <ArrowDownRight color="#DC3545" size={24} />
                 )}
-                <Text style={styles.modalTitle}>
+                <Text style={[styles.modalTitle, { color: colors.text }]}>
                   Adicionar {addModalType === 'entry' ? 'Entrada' : addModalType === 'exit' ? 'Despesa Fixa' : addModalType === 'variable' ? 'Despesa Variada' : addModalType === 'recurring' ? 'Recorrente' : 'Compra Parcelada'}
                 </Text>
               </View>
@@ -679,9 +679,9 @@ export default function BudgetScreen() {
                   setCardUsedVal(creditCards[0]?.id || 'nubank');
                   setFormError('');
                 }} 
-                style={styles.closeModalBtn}
+                style={[styles.closeModalBtn, { backgroundColor: colorScheme === 'dark' ? 'rgba(255,255,255,0.05)' : '#F8F9FA' }]}
               >
-                <X color="#495057" size={20} />
+                <X color={colors.textMuted} size={20} />
               </TouchableOpacity>
             </View>
 

@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { StyleSheet, Text, Animated, View, Platform } from 'react-native';
 import { CheckCircle, AlertCircle } from 'lucide-react-native';
+import { useTheme } from '../hooks/useTheme';
 
 interface ToastProps {
   message: string;
@@ -12,6 +13,7 @@ interface ToastProps {
 export const Toast: React.FC<ToastProps> = ({ message, type, visible, onHide }) => {
   const slideAnim = useRef(new Animated.Value(-100)).current;
   const opacityAnim = useRef(new Animated.Value(0)).current;
+  const { theme: colorScheme } = useTheme();
 
   useEffect(() => {
     if (visible) {
@@ -58,13 +60,21 @@ export const Toast: React.FC<ToastProps> = ({ message, type, visible, onHide }) 
   if (!visible) return null;
 
   const isSuccess = type === 'success';
+  const isDark = colorScheme === 'dark';
 
   return (
     <Animated.View
       pointerEvents="none"
       style={[
         styles.toastContainer,
-        isSuccess ? styles.successBg : styles.errorBg,
+        {
+          backgroundColor: isSuccess
+            ? (isDark ? 'rgba(16, 185, 129, 0.15)' : '#E8F5E9')
+            : (isDark ? 'rgba(220, 53, 69, 0.15)' : '#FCE8E6'),
+          borderColor: isSuccess
+            ? (isDark ? 'rgba(16, 185, 129, 0.3)' : '#A7F3D0')
+            : (isDark ? 'rgba(220, 53, 69, 0.3)' : '#FECACA'),
+        },
         {
           transform: [{ translateY: slideAnim }],
           opacity: opacityAnim,
@@ -73,11 +83,14 @@ export const Toast: React.FC<ToastProps> = ({ message, type, visible, onHide }) 
     >
       <View style={styles.toastContent}>
         {isSuccess ? (
-          <CheckCircle color="#0F5132" size={20} style={styles.icon} />
+          <CheckCircle color={isDark ? '#10B981' : '#0F5132'} size={20} style={styles.icon} />
         ) : (
           <AlertCircle color="#DC3545" size={20} style={styles.icon} />
         )}
-        <Text style={[styles.toastText, isSuccess ? styles.successText : styles.errorText]}>
+        <Text style={[
+          styles.toastText, 
+          { color: isSuccess ? (isDark ? '#10B981' : '#0F5132') : (isDark ? '#FCA5A5' : '#C53030') }
+        ]}>
           {message}
         </Text>
       </View>
@@ -116,20 +129,6 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     flex: 1,
     lineHeight: 18,
-  },
-  successBg: {
-    backgroundColor: '#E8F5E9',
-    borderColor: '#A7F3D0',
-  },
-  errorBg: {
-    backgroundColor: '#FCE8E6',
-    borderColor: '#FECACA',
-  },
-  successText: {
-    color: '#0F5132',
-  },
-  errorText: {
-    color: '#C53030',
   },
 });
 

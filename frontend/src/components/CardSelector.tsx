@@ -2,6 +2,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Check } from 'lucide-react-native';
+import { useTheme } from '../hooks/useTheme';
 
 interface CardSelectorProps {
   selectedCard: string;
@@ -12,10 +13,11 @@ interface CardSelectorProps {
 
 export const CardSelector: React.FC<CardSelectorProps> = ({ selectedCard, onSelect, cards, label }) => {
   const { t } = useTranslation();
+  const { colors } = useTheme();
 
   return (
     <View style={styles.container}>
-      <Text style={styles.label}>{label || t('installments.cardUsed')}</Text>
+      <Text style={[styles.label, { color: colors.text }]}>{label || t('installments.cardUsed')}</Text>
       <ScrollView 
         horizontal 
         showsHorizontalScrollIndicator={false}
@@ -57,7 +59,6 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   label: {
-    color: '#495057',
     fontSize: 14,
     fontWeight: '600',
     marginBottom: 8,
