@@ -11,9 +11,14 @@ import {
   Settings as SettingsIcon,
   Menu as MenuIcon,
   X,
-  Sparkles
+  Sparkles,
+  Sun,
+  Moon
 } from 'lucide-react-native';
 import { useFinancials } from '../../context/FinancialContext';
+import { useThemeStore } from '../../stores/useThemeStore';
+import { useColorScheme } from '../../components/useColorScheme';
+import Theme from '../../constants/Colors';
 import NotificationModal from '../../components/NotificationModal';
 import { useNotifications } from '../../hooks/useNotifications';
 
@@ -27,6 +32,11 @@ function CustomHeader() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
   const notifications = useNotifications();
+
+  const theme = useThemeStore((state) => state.theme);
+  const toggleTheme = useThemeStore((state) => state.toggleTheme);
+  const colorScheme = useColorScheme();
+  const colors = Theme[colorScheme];
 
   const navLinks = [
     { label: 'Dashboard', path: '/' },
@@ -75,14 +85,14 @@ function CustomHeader() {
   ).toUpperCase() || 'LM';
 
   return (
-    <View style={styles.headerContainer}>
+    <View style={[styles.headerContainer, { backgroundColor: colors.background, borderBottomColor: colors.borderGlass }]}>
       <View style={styles.headerContent}>
         {/* Logo */}
         <View style={styles.logoContainer}>
           <View style={styles.logoIcon}>
             <Text style={styles.logoIconText}>v</Text>
           </View>
-          <Text style={styles.logoText}>
+          <Text style={[styles.logoText, { color: colors.text }]}>
             verde<Text style={styles.logoTextHighlight}>co.</Text>
           </Text>
         </View>
@@ -99,7 +109,11 @@ function CustomHeader() {
                   onPress={() => router.push(link.path as any)}
                   style={styles.navItem}
                 >
-                  <Text style={[styles.navText, isActive && styles.navTextActive]}>
+                  <Text style={[
+                    styles.navText, 
+                    isActive && styles.navTextActive,
+                    { color: isActive ? colors.text : colors.textMuted }
+                  ]}>
                     {link.label}
                   </Text>
                 </TouchableOpacity>
@@ -113,20 +127,29 @@ function CustomHeader() {
           {/* Botão de Menu Hamburger para telas menores */}
           {!isLargeScreen && (
             <TouchableOpacity 
-              style={styles.hamburgerButton} 
+              style={[styles.hamburgerButton, { backgroundColor: colorScheme === 'dark' ? 'rgba(255, 255, 255, 0.05)' : '#F8F9FA' }]} 
               onPress={() => setMenuOpen(!menuOpen)}
               activeOpacity={0.7}
             >
-              {menuOpen ? <X size={22} color="#0F5132" /> : <MenuIcon size={22} color="#0F5132" />}
+              {menuOpen ? <X size={22} color={colors.text} /> : <MenuIcon size={22} color={colors.text} />}
             </TouchableOpacity>
           )}
 
+          {/* Botão de Alternância de Tema Claro/Escuro */}
           <TouchableOpacity 
-            style={styles.bellButton} 
+            style={[styles.themeButton, { backgroundColor: colorScheme === 'dark' ? 'rgba(255, 255, 255, 0.05)' : '#F8F9FA' }]} 
+            activeOpacity={0.7}
+            onPress={toggleTheme}
+          >
+            {colorScheme === 'dark' ? <Sun size={20} color="#F59E0B" /> : <Moon size={20} color="#495057" />}
+          </TouchableOpacity>
+
+          <TouchableOpacity 
+            style={[styles.bellButton, { backgroundColor: colorScheme === 'dark' ? 'rgba(255, 255, 255, 0.05)' : '#F8F9FA' }]} 
             activeOpacity={0.7}
             onPress={() => setModalVisible(true)}
           >
-            <Bell size={20} color="#495057" />
+            <Bell size={20} color={colors.textSecondary} />
             {notifications.length > 0 && <View style={styles.notificationBadge} />}
           </TouchableOpacity>
           <TouchableOpacity 
@@ -146,7 +169,8 @@ function CustomHeader() {
             ]}>
               <Text style={[
                 styles.avatarText,
-                userProfile?.activePlan === 'premium' && { color: '#B45309' }
+                userProfile?.activePlan === 'premium' && { color: '#B45309' },
+                { color: colors.text }
               ]}>
                 {initials}
               </Text>
@@ -157,7 +181,7 @@ function CustomHeader() {
 
       {/* Dropdown de Navegação Mobile */}
       {!isLargeScreen && menuOpen && (
-        <View style={styles.mobileDropdown}>
+        <View style={[styles.mobileDropdown, { backgroundColor: colorScheme === 'dark' ? '#151D30' : '#FFFFFF', borderBottomColor: colors.borderGlass }]}>
           {navLinks.map((link) => {
             const isActive = pathname === link.path || (link.path === '/' && pathname === '/index');
             return (
@@ -168,9 +192,17 @@ function CustomHeader() {
                   setMenuOpen(false);
                   router.push(link.path as any);
                 }}
-                style={[styles.mobileDropdownItem, isActive && styles.mobileDropdownItemActive]}
+                style={[
+                  styles.mobileDropdownItem, 
+                  isActive && styles.mobileDropdownItemActive,
+                  { borderBottomColor: isActive ? colors.borderGlassActive : (colorScheme === 'dark' ? 'rgba(255,255,255,0.03)' : '#F8F9FA') }
+                ]}
               >
-                <Text style={[styles.mobileDropdownText, isActive && styles.mobileDropdownTextActive]}>
+                <Text style={[
+                  styles.mobileDropdownText, 
+                  isActive && styles.mobileDropdownTextActive,
+                  { color: isActive ? colors.text : colors.textMuted }
+                ]}>
                   {link.label}
                 </Text>
               </TouchableOpacity>
@@ -413,6 +445,13 @@ const styles = StyleSheet.create({
     height: 40,
     borderRadius: 20,
     backgroundColor: '#F8F9FA',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  themeButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     alignItems: 'center',
     justifyContent: 'center',
   },

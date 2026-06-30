@@ -4,6 +4,7 @@ import { useFinanceStore } from '../../stores/useFinanceStore';
 import { useAuthStore } from '../../stores/useAuthStore';
 import GlassCard from '../../components/GlassCard';
 import { formatCurrency } from '../../utils/format';
+import { useTheme } from '../../hooks/useTheme';
 import { 
   History, 
   ArrowUpRight, 
@@ -28,6 +29,7 @@ interface MonthItem {
 }
 
 export default function HistoryScreen() {
+  const { theme: colorScheme, colors } = useTheme();
   const { width } = useWindowDimensions();
   const getMonthlySummary = useFinanceStore(s => s.getMonthlySummary);
   const getMonthlyOutflowsList = useFinanceStore(s => s.getMonthlyOutflowsList);
@@ -96,15 +98,15 @@ export default function HistoryScreen() {
   }, [selectedMonthDetails, getMonthlySummary, userCreatedAt]);
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       <ScrollView contentContainerStyle={[styles.scrollContent, { paddingBottom: width < 768 ? 110 : 24 }]}>
         
         {/* HEADER TELA */}
         <View style={styles.headerSection}>
-          <History color="#0F5132" size={24} />
+          <History color={colorScheme === 'dark' ? colors.text : "#0F5132"} size={24} />
           <View>
-            <Text style={styles.headerTitle}>Histórico Mensal</Text>
-            <Text style={styles.headerSubtitle}>
+            <Text style={[styles.headerTitle, { color: colors.text }]}>Histórico Mensal</Text>
+            <Text style={[styles.headerSubtitle, { color: colors.textMuted }]}>
               Conferência e levantamento de informações de até 24 meses anteriores.
             </Text>
           </View>
@@ -113,10 +115,10 @@ export default function HistoryScreen() {
         {/* LISTA DE MESES PASSADOS */}
         <View style={styles.monthsList}>
           {pastMonths.length === 0 ? (
-            <View style={styles.emptyCard}>
-              <Info color="#6C757D" size={32} />
-              <Text style={styles.emptyText}>Nenhum histórico disponível.</Text>
-              <Text style={styles.emptySubText}>
+            <View style={[styles.emptyCard, { backgroundColor: colors.surface, borderColor: colors.borderGlass }]}>
+              <Info color={colors.textMuted} size={32} />
+              <Text style={[styles.emptyText, { color: colors.text }]}>Nenhum histórico disponível.</Text>
+              <Text style={[styles.emptySubText, { color: colors.textMuted }]}>
                 O histórico exibe até 24 meses anteriores ao atual (a partir de Junho de 2025).
               </Text>
             </View>
@@ -139,14 +141,14 @@ export default function HistoryScreen() {
                         { backgroundColor: isPositive ? '#10B981' : '#DC3545' }
                       ]} />
                       <View>
-                        <Text style={styles.monthTitle}>{item.name}</Text>
-                        <Text style={styles.monthYear}>{item.year}</Text>
+                        <Text style={[styles.monthTitle, { color: colors.text }]}>{item.name}</Text>
+                        <Text style={[styles.monthYear, { color: colors.textMuted }]}>{item.year}</Text>
                       </View>
                     </View>
 
                     <View style={styles.cardHeaderRight}>
                       <View style={styles.rightStats}>
-                        <Text style={styles.statLabel}>Balanço</Text>
+                        <Text style={[styles.statLabel, { color: colors.textMuted }]}>Balanço</Text>
                         <Text style={[
                           styles.statValue,
                           { color: isPositive ? '#10B981' : '#DC3545' }
@@ -160,19 +162,19 @@ export default function HistoryScreen() {
                   {/* Detalhes Rápidos de Resumo */}
                   <View style={styles.summaryMetricsRow}>
                     <View style={styles.miniMetric}>
-                      <Text style={styles.miniLabel}>Entradas</Text>
+                      <Text style={[styles.miniLabel, { color: colors.textMuted }]}>Entradas</Text>
                       <Text style={styles.miniValGreen}>
                         {formatCurrency(summary.entriesTotal)}
                       </Text>
                     </View>
                     <View style={styles.miniMetric}>
-                      <Text style={styles.miniLabel}>Saídas</Text>
-                      <Text style={styles.miniValNormal}>
+                      <Text style={[styles.miniLabel, { color: colors.textMuted }]}>Saídas</Text>
+                      <Text style={[styles.miniValNormal, { color: colors.text }]}>
                         {formatCurrency(summary.exitsTotal)}
                       </Text>
                     </View>
                     <View style={styles.miniMetric}>
-                      <Text style={styles.miniLabel}>Poupado</Text>
+                      <Text style={[styles.miniLabel, { color: colors.textMuted }]}>Poupado</Text>
                       <Text style={styles.miniValSavings}>
                         {formatCurrency(summary.savingsPlaced)}
                       </Text>
@@ -185,8 +187,8 @@ export default function HistoryScreen() {
                     style={styles.viewDetailedLink}
                     activeOpacity={0.7}
                   >
-                    <Text style={styles.viewDetailedLinkText}>Ver histórico detalhado</Text>
-                    <ChevronDown size={14} color="#0F5132" style={{ transform: [{ rotate: '-90deg' }], marginLeft: 2 }} />
+                    <Text style={[styles.viewDetailedLinkText, { color: colorScheme === 'dark' ? '#10B981' : '#0F5132' }]}>Ver histórico detalhado</Text>
+                    <ChevronDown size={14} color={colorScheme === 'dark' ? '#10B981' : '#0F5132'} style={{ transform: [{ rotate: '-90deg' }], marginLeft: 2 }} />
                   </TouchableOpacity>
                 </GlassCard>
               );
@@ -204,16 +206,16 @@ export default function HistoryScreen() {
         onRequestClose={() => setSelectedMonthDetails(null)}
       >
         <View style={styles.modalBg}>
-          <View style={[styles.modalContainer, { maxWidth: 600 }]}>
-            <View style={styles.modalHeader}>
+          <View style={[styles.modalContainer, { maxWidth: 600, backgroundColor: colors.surface, borderColor: colors.borderGlass }]}>
+            <View style={[styles.modalHeader, { borderBottomColor: colors.borderGlass }]}>
               <View style={styles.modalTitleContainer}>
-                <History color="#0F5132" size={24} />
-                <Text style={styles.modalTitle} numberOfLines={1}>
+                <History color={colorScheme === 'dark' ? colors.text : "#0F5132"} size={24} />
+                <Text style={[styles.modalTitle, { color: colors.text }]} numberOfLines={1}>
                   Consulta - {selectedMonthDetails?.name} {selectedMonthDetails?.year}
                 </Text>
               </View>
               <TouchableOpacity onPress={() => setSelectedMonthDetails(null)} style={styles.closeModalBtn}>
-                <X color="#495057" size={20} />
+                <X color={colors.text} size={20} />
               </TouchableOpacity>
             </View>
 
@@ -222,8 +224,8 @@ export default function HistoryScreen() {
                 
                 {/* Resumo Rápido no Modal */}
                 {modalSummary && (
-                  <View style={styles.modalSummaryBox}>
-                    <Text style={styles.modalSummaryLabel}>Balanço Projetado Final</Text>
+                  <View style={[styles.modalSummaryBox, { backgroundColor: colorScheme === 'dark' ? 'rgba(255,255,255,0.02)' : '#F8F9FA', borderColor: colors.borderGlass }]}>
+                    <Text style={[styles.modalSummaryLabel, { color: colors.textMuted }]}>Balanço Projetado Final</Text>
                     <Text style={[
                       styles.modalSummaryValue,
                       { color: modalSummary.forecastLeftover >= 0 ? '#10B981' : '#DC3545' }
@@ -232,19 +234,19 @@ export default function HistoryScreen() {
                     </Text>
                     <View style={styles.modalSummaryMiniRow}>
                       <View style={styles.modalSummaryMiniCol}>
-                        <Text style={styles.miniLabel}>Entradas</Text>
+                        <Text style={[styles.miniLabel, { color: colors.textMuted }]}>Entradas</Text>
                         <Text style={styles.miniValGreen}>
                           {formatCurrency(modalSummary.entriesTotal)}
                         </Text>
                       </View>
                       <View style={styles.modalSummaryMiniCol}>
-                        <Text style={styles.miniLabel}>Saídas</Text>
-                        <Text style={styles.miniValNormal}>
+                        <Text style={[styles.miniLabel, { color: colors.textMuted }]}>Saídas</Text>
+                        <Text style={[styles.miniValNormal, { color: colors.text }]}>
                           {formatCurrency(modalSummary.exitsTotal)}
                         </Text>
                       </View>
                       <View style={styles.modalSummaryMiniCol}>
-                        <Text style={styles.miniLabel}>Poupado</Text>
+                        <Text style={[styles.miniLabel, { color: colors.textMuted }]}>Poupado</Text>
                         <Text style={styles.miniValSavings}>
                           {formatCurrency(modalSummary.savingsPlaced)}
                         </Text>
@@ -253,21 +255,21 @@ export default function HistoryScreen() {
                   </View>
                 )}
 
-                <View style={styles.detailsDivider} />
+                <View style={[styles.detailsDivider, { backgroundColor: colors.borderGlass }]} />
 
                 {/* Lista de Entradas */}
                 <View style={styles.modalDetailsSection}>
                   <View style={styles.modalSectionTitleRow}>
                     <ArrowUpRight color="#10B981" size={18} />
-                    <Text style={styles.detailsSectionHeader}>Rendimentos e Entradas</Text>
+                    <Text style={[styles.detailsSectionHeader, { color: colors.text }]}>Rendimentos e Entradas</Text>
                   </View>
                   <View style={styles.detailsList}>
                     {entries.filter(e => e.date === selectedMonthDetails.monthStr).length === 0 ? (
-                      <Text style={styles.noTransactionsText}>Nenhuma entrada registrada neste período.</Text>
+                      <Text style={[styles.noTransactionsText, { color: colors.textMuted }]}>Nenhuma entrada registrada neste período.</Text>
                     ) : (
                       entries.filter(e => e.date === selectedMonthDetails.monthStr).map(entry => (
-                        <View key={entry.id} style={styles.transactionRow}>
-                          <Text style={styles.transactionDesc}>{entry.description}</Text>
+                        <View key={entry.id} style={[styles.transactionRow, { borderBottomColor: colors.borderGlass }]}>
+                          <Text style={[styles.transactionDesc, { color: colors.text }]}>{entry.description}</Text>
                           <Text style={styles.transactionValGreen}>+ {formatCurrency(entry.value)}</Text>
                         </View>
                       ))
@@ -279,18 +281,18 @@ export default function HistoryScreen() {
                 <View style={styles.modalDetailsSection}>
                   <View style={styles.modalSectionTitleRow}>
                     <ArrowDownRight color="#DC3545" size={18} />
-                    <Text style={styles.detailsSectionHeader}>Contas, Assinaturas e Parcelas</Text>
+                    <Text style={[styles.detailsSectionHeader, { color: colors.text }]}>Contas, Assinaturas e Parcelas</Text>
                   </View>
                   <View style={styles.detailsList}>
                     {getMonthlyOutflowsList(selectedMonthDetails.monthStr, userCreatedAt).length === 0 ? (
-                      <Text style={styles.noTransactionsText}>Nenhuma despesa registrada neste período.</Text>
+                      <Text style={[styles.noTransactionsText, { color: colors.textMuted }]}>Nenhuma despesa registrada neste período.</Text>
                     ) : (
                       getMonthlyOutflowsList(selectedMonthDetails.monthStr, userCreatedAt).map(outflow => {
                         const cardColor = getCardColorHex(outflow.cardUsed);
                         return (
-                          <View key={outflow.id} style={styles.transactionRow}>
+                          <View key={outflow.id} style={[styles.transactionRow, { borderBottomColor: colors.borderGlass }]}>
                             <View style={styles.transactionDescCol}>
-                              <Text style={styles.transactionDesc}>{outflow.description}</Text>
+                              <Text style={[styles.transactionDesc, { color: colors.text }]}>{outflow.description}</Text>
                               <View style={styles.transactionTypeRow}>
                                 {outflow.type === 'fixed' && (
                                   <Text style={styles.typeBadgeFixed}>Fixa</Text>

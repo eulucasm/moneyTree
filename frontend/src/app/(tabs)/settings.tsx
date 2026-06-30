@@ -3,6 +3,7 @@ import { StyleSheet, Text, View, Alert, TouchableOpacity, ScrollView, TextInput,
 import { useFinancials, UserProfile } from '../../context/FinancialContext';
 import { useTranslation } from 'react-i18next';
 import GlassCard from '../../components/GlassCard';
+import { useTheme } from '../../hooks/useTheme';
 import { 
   Trash2, 
   Globe, 
@@ -47,6 +48,7 @@ const showAlert = (
 };
 
 export default function SettingsScreen() {
+  const { theme: colorScheme, colors } = useTheme();
   const { width } = useWindowDimensions();
   const isLargeScreen = width >= 768;
 
@@ -368,11 +370,11 @@ export default function SettingsScreen() {
   const isDanger = customConfirm.type === 'danger' || !customConfirm.type;
 
   return (
-    <View style={{ flex: 1 }}>
-      <ScrollView style={styles.container} contentContainerStyle={[styles.content, { paddingBottom: width < 768 ? 110 : 24 }]}>
+    <View style={{ flex: 1, backgroundColor: colors.background }}>
+      <ScrollView style={[styles.container, { backgroundColor: colors.background }]} contentContainerStyle={[styles.content, { paddingBottom: width < 768 ? 110 : 24 }]}>
       <View style={styles.header}>
-        <User color="#0F5132" size={32} />
-        <Text style={styles.headerText}>Configuração de Conta</Text>
+        <User color={colorScheme === 'dark' ? colors.text : "#0F5132"} size={32} />
+        <Text style={[styles.headerText, { color: colors.text }]}>Configuração de Conta</Text>
       </View>
 
       <View style={styles.mainGrid}>
@@ -381,29 +383,29 @@ export default function SettingsScreen() {
           {/* Firebase Cloud Sync Card */}
           <GlassCard style={styles.card}>
             <View style={styles.sectionHeader}>
-              <Cloud color="#0F5132" size={24} />
-              <Text style={styles.sectionTitle}>Sincronização Cloud</Text>
+              <Cloud color={colorScheme === 'dark' ? colors.text : "#0F5132"} size={24} />
+              <Text style={[styles.sectionTitle, { color: colors.text }]}>Sincronização Cloud</Text>
             </View>
 
             {user ? (
               <View style={styles.syncDetails}>
-                <View style={styles.syncRow}>
-                  <Text style={styles.syncLabel}>Conta:</Text>
-                  <Text style={styles.syncValue} numberOfLines={1}>{user.email}</Text>
+                <View style={[styles.syncRow, { borderBottomColor: colors.borderGlass }]}>
+                  <Text style={[styles.syncLabel, { color: colors.text }]}>Conta:</Text>
+                  <Text style={[styles.syncValue, { color: colors.textMuted }]} numberOfLines={1}>{user.email}</Text>
                 </View>
-                <View style={styles.syncRow}>
-                  <Text style={styles.syncLabel}>Status:</Text>
+                <View style={[styles.syncRow, { borderBottomColor: colors.borderGlass }]}>
+                  <Text style={[styles.syncLabel, { color: colors.text }]}>Status:</Text>
                   <View style={[
                     styles.syncBadge,
-                    syncStatus === 'synced' && styles.syncBadgeSynced,
-                    syncStatus === 'syncing' && styles.syncBadgeSyncing,
-                    syncStatus === 'error' && styles.syncBadgeError,
+                    syncStatus === 'synced' && (colorScheme === 'dark' ? { backgroundColor: 'rgba(16,185,129,0.1)' } : styles.syncBadgeSynced),
+                    syncStatus === 'syncing' && (colorScheme === 'dark' ? { backgroundColor: 'rgba(59,130,246,0.1)' } : styles.syncBadgeSyncing),
+                    syncStatus === 'error' && (colorScheme === 'dark' ? { backgroundColor: 'rgba(239,68,68,0.1)' } : styles.syncBadgeError),
                   ]}>
                     <Text style={[
                       styles.syncBadgeText,
-                      syncStatus === 'synced' && { color: '#0F5132' },
-                      syncStatus === 'syncing' && { color: '#004085' },
-                      syncStatus === 'error' && { color: '#721C24' },
+                      syncStatus === 'synced' && { color: colorScheme === 'dark' ? '#10B981' : '#0F5132' },
+                      syncStatus === 'syncing' && { color: colorScheme === 'dark' ? '#3B82F6' : '#004085' },
+                      syncStatus === 'error' && { color: colorScheme === 'dark' ? '#EF4444' : '#721C24' },
                     ]}>
                       {syncStatus === 'synced' && 'Sincronizado'}
                       {syncStatus === 'syncing' && 'Sincronizando...'}
@@ -413,9 +415,9 @@ export default function SettingsScreen() {
                   </View>
                 </View>
                 {lastUpdatedAt > 0 && (
-                  <View style={styles.syncRow}>
-                    <Text style={styles.syncLabel}>Última sincronia:</Text>
-                    <Text style={styles.syncValueDate}>
+                  <View style={[styles.syncRow, { borderBottomColor: colors.borderGlass }]}>
+                    <Text style={[styles.syncLabel, { color: colors.text }]}>Última sincronia:</Text>
+                    <Text style={[styles.syncValueDate, { color: colors.textMuted }]}>
                       {new Date(lastUpdatedAt).toLocaleString('pt-BR')}
                     </Text>
                   </View>
@@ -425,7 +427,7 @@ export default function SettingsScreen() {
                   <TouchableOpacity 
                     activeOpacity={0.8}
                     onPress={() => router.push('/admin' as any)}
-                    style={[styles.logoutButton, { backgroundColor: '#0F5132', borderColor: '#0F5132', marginBottom: 10 }]}
+                    style={[styles.logoutButton, { backgroundColor: colorScheme === 'dark' ? '#10B981' : '#0F5132', borderColor: colorScheme === 'dark' ? '#10B981' : '#0F5132', marginBottom: 10 }]}
                   >
                     <Text style={[styles.logoutButtonText, { color: '#FFFFFF' }]}>Painel Admin</Text>
                   </TouchableOpacity>
@@ -434,22 +436,22 @@ export default function SettingsScreen() {
                 <TouchableOpacity 
                   activeOpacity={0.8}
                   onPress={handleLogout}
-                  style={styles.logoutButton}
+                  style={[styles.logoutButton, { borderColor: colors.borderGlass }]}
                 >
-                  <Text style={styles.logoutButtonText}>Sair da Conta</Text>
+                  <Text style={[styles.logoutButtonText, { color: colorScheme === 'dark' ? colors.text : '#DC3545' }]}>Sair da Conta</Text>
                 </TouchableOpacity>
               </View>
             ) : (
               <View style={styles.syncDetails}>
-                <Text style={styles.syncDesc}>
+                <Text style={[styles.syncDesc, { color: colors.textMuted }]}>
                   Você está usando o modo local (Offline-first). Seus dados estão salvos apenas neste dispositivo.
                 </Text>
                 <TouchableOpacity 
                   activeOpacity={0.8}
                   onPress={() => router.replace('/login')}
-                  style={styles.loginBtnSettings}
+                  style={[styles.loginBtnSettings, { borderColor: colors.borderGlass }]}
                 >
-                  <Text style={styles.loginBtnSettingsText}>Acessar / Criar Conta Cloud</Text>
+                  <Text style={[styles.loginBtnSettingsText, { color: colorScheme === 'dark' ? colors.text : '#0F5132' }]}>Acessar / Criar Conta Cloud</Text>
                 </TouchableOpacity>
               </View>
             )}
@@ -458,24 +460,26 @@ export default function SettingsScreen() {
           {/* User Profile Form */}
           <GlassCard style={styles.card}>
             <View style={styles.sectionHeader}>
-              <User color="#0F5132" size={24} />
-              <Text style={styles.sectionTitle}>Dados do Perfil</Text>
+              <User color={colorScheme === 'dark' ? colors.text : "#0F5132"} size={24} />
+              <Text style={[styles.sectionTitle, { color: colors.text }]}>Dados do Perfil</Text>
             </View>
 
             <View style={styles.formRow}>
               <View style={styles.formField}>
-                <Text style={styles.label}>Nome</Text>
+                <Text style={[styles.label, { color: colors.text }]}>Nome</Text>
                 <TextInput
-                  style={styles.input}
+                  style={[styles.input, { borderColor: colors.borderGlass, color: colors.text, backgroundColor: colorScheme === 'dark' ? 'rgba(255,255,255,0.02)' : '#FFFFFF' }]}
+                  placeholderTextColor={colors.textMuted}
                   value={firstName}
                   onChangeText={setFirstName}
                   placeholder="Seu nome"
                 />
               </View>
               <View style={styles.formField}>
-                <Text style={styles.label}>Sobrenome</Text>
+                <Text style={[styles.label, { color: colors.text }]}>Sobrenome</Text>
                 <TextInput
-                  style={styles.input}
+                  style={[styles.input, { borderColor: colors.borderGlass, color: colors.text, backgroundColor: colorScheme === 'dark' ? 'rgba(255,255,255,0.02)' : '#FFFFFF' }]}
+                  placeholderTextColor={colors.textMuted}
                   value={lastName}
                   onChangeText={setLastName}
                   placeholder="Seu sobrenome"
@@ -485,18 +489,20 @@ export default function SettingsScreen() {
 
             <View style={styles.formRow}>
               <View style={styles.formField}>
-                <Text style={styles.label}>Cidade</Text>
+                <Text style={[styles.label, { color: colors.text }]}>Cidade</Text>
                 <TextInput
-                  style={styles.input}
+                  style={[styles.input, { borderColor: colors.borderGlass, color: colors.text, backgroundColor: colorScheme === 'dark' ? 'rgba(255,255,255,0.02)' : '#FFFFFF' }]}
+                  placeholderTextColor={colors.textMuted}
                   value={city}
                   onChangeText={setCity}
                   placeholder="Sua cidade"
                 />
               </View>
               <View style={styles.formField}>
-                <Text style={styles.label}>Estado (UF)</Text>
+                <Text style={[styles.label, { color: colors.text }]}>Estado (UF)</Text>
                 <TextInput
-                  style={styles.input}
+                  style={[styles.input, { borderColor: colors.borderGlass, color: colors.text, backgroundColor: colorScheme === 'dark' ? 'rgba(255,255,255,0.02)' : '#FFFFFF' }]}
+                  placeholderTextColor={colors.textMuted}
                   value={state}
                   onChangeText={setState}
                   placeholder="Ex: SP"
@@ -508,9 +514,10 @@ export default function SettingsScreen() {
 
             <View style={styles.formRow}>
               <View style={styles.formField}>
-                <Text style={styles.label}>Celular</Text>
+                <Text style={[styles.label, { color: colors.text }]}>Celular</Text>
                 <TextInput
-                  style={styles.input}
+                  style={[styles.input, { borderColor: colors.borderGlass, color: colors.text, backgroundColor: colorScheme === 'dark' ? 'rgba(255,255,255,0.02)' : '#FFFFFF' }]}
+                  placeholderTextColor={colors.textMuted}
                   value={phone}
                   onChangeText={setPhone}
                   placeholder="Ex: (11) 99999-9999"
@@ -518,9 +525,10 @@ export default function SettingsScreen() {
                 />
               </View>
               <View style={styles.formField}>
-                <Text style={styles.label}>Data de Nascimento</Text>
+                <Text style={[styles.label, { color: colors.text }]}>Data de Nascimento</Text>
                 <TextInput
-                  style={styles.input}
+                  style={[styles.input, { borderColor: colors.borderGlass, color: colors.text, backgroundColor: colorScheme === 'dark' ? 'rgba(255,255,255,0.02)' : '#FFFFFF' }]}
+                  placeholderTextColor={colors.textMuted}
                   value={birthDate}
                   onChangeText={setBirthDate}
                   placeholder="Ex: DD/MM/AAAA"
@@ -531,19 +539,20 @@ export default function SettingsScreen() {
 
             {/* Login Type Selector */}
             <View style={styles.loginTypeContainer}>
-              <Text style={styles.label}>Método de Login</Text>
+              <Text style={[styles.label, { color: colors.text }]}>Método de Login</Text>
               <View style={styles.selectorPills}>
                 <TouchableOpacity
                   activeOpacity={0.8}
                   onPress={() => setLoginType('google')}
                   style={[
                     styles.pill,
-                    loginType === 'google' ? styles.pillActive : styles.pillInactive
+                    { borderColor: colors.borderGlass },
+                    loginType === 'google' ? styles.pillActive : { backgroundColor: colorScheme === 'dark' ? 'rgba(255,255,255,0.02)' : '#F8F9FA' }
                   ]}
                 >
                   <Text style={[
                     styles.pillText,
-                    loginType === 'google' ? styles.pillTextActive : styles.pillTextInactive
+                    loginType === 'google' ? styles.pillTextActive : [styles.pillTextInactive, { color: colors.textMuted }]
                   ]}>
                     Google OAuth
                   </Text>
@@ -553,12 +562,13 @@ export default function SettingsScreen() {
                   onPress={() => setLoginType('email')}
                   style={[
                     styles.pill,
-                    loginType === 'email' ? styles.pillActive : styles.pillInactive
+                    { borderColor: colors.borderGlass },
+                    loginType === 'email' ? styles.pillActive : { backgroundColor: colorScheme === 'dark' ? 'rgba(255,255,255,0.02)' : '#F8F9FA' }
                   ]}
                 >
                   <Text style={[
                     styles.pillText,
-                    loginType === 'email' ? styles.pillTextActive : styles.pillTextInactive
+                    loginType === 'email' ? styles.pillTextActive : [styles.pillTextInactive, { color: colors.textMuted }]
                   ]}>
                     E-mail e Senha
                   </Text>
@@ -569,10 +579,11 @@ export default function SettingsScreen() {
             {/* Password input (only visible/active for Email Login) */}
             {loginType === 'email' ? (
               <View style={styles.formField}>
-                <Text style={styles.label}>Senha de Acesso</Text>
-                <View style={styles.passwordInputWrapper}>
+                <Text style={[styles.label, { color: colors.text }]}>Senha de Acesso</Text>
+                <View style={[styles.passwordInputWrapper, { borderColor: colors.borderGlass, backgroundColor: colorScheme === 'dark' ? 'rgba(255,255,255,0.02)' : '#FFFFFF' }]}>
                   <TextInput
-                    style={styles.passwordInput}
+                    style={[styles.passwordInput, { color: colors.text }]}
+                    placeholderTextColor={colors.textMuted}
                     value={password}
                     onChangeText={setPassword}
                     placeholder="Sua senha secreta"
@@ -582,14 +593,14 @@ export default function SettingsScreen() {
                     onPress={() => setShowPassword(!showPassword)}
                     style={styles.showPasswordButton}
                   >
-                    <Key size={18} color="#6C757D" />
+                    <Key size={18} color={colors.textMuted} />
                   </TouchableOpacity>
                 </View>
               </View>
             ) : (
-              <View style={styles.googleNotice}>
-                <Lock size={16} color="#0E5A36" style={{ marginRight: 8 }} />
-                <Text style={styles.googleNoticeText}>
+              <View style={[styles.googleNotice, { backgroundColor: colorScheme === 'dark' ? 'rgba(16,185,129,0.05)' : '#E8F5E9', borderColor: colors.borderGlass }]}>
+                <Lock size={16} color={colorScheme === 'dark' ? '#10B981' : '#0E5A36'} style={{ marginRight: 8 }} />
+                <Text style={[styles.googleNoticeText, { color: colorScheme === 'dark' ? '#10B981' : '#0E5A36' }]}>
                   Login integrado via Google. A senha está desativada para a sua segurança.
                 </Text>
               </View>
@@ -604,13 +615,13 @@ export default function SettingsScreen() {
             </TouchableOpacity>
           </GlassCard>
 
-          {/* Backup & System Data */}
+           {/* Backup & System Data */}
           <GlassCard style={styles.card}>
             <View style={styles.sectionHeader}>
-              <Layers color="#0F5132" size={24} />
-              <Text style={styles.sectionTitle}>Backup e Restauração</Text>
+              <Layers color={colorScheme === 'dark' ? colors.text : "#0F5132"} size={24} />
+              <Text style={[styles.sectionTitle, { color: colors.text }]}>Backup e Restauração</Text>
             </View>
-            <Text style={styles.cardDescription}>
+            <Text style={[styles.cardDescription, { color: colors.textMuted }]}>
               Exporte seus dados (receitas, boletos, investimentos e perfil) para um arquivo JSON portátil e faça importações a qualquer momento.
             </Text>
 
@@ -643,10 +654,10 @@ export default function SettingsScreen() {
                     setIsImportVisible(!isImportVisible);
                   }
                 }}
-                style={styles.backupButtonOutline}
+                style={[styles.backupButtonOutline, { borderColor: colors.borderGlass }]}
               >
-                <Upload size={18} color="#0F5132" style={{ marginRight: 8 }} />
-                <Text style={styles.backupButtonOutlineText}>
+                <Upload size={18} color={colors.text} style={{ marginRight: 8 }} />
+                <Text style={[styles.backupButtonOutlineText, { color: colors.text }]}>
                   {Platform.OS === 'web' ? 'Selecionar Arquivo' : 'Código de Importação'}
                 </Text>
               </TouchableOpacity>
@@ -655,9 +666,10 @@ export default function SettingsScreen() {
             {/* Paste Box for restoring fallback / mobile */}
             {(isImportVisible || Platform.OS !== 'web') && (
               <View style={styles.importTextBox}>
-                <Text style={styles.label}>Colar Código JSON de Backup</Text>
+                <Text style={[styles.label, { color: colors.text }]}>Colar Código JSON de Backup</Text>
                 <TextInput
-                  style={styles.textarea}
+                  style={[styles.textarea, { borderColor: colors.borderGlass, color: colors.text, backgroundColor: colorScheme === 'dark' ? 'rgba(255,255,255,0.02)' : '#FFFFFF' }]}
+                  placeholderTextColor={colors.textMuted}
                   value={backupInput}
                   onChangeText={setBackupInput}
                   placeholder='Cole o JSON aqui...'
@@ -681,16 +693,16 @@ export default function SettingsScreen() {
           {/* Subscription Active Plan Card */}
           <GlassCard style={styles.card}>
             <View style={styles.sectionHeader}>
-              <Sparkles color="#0F5132" size={24} />
-              <Text style={styles.sectionTitle}>Plano Vigente</Text>
+              <Sparkles color={colorScheme === 'dark' ? colors.text : "#0F5132"} size={24} />
+              <Text style={[styles.sectionTitle, { color: colors.text }]}>Plano Vigente</Text>
             </View>
-            <Text style={styles.cardDescription}>
+            <Text style={[styles.cardDescription, { color: colors.textMuted }]}>
               {userProfile?.activePlan === 'premium' 
                 ? 'Você está utilizando o plano Premium do Money Tree. Aproveite todos os recursos liberados para sua gestão.'
                 : 'Você está utilizando o plano Básico do Money Tree. Adquira o Premium para liberar sincronização em nuvem e recursos extras.'}
             </Text>
             <View style={styles.activePlanBadgeContainer}>
-              <Text style={styles.activePlanLabel}>Plano Atual:</Text>
+              <Text style={[styles.activePlanLabel, { color: colors.text }]}>Plano Atual:</Text>
               <View style={[
                 styles.activePlanBadge,
                 { backgroundColor: userProfile?.activePlan === 'premium' ? '#10B981' : '#6C757D' }
@@ -703,17 +715,17 @@ export default function SettingsScreen() {
             <TouchableOpacity
               activeOpacity={0.8}
               onPress={() => router.push('/plans' as any)}
-              style={styles.changePlanButton}
+              style={[styles.changePlanButton, { borderColor: colors.borderGlass }]}
             >
-              <Text style={styles.changePlanButtonText}>Adquirir Outro Plano</Text>
+              <Text style={[styles.changePlanButtonText, { color: colors.text }]}>Adquirir Outro Plano</Text>
             </TouchableOpacity>
           </GlassCard>
 
           {/* Languages Section */}
           <GlassCard style={styles.card}>
             <View style={styles.sectionHeader}>
-              <Globe color="#0F5132" size={24} />
-              <Text style={styles.sectionTitle}>{t('common.language')}</Text>
+              <Globe color={colorScheme === 'dark' ? colors.text : "#0F5132"} size={24} />
+              <Text style={[styles.sectionTitle, { color: colors.text }]}>{t('common.language')}</Text>
             </View>
             <View style={styles.langList}>
               {languages.map((lang) => {
@@ -725,12 +737,13 @@ export default function SettingsScreen() {
                     onPress={() => changeLanguage(lang.key)}
                     style={[
                       styles.langItem,
+                      { borderBottomColor: colors.borderGlass },
                       isSelected ? styles.langItemSelected : styles.langItemUnselected,
                     ]}
                   >
                     <Text style={[
                       styles.langText,
-                      isSelected ? styles.langTextActive : styles.langTextInactive
+                      isSelected ? { color: colorScheme === 'dark' ? '#10B981' : '#0F5132', fontWeight: 'bold' } : { color: colors.text }
                     ]}>
                       {lang.label}
                     </Text>
@@ -742,14 +755,14 @@ export default function SettingsScreen() {
           </GlassCard>
 
           {/* Danger Zone Section */}
-          <GlassCard style={[styles.card, styles.dangerCard]}>
+          <GlassCard style={[styles.card, styles.dangerCard, { borderColor: '#EF4444' }]}>
             <View style={styles.sectionHeader}>
               <Trash2 color="#DC3545" size={24} />
               <Text style={[styles.sectionTitle, { color: '#DC3545' }]}>
                 {t('common.cleanData')}
               </Text>
             </View>
-            <Text style={styles.dangerDescription}>
+            <Text style={[styles.dangerDescription, { color: colors.textMuted }]}>
               Esta ação apagará permanentemente todos os lançamentos de receitas, saídas, faturas de cartões e configurações de perfil gravados no seu dispositivo.
             </Text>
             <TouchableOpacity
@@ -762,14 +775,14 @@ export default function SettingsScreen() {
           </GlassCard>
 
           {/* Excluir Conta Section */}
-          <GlassCard style={[styles.card, styles.dangerCard]}>
+          <GlassCard style={[styles.card, styles.dangerCard, { borderColor: '#EF4444' }]}>
             <View style={styles.sectionHeader}>
               <Trash2 color="#DC3545" size={24} />
               <Text style={[styles.sectionTitle, { color: '#DC3545' }]}>
                 Excluir Minha Conta
               </Text>
             </View>
-            <Text style={styles.dangerDescription}>
+            <Text style={[styles.dangerDescription, { color: colors.textMuted }]}>
               Esta ação excluirá permanentemente sua conta da nuvem e todos os dados vinculados a ela. Esta operação não pode ser desfeita.
             </Text>
             <TouchableOpacity
@@ -791,6 +804,7 @@ export default function SettingsScreen() {
       <View style={styles.alertOverlay}>
         <GlassCard style={[
           styles.alertCard,
+          { backgroundColor: colors.surface, borderColor: colors.borderGlass },
           isSuccess && { borderColor: '#A7F3D0' },
           isInfo && { borderColor: '#E0F2FE' },
           isDanger && { borderColor: '#FEE2E2' }
@@ -810,15 +824,15 @@ export default function SettingsScreen() {
               isDanger && { color: '#DC3545' }
             ]}>{customConfirm.title}</Text>
           </View>
-          <Text style={styles.alertMessage}>{customConfirm.message}</Text>
+          <Text style={[styles.alertMessage, { color: colors.text }]}>{customConfirm.message}</Text>
           <View style={styles.alertButtons}>
             {!!customConfirm.cancelText && (
               <TouchableOpacity
                 activeOpacity={0.8}
-                style={styles.alertCancelButton}
+                style={[styles.alertCancelButton, { borderColor: colors.borderGlass }]}
                 onPress={() => setCustomConfirm(prev => ({ ...prev, visible: false }))}
               >
-                <Text style={styles.alertCancelButtonText}>
+                <Text style={[styles.alertCancelButtonText, { color: colors.textMuted }]}>
                   {customConfirm.cancelText}
                 </Text>
               </TouchableOpacity>

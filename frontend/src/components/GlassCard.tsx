@@ -1,10 +1,10 @@
 import React from 'react';
-import { StyleSheet, View, ViewStyle, StyleProp } from 'react-native';
+import { StyleSheet, View, ViewStyle, StyleProp, useColorScheme } from 'react-native';
+import Theme from '../constants/Colors';
 
 interface GlassCardProps {
   children: React.ReactNode;
   style?: StyleProp<ViewStyle>;
-  gradientColors?: string[];
   borderActive?: boolean;
 }
 
@@ -13,10 +13,16 @@ export const GlassCard: React.FC<GlassCardProps> = ({
   style,
   borderActive = false,
 }) => {
+  const systemColorScheme = useColorScheme() === 'dark' ? 'dark' : 'light';
+  const colors = Theme[systemColorScheme];
+
   return (
     <View style={[
       styles.cardContainer, 
-      borderActive ? styles.borderActive : styles.borderDefault,
+      {
+        backgroundColor: colors.surfaceGlass,
+        borderColor: borderActive ? colors.borderGlassActive : colors.borderGlass,
+      },
       style
     ]}>
       {children}
@@ -28,22 +34,14 @@ const styles = StyleSheet.create({
   cardContainer: {
     borderRadius: 16,
     overflow: 'hidden',
-    backgroundColor: '#FFFFFF',
     padding: 16,
-    // Subtle drop shadow for web/iOS to match the minimalist tech design
+    borderWidth: 1,
+    // Subtle drop shadow for depth
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.05,
+    shadowOpacity: 0.03,
     shadowRadius: 10,
-    elevation: 2, // Android shadow
-  },
-  borderDefault: {
-    borderWidth: 1,
-    borderColor: '#E9ECEF',
-  },
-  borderActive: {
-    borderWidth: 1,
-    borderColor: '#10B981',
+    elevation: 2,
   },
 });
 

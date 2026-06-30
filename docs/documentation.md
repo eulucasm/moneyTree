@@ -5,7 +5,8 @@ Este é o documento central de documentação e contexto do projeto.
 ## 2.1. ⚠️ INSTRUÇÕES IMPORTANTES - LEIA PRIMEIRO
 
 **Para a Inteligência Artificial / Agente**:
-Sempre que iniciar uma sessão com este repositório ou quando o contexto for perdido, leia este documento para recuperar o estado atual do projeto. Mantenha as seções abaixo rigorosamente atualizadas conforme as regras em `docs/GUIA_DOCUMENTACAO.md`.
+- Sempre que iniciar uma sessão com este repositório ou quando o contexto for perdido, leia este documento para recuperar o estado atual do projeto. Mantenha as seções abaixo rigorosamente atualizadas conforme as regras em `docs/GUIA_DOCUMENTACAO.md`.
+- **⚠️ PROTEÇÃO DE CREDENCIAIS (CRÍTICO):** Nunca exponha chaves de API, senhas, tokens ou strings de conexão no chat ou em arquivos de código rígido (hardcoded) versionados. Sempre salve dados sensíveis em arquivos `.env` locais (já ignorados no `.gitignore`) e acesse-os por variáveis de ambiente.
 
 **Comando de Recuperação de Contexto (Golden Prompt):**
 > *"Leia o documento `docs/documentation.md` para recuperar o contexto do projeto, veja as regras no arquivo `docs/GUIA_DOCUMENTACAO.md` e aguarde minhas próximas instruções."*
@@ -88,7 +89,6 @@ gantt
 
 - [ ] Importar/Migrar dados reais históricos da planilha `New Contas 2025.xlsx` para testes avançados locais.
 - [ ] Validar fluxos de transação de ponta a ponta e tratar cenários de rede offline/online no app.
-- [ ] Revisão fina de UI/UX e micro-animações do tema Glassmorphism.
 
 ---
 
@@ -98,6 +98,7 @@ gantt
 - **Decisão (29/06/2026):** Banco de dados PostgreSQL escolhido por sua consistência com dados financeiros estruturados.
 - **Decisão (30/06/2026):** Hospedagem do banco PostgreSQL na Supabase. Devido a restrições de rede local (IPv4) com a porta direta IPv6 da Supabase, foi adotado o uso de Connection Pooler (Supavisor) na porta `5432` com host pooler IPv4 (`aws-1-sa-east-1.pooler.supabase.com`) no backend.
 - **Decisão (30/06/2026):** Segurança de Credenciais. Para evitar exposição de chaves no repositório Git, as credenciais do Firebase no frontend foram migradas para variáveis de ambiente locais usando o padrão do Expo (`EXPO_PUBLIC_...`) no arquivo `frontend/.env`.
+- **Decisão (30/06/2026):** Alternância manual de temas. O app agora utiliza uma Zustand store com persistência local em AsyncStorage para permitir que o usuário mude livremente entre Light e Dark via cabeçalho.
 
 ---
 
@@ -111,3 +112,5 @@ gantt
 | 30/06/2026 | Cadastro de novos usuários (celular, data nasc), validações de senha complexa, confirmação de senha, suporte BD/API e ajustes de perfil | IA | ✅ Concluída |
 | 30/06/2026 | Integração e migração do banco de dados local para PostgreSQL na nuvem (Supabase via Connection Pooler IPv4) | IA | ✅ Concluída |
 | 30/06/2026 | Migração das credenciais hardcoded do Firebase no frontend para variáveis de ambiente locais (.env) | IA | ✅ Concluída |
+| 30/06/2026 | Integração de micro-animações premium (transições fade-in e slide-up reativas) no Dashboard e Orçamento | IA | ✅ Concluída |
+| 30/06/2026 | Botão manual de alternância de tema (Claro/Escuro) no menu superior, integrado a Zustand e persistido | IA | ✅ Concluída |

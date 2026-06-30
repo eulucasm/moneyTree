@@ -1,6 +1,5 @@
-import { useColorScheme as useColorSchemeCore } from 'react-native';
+import { useThemeStore } from '../stores/useThemeStore';
 
 export const useColorScheme = () => {
-  const coreScheme = useColorSchemeCore();
-  return coreScheme === 'unspecified' ? 'light' : coreScheme;
+  return useThemeStore((state) => state.theme);
 };

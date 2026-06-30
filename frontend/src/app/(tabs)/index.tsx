@@ -26,8 +26,10 @@ import FinancialButton from '../../components/FinancialButton';
 import CardSelector from '../../components/CardSelector';
 import Toast from '../../components/Toast';
 import { useRouter } from 'expo-router';
+import { useTheme } from '../../hooks/useTheme';
 
 export default function DashboardScreen() {
+  const { theme: colorScheme, colors } = useTheme();
   const { width } = useWindowDimensions();
   const isLargeScreen = width >= 900;
   const isMediumScreen = width >= 600;
@@ -95,16 +97,25 @@ export default function DashboardScreen() {
     setToastVisible(true);
   };
 
-  // Re-run month fade-in transition
-  const contentOpacity = useRef(new Animated.Value(1)).current;
+  // Re-run month fade-in and slide-up transition
+  const contentOpacity = useRef(new Animated.Value(0)).current;
+  const contentTranslateY = useRef(new Animated.Value(15)).current;
 
   useEffect(() => {
-    contentOpacity.setValue(0.3);
-    Animated.timing(contentOpacity, {
-      toValue: 1,
-      duration: 300,
-      useNativeDriver: true,
-    }).start();
+    contentOpacity.setValue(0);
+    contentTranslateY.setValue(15);
+    Animated.parallel([
+      Animated.timing(contentOpacity, {
+        toValue: 1,
+        duration: 350,
+        useNativeDriver: true,
+      }),
+      Animated.timing(contentTranslateY, {
+        toValue: 0,
+        duration: 350,
+        useNativeDriver: true,
+      })
+    ]).start();
   }, [selectedPeriod]);
 
   const availableColors = [
@@ -248,24 +259,24 @@ export default function DashboardScreen() {
   const renderSavingsList = (items: SavingsItem[], sectionTitle: string) => {
     return (
       <View style={styles.savingsSection}>
-        <Text style={styles.savingsSectionTitle}>{sectionTitle}</Text>
+        <Text style={[styles.savingsSectionTitle, { color: colors.text }]}>{sectionTitle}</Text>
         {items.length === 0 ? (
-          <Text style={styles.noSavingsItemsText}>Nenhuma reserva cadastrada.</Text>
+          <Text style={[styles.noSavingsItemsText, { color: colors.textMuted }]}>Nenhuma reserva cadastrada.</Text>
         ) : (
           <View style={styles.savingsItemsList}>
             {items.map(item => {
               const cardColor = getCardColorHex(item.bank);
               const cardName = getCardColorName(item.bank);
               return (
-                <View key={item.id} style={styles.savingsItemRow}>
+                <View key={item.id} style={[styles.savingsItemRow, { borderBottomColor: colors.borderGlass }]}>
                   <View style={styles.savingsItemLeft}>
                     <View style={[styles.bankTag, { backgroundColor: cardColor + '20' }]}>
                       <Text style={[styles.bankTagText, { color: cardColor }]}>{cardName}</Text>
                     </View>
-                    <Text style={styles.savingsItemDesc} numberOfLines={1}>{item.description}</Text>
+                    <Text style={[styles.savingsItemDesc, { color: colors.text }]} numberOfLines={1}>{item.description}</Text>
                   </View>
                   <View style={styles.savingsItemRight}>
-                    <Text style={styles.savingsItemAmount}>
+                    <Text style={[styles.savingsItemAmount, { color: colors.text }]}>
                       R$ {item.amount.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </Text>
                     <TouchableOpacity 
@@ -273,7 +284,7 @@ export default function DashboardScreen() {
                         deleteSavingsItem(selectedPeriod, item.id);
                         showToast('Registro de poupança removido.', 'success');
                       }}
-                      style={styles.savingsDeleteBtn}
+                      style={[styles.savingsDeleteBtn, { backgroundColor: colorScheme === 'dark' ? 'rgba(220, 53, 69, 0.15)' : '#FCE8E6' }]}
                     >
                       <Trash2 color="#DC3545" size={14} />
                     </TouchableOpacity>
@@ -288,8 +299,12 @@ export default function DashboardScreen() {
   };
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={[styles.content, { paddingBottom: width < 768 ? 110 : 24 }]}>
-      <Animated.View style={{ opacity: contentOpacity, width: '100%' }}>
+    <ScrollView style={[styles.container, { backgroundColor: colors.background }]} contentContainerStyle={[styles.content, { paddingBottom: width < 768 ? 110 : 24 }]}>
+      <Animated.View style={{ 
+        opacity: contentOpacity, 
+        transform: [{ translateY: contentTranslateY }],
+        width: '100%' 
+      }}>
       
       {/* SAUDAÇÃO */}
       <View style={styles.greetingSection}>
@@ -322,7 +337,8 @@ export default function DashboardScreen() {
         <View style={[
           styles.cardMain, 
           { 
-            borderColor: summary.forecastLeftover >= 0 ? '#A7F3D0' : '#FECACA',
+            backgroundColor: colors.surface,
+            borderColor: summary.forecastLeftover >= 0 ? colors.borderGlassActive : '#FECACA',
             flex: 1,
             minWidth: isLargeScreen ? 200 : (isMediumScreen ? '47%' : '100%'),
           }
@@ -332,7 +348,7 @@ export default function DashboardScreen() {
             { backgroundColor: summary.forecastLeftover >= 0 ? '#10B981' : '#DC3545' }
           ]} />
           <View style={styles.cardHeader}>
-            <Text style={styles.cardLabel}>Balanço Projetado</Text>
+            <Text style={[styles.cardLabel, { color: colors.textMuted }]}>Balanço Projetado</Text>
             <View style={[
               styles.badgeStatus,
               { backgroundColor: summary.forecastLeftover >= 0 ? '#E8F5E9' : '#FCE8E6' }
@@ -345,10 +361,10 @@ export default function DashboardScreen() {
               </Text>
             </View>
           </View>
-          <Text style={styles.cardValueMain}>
+          <Text style={[styles.cardValueMain, { color: colors.text }]}>
             {formatCurrency(summary.forecastLeftover)}
           </Text>
-          <Text style={styles.cardSubText}>
+          <Text style={[styles.cardSubText, { color: colors.textMuted }]}>
             {summary.forecastLeftover >= 0 
               ? 'Muito bem! Projeção de sobra positiva para o final deste mês.' 
               : 'Atenção: Suas despesas programadas estão superiores às suas entradas este mês.'}
@@ -356,45 +372,45 @@ export default function DashboardScreen() {
         </View>
 
         {/* Card: Entradas */}
-        <View style={[styles.cardStandard, { flex: 1, minWidth: isLargeScreen ? 200 : (isMediumScreen ? '47%' : '100%') }]}>
+        <View style={[styles.cardStandard, { backgroundColor: colors.surface, borderColor: colors.borderGlass, flex: 1, minWidth: isLargeScreen ? 200 : (isMediumScreen ? '47%' : '100%') }]}>
           <View style={styles.cardHeaderIcon}>
             <View style={styles.iconWrapperSuccess}>
               <TrendingUp size={20} color="#10B981" />
             </View>
-            <Text style={styles.cardLabelNormal}>Total Entradas</Text>
+            <Text style={[styles.cardLabelNormal, { color: colors.textMuted }]}>Total Entradas</Text>
           </View>
           <Text style={styles.cardValueSuccess}>
             {formatCurrency(summary.entriesTotal)}
           </Text>
-          <Text style={styles.cardSubText}>Salário, vales e rendimentos eventuais.</Text>
+          <Text style={[styles.cardSubText, { color: colors.textMuted }]}>Salário, vales e rendimentos eventuais.</Text>
         </View>
 
         {/* Card: Saídas */}
-        <View style={[styles.cardStandard, { flex: 1, minWidth: isLargeScreen ? 200 : (isMediumScreen ? '47%' : '100%') }]}>
+        <View style={[styles.cardStandard, { backgroundColor: colors.surface, borderColor: colors.borderGlass, flex: 1, minWidth: isLargeScreen ? 200 : (isMediumScreen ? '47%' : '100%') }]}>
           <View style={styles.cardHeaderIcon}>
             <View style={styles.iconWrapperDanger}>
               <TrendingDown size={20} color="#DC3545" />
             </View>
-            <Text style={styles.cardLabelNormal}>Total Saídas</Text>
+            <Text style={[styles.cardLabelNormal, { color: colors.textMuted }]}>Total Saídas</Text>
           </View>
-          <Text style={styles.cardValueNormal}>
+          <Text style={[styles.cardValueNormal, { color: colors.text }]}>
             {formatCurrency(summary.exitsTotal)}
           </Text>
-          <Text style={styles.cardSubText}>Contas fixas, assinaturas e parcelas ativas.</Text>
+          <Text style={[styles.cardSubText, { color: colors.textMuted }]}>Contas fixas, assinaturas e parcelas ativas.</Text>
         </View>
 
         {/* Card: Cartão de Crédito */}
-        <View style={[styles.cardStandard, { flex: 1, minWidth: isLargeScreen ? 200 : (isMediumScreen ? '47%' : '100%') }]}>
+        <View style={[styles.cardStandard, { backgroundColor: colors.surface, borderColor: colors.borderGlass, flex: 1, minWidth: isLargeScreen ? 200 : (isMediumScreen ? '47%' : '100%') }]}>
           <View style={styles.cardHeaderIcon}>
             <View style={styles.iconWrapperWarning}>
               <CreditCard size={20} color="#0F5132" />
             </View>
-            <Text style={styles.cardLabelNormal}>Cartão de Crédito</Text>
+            <Text style={[styles.cardLabelNormal, { color: colors.textMuted }]}>Cartão de Crédito</Text>
           </View>
-          <Text style={styles.cardValueNormal}>
+          <Text style={[styles.cardValueNormal, { color: colors.text }]}>
             {formatCurrency(creditCardTotal)}
           </Text>
-          <Text style={styles.cardSubText}>Soma de todas as parcelas de cartão no mês.</Text>
+          <Text style={[styles.cardSubText, { color: colors.textMuted }]}>Soma de todas as parcelas de cartão no mês.</Text>
         </View>
 
       </View>
@@ -460,21 +476,21 @@ export default function DashboardScreen() {
         <View style={[styles.savingsCardHeader, { flexDirection: isMediumScreen ? 'row' : 'column', alignItems: isMediumScreen ? 'center' : 'stretch', gap: 16 }]}>
           <View style={styles.savingsCardHeaderLeft}>
             <View style={styles.iconWrapperSavings}>
-              <CreditCard size={24} color="#0F5132" />
+              <CreditCard size={24} color={colorScheme === 'dark' ? colors.text : "#0F5132"} />
             </View>
             <View style={{ flex: 1 }}>
-              <Text style={styles.savingsTitle}>Faturas & Limites dos Cartões</Text>
-              <Text style={styles.savingsSubtitle}>Acompanhamento de limite disponível e utilizado</Text>
+              <Text style={[styles.savingsTitle, { color: colors.text }]}>Faturas & Limites dos Cartões</Text>
+              <Text style={[styles.savingsSubtitle, { color: colors.textMuted }]}>Acompanhamento de limite disponível e utilizado</Text>
             </View>
           </View>
           <View style={styles.savingsActions}>
             <TouchableOpacity 
-              style={styles.savingsBtnEdit} 
+              style={[styles.savingsBtnEdit, { backgroundColor: colorScheme === 'dark' ? 'rgba(255,255,255,0.05)' : '#E8F5E9' }]} 
               activeOpacity={0.7}
               onPress={() => setCardModalVisible(true)}
             >
-              <Settings size={14} color="#0F5132" />
-              <Text style={styles.savingsBtnEditText}>Gerenciar</Text>
+              <Settings size={14} color={colorScheme === 'dark' ? colors.text : "#0F5132"} />
+              <Text style={[styles.savingsBtnEditText, { color: colorScheme === 'dark' ? colors.text : "#0F5132" }]}>Gerenciar</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -487,21 +503,21 @@ export default function DashboardScreen() {
             const brandColor = card.color || '#64748B';
 
             return (
-              <View key={card.id} style={[styles.creditCardItem, { flex: isMediumScreen ? 1 : undefined, flexGrow: isMediumScreen ? 1 : 0, flexShrink: 1, width: isLargeScreen ? 220 : (isMediumScreen ? '48%' : '100%') }]}>
+              <View key={card.id} style={[styles.creditCardItem, { backgroundColor: colorScheme === 'dark' ? '#151D30' : '#F8F9FA', borderColor: colors.borderGlass, flex: isMediumScreen ? 1 : undefined, flexGrow: isMediumScreen ? 1 : 0, flexShrink: 1, width: isLargeScreen ? 220 : (isMediumScreen ? '48%' : '100%') }]}>
                 <View style={styles.cardItemNameRow}>
                   <View style={[styles.brandDot, { backgroundColor: brandColor }]} />
-                  <Text style={styles.cardItemName}>{card.name}</Text>
+                  <Text style={[styles.cardItemName, { color: colors.text }]}>{card.name}</Text>
                 </View>
-                <Text style={styles.cardItemAvailableStacked}>
+                <Text style={[styles.cardItemAvailableStacked, { color: colors.text }]}>
                   Disp: {formatCurrency(available)}
                 </Text>
 
                 {/* Progress bar */}
-                <View style={styles.cardProgressBarTrack}>
+                <View style={[styles.cardProgressBarTrack, { backgroundColor: colorScheme === 'dark' ? 'rgba(255,255,255,0.05)' : '#E9ECEF' }]}>
                   <View style={[styles.cardProgressBarFill, { width: `${percent}%`, backgroundColor: brandColor }]} />
                 </View>
 
-                <Text style={styles.cardItemUsedStacked}>
+                <Text style={[styles.cardItemUsedStacked, { color: colors.textMuted }]}>
                   Usado: {formatCurrency(used)}
                 </Text>
               </View>
@@ -515,24 +531,24 @@ export default function DashboardScreen() {
         <View style={[styles.savingsCardHeader, { flexDirection: isMediumScreen ? 'row' : 'column', alignItems: isMediumScreen ? 'center' : 'stretch', gap: 16 }]}>
           <View style={styles.savingsCardHeaderLeft}>
             <View style={styles.iconWrapperSavings}>
-              <Target size={24} color="#0F5132" />
+              <Target size={24} color={colorScheme === 'dark' ? colors.text : "#0F5132"} />
             </View>
             <View>
-              <Text style={styles.savingsTitle}>Poupança & Reserva de Emergência</Text>
-              <Text style={styles.savingsSubtitle}>Guarde dinheiro e acompanhe sua meta de segurança</Text>
+              <Text style={[styles.savingsTitle, { color: colors.text }]}>Poupança & Reserva de Emergência</Text>
+              <Text style={[styles.savingsSubtitle, { color: colors.textMuted }]}>Guarde dinheiro e acompanhe sua meta de segurança</Text>
             </View>
           </View>
           <View style={styles.savingsActions}>
             <TouchableOpacity 
-              style={styles.savingsBtnEdit} 
+              style={[styles.savingsBtnEdit, { backgroundColor: colorScheme === 'dark' ? 'rgba(255,255,255,0.05)' : '#E8F5E9' }]} 
               activeOpacity={0.7}
               onPress={() => {
                 setNewGoalValue(savingsGoal.toString());
                 setGoalModalVisible(true);
               }}
             >
-              <Edit size={14} color="#0F5132" />
-              <Text style={styles.savingsBtnEditText}>Meta</Text>
+              <Edit size={14} color={colorScheme === 'dark' ? colors.text : "#0F5132"} />
+              <Text style={[styles.savingsBtnEditText, { color: colorScheme === 'dark' ? colors.text : "#0F5132" }]}>Meta</Text>
             </TouchableOpacity>
             <TouchableOpacity 
               style={styles.savingsBtnAdd} 
@@ -554,14 +570,14 @@ export default function DashboardScreen() {
         <View style={styles.savingsBody}>
           <View style={styles.savingsMetricsRow}>
             <View>
-              <Text style={styles.savingsMetricLabel}>Poupado Acumulado</Text>
-              <Text style={styles.savingsMetricVal}>
+              <Text style={[styles.savingsMetricLabel, { color: colors.textMuted }]}>Poupado Acumulado</Text>
+              <Text style={[styles.savingsMetricVal, { color: colors.text }]}>
                 {formatCurrency(totalSavings)}
               </Text>
             </View>
             <View style={{ alignItems: 'flex-end' }}>
-              <Text style={styles.savingsMetricLabel}>Sua Meta</Text>
-              <Text style={styles.savingsMetricValGoal}>
+              <Text style={[styles.savingsMetricLabel, { color: colors.textMuted }]}>Sua Meta</Text>
+              <Text style={[styles.savingsMetricValGoal, { color: colors.text }]}>
                 {formatCurrency(savingsGoal)}
               </Text>
             </View>
@@ -569,13 +585,13 @@ export default function DashboardScreen() {
 
           {/* Progress Bar */}
           <View style={styles.progressBarWrapper}>
-            <View style={styles.progressBarTrackLarge}>
+            <View style={[styles.progressBarTrackLarge, { backgroundColor: colorScheme === 'dark' ? 'rgba(255,255,255,0.05)' : '#E9ECEF' }]}>
               <View style={[styles.progressBarFillLarge, { width: `${progressPercent}%` }]} />
             </View>
-            <Text style={styles.progressPercentText}>{progressPercent.toFixed(1)}% atingido</Text>
+            <Text style={[styles.progressPercentText, { color: colors.textMuted }]}>{progressPercent.toFixed(1)}% atingido</Text>
           </View>
 
-          <View style={styles.savingsDivider} />
+          <View style={[styles.savingsDivider, { backgroundColor: colors.borderGlass }]} />
           <View style={[styles.savingsColumnsContainer, { flexDirection: isMediumScreen ? 'row' : 'column', gap: 24 }]}>
             {renderSavingsList(poupancaItems, '💰 Poupança Tradicional')}
             {renderSavingsList(caixinhaItems, '📦 Caixinhas / Metas')}
@@ -588,25 +604,25 @@ export default function DashboardScreen() {
         <View style={styles.unifiedHeader}>
           <View style={styles.unifiedHeaderLeft}>
             <View style={styles.iconWrapperUnified}>
-              <Target size={24} color="#0F5132" />
+              <Target size={24} color={colorScheme === 'dark' ? colors.text : "#0F5132"} />
             </View>
             <View>
-              <Text style={styles.unifiedTitle}>Fluxo de Caixa Detalhado</Text>
-              <Text style={styles.unifiedSubtitle}>Contas fixas, assinaturas ativas e parcelas programadas</Text>
+              <Text style={[styles.unifiedTitle, { color: colors.text }]}>Fluxo de Caixa Detalhado</Text>
+              <Text style={[styles.unifiedSubtitle, { color: colors.textMuted }]}>Contas fixas, assinaturas ativas e parcelas programadas</Text>
             </View>
           </View>
         </View>
 
         <View style={[styles.threeColGrid, { flexDirection: isLargeScreen ? 'row' : 'column' }]}>
           {/* GRUPO 1: CONTAS FIXAS */}
-          <View style={[styles.unifiedColumn, { flex: isLargeScreen ? 1 : undefined, width: isLargeScreen ? undefined : '100%' }]}>
+          <View style={[styles.unifiedColumn, { backgroundColor: colorScheme === 'dark' ? '#151D30' : '#F8F9FA', borderColor: colors.borderGlass, flex: isLargeScreen ? 1 : undefined, width: isLargeScreen ? undefined : '100%' }]}>
             <View style={styles.columnHeader}>
-              <Home size={16} color="#0F5132" />
-              <Text style={styles.columnTitle}>Contas Fixas / Variáveis</Text>
+              <Home size={16} color={colorScheme === 'dark' ? colors.text : "#0F5132"} />
+              <Text style={[styles.columnTitle, { color: colors.text }]}>Contas Fixas / Variáveis</Text>
             </View>
             <View style={styles.listContainer}>
               {fixedAndVariableOutflows.length === 0 ? (
-                <Text style={styles.noItemsText}>Nenhuma conta cadastrada para este mês.</Text>
+                <Text style={[styles.noItemsText, { color: colors.textMuted }]}>Nenhuma conta cadastrada para este mês.</Text>
               ) : (
                 fixedAndVariableOutflows.slice(0, 5).map(item => (
                   <View key={item.id} style={styles.listItem}>
@@ -615,61 +631,61 @@ export default function DashboardScreen() {
                         styles.statusIndicator, 
                         { backgroundColor: item.status === 'ok' ? '#10B981' : '#CED4DA' }
                       ]} />
-                      <Text style={[styles.listItemTitle, item.status === 'ok' && styles.crossedText]} numberOfLines={1}>
+                      <Text style={[styles.listItemTitle, { color: colors.text }, item.status === 'ok' && styles.crossedText]} numberOfLines={1}>
                         {item.description}
                       </Text>
                     </View>
-                    <Text style={styles.listItemValue}>{formatCurrency(item.value)}</Text>
+                    <Text style={[styles.listItemValue, { color: colors.text }]}>{formatCurrency(item.value)}</Text>
                   </View>
                 ))
               )}
             </View>
-            <View style={styles.columnFooter}>
-              <Text style={styles.columnFooterLabel}>Total</Text>
-              <Text style={styles.columnFooterValue}>
+            <View style={[styles.columnFooter, { borderTopColor: colors.borderGlass }]}>
+              <Text style={[styles.columnFooterLabel, { color: colors.textMuted }]}>Total</Text>
+              <Text style={[styles.columnFooterValue, { color: colorScheme === 'dark' ? '#10B981' : '#0F5132' }]}>
                 {formatCurrency(fixedAndVariableTotal)}
               </Text>
             </View>
           </View>
 
           {/* GRUPO 2: ASSINATURAS DIGITAIS */}
-          <View style={[styles.unifiedColumn, { flex: isLargeScreen ? 1 : undefined, width: isLargeScreen ? undefined : '100%' }]}>
+          <View style={[styles.unifiedColumn, { backgroundColor: colorScheme === 'dark' ? '#151D30' : '#F8F9FA', borderColor: colors.borderGlass, flex: isLargeScreen ? 1 : undefined, width: isLargeScreen ? undefined : '100%' }]}>
             <View style={styles.columnHeader}>
-              <Play size={16} color="#0F5132" />
-              <Text style={styles.columnTitle}>Assinaturas Digitais</Text>
+              <Play size={16} color={colorScheme === 'dark' ? colors.text : "#0F5132"} />
+              <Text style={[styles.columnTitle, { color: colors.text }]}>Assinaturas Digitais</Text>
             </View>
             <View style={styles.listContainer}>
               {recurringOutflows.length === 0 ? (
-                <Text style={styles.noItemsText}>Nenhuma assinatura ativa.</Text>
+                <Text style={[styles.noItemsText, { color: colors.textMuted }]}>Nenhuma assinatura ativa.</Text>
               ) : (
                 recurringOutflows.slice(0, 5).map(item => (
                   <View key={item.id} style={styles.listItem}>
                     <View style={styles.listItemLeft}>
-                      <View style={[styles.statusIndicator, { backgroundColor: '#0F5132' }]} />
-                      <Text style={styles.listItemTitle} numberOfLines={1}>{item.description}</Text>
+                      <View style={[styles.statusIndicator, { backgroundColor: '#10B981' }]} />
+                      <Text style={[styles.listItemTitle, { color: colors.text }]} numberOfLines={1}>{item.description}</Text>
                     </View>
-                    <Text style={styles.listItemValue}>{formatCurrency(item.value)}</Text>
+                    <Text style={[styles.listItemValue, { color: colors.text }]}>{formatCurrency(item.value)}</Text>
                   </View>
                 ))
               )}
             </View>
-            <View style={styles.columnFooter}>
-              <Text style={styles.columnFooterLabel}>Total</Text>
-              <Text style={styles.columnFooterValue}>
+            <View style={[styles.columnFooter, { borderTopColor: colors.borderGlass }]}>
+              <Text style={[styles.columnFooterLabel, { color: colors.textMuted }]}>Total</Text>
+              <Text style={[styles.columnFooterValue, { color: colorScheme === 'dark' ? '#10B981' : '#0F5132' }]}>
                 {formatCurrency(recurringTotal)}
               </Text>
             </View>
           </View>
 
           {/* GRUPO 3: PARCELAMENTOS ATIVOS */}
-          <View style={[styles.unifiedColumn, { flex: isLargeScreen ? 1 : undefined, width: isLargeScreen ? undefined : '100%' }]}>
+          <View style={[styles.unifiedColumn, { backgroundColor: colorScheme === 'dark' ? '#151D30' : '#F8F9FA', borderColor: colors.borderGlass, flex: isLargeScreen ? 1 : undefined, width: isLargeScreen ? undefined : '100%' }]}>
             <View style={styles.columnHeader}>
-              <CreditCard size={16} color="#0F5132" />
-              <Text style={styles.columnTitle}>Parcelamentos Ativos</Text>
+              <CreditCard size={16} color={colorScheme === 'dark' ? colors.text : "#0F5132"} />
+              <Text style={[styles.columnTitle, { color: colors.text }]}>Parcelamentos Ativos</Text>
             </View>
             <View style={styles.listContainer}>
               {installmentOutflows.length === 0 ? (
-                <Text style={styles.noItemsText}>Nenhum parcelamento ativo neste mês.</Text>
+                <Text style={[styles.noItemsText, { color: colors.textMuted }]}>Nenhum parcelamento ativo neste mês.</Text>
               ) : (
                 installmentOutflows.slice(0, 5).map(item => {
                   const cardColor = getCardColorHex(item.cardUsed);
@@ -678,14 +694,14 @@ export default function DashboardScreen() {
                     <View key={item.id} style={styles.progressItem}>
                       <View style={styles.progressHeader}>
                         <View style={styles.progressTitleRow}>
-                          <Text style={styles.progressTitle} numberOfLines={1}>{item.description}</Text>
+                          <Text style={[styles.progressTitle, { color: colors.text }]} numberOfLines={1}>{item.description}</Text>
                           <View style={[styles.tagBrand, { backgroundColor: cardColor + '20' }]}>
                             <Text style={[styles.tagBrandText, { color: cardColor }]}>{cardName}</Text>
                           </View>
                         </View>
-                        <Text style={styles.progressCount}>{item.installmentRef}</Text>
+                        <Text style={[styles.progressCount, { color: colors.textMuted }]}>{item.installmentRef}</Text>
                       </View>
-                      <View style={styles.progressBarTrack}>
+                      <View style={[styles.progressBarTrack, { backgroundColor: colorScheme === 'dark' ? 'rgba(255,255,255,0.05)' : '#E9ECEF' }]}>
                         <View style={[
                           styles.progressBarFill, 
                           { 
@@ -696,15 +712,15 @@ export default function DashboardScreen() {
                           }
                         ]} />
                       </View>
-                      <Text style={styles.progressSubText}>Parcela: {formatCurrency(item.value)}</Text>
+                      <Text style={[styles.progressSubText, { color: colors.textMuted }]}>Parcela: {formatCurrency(item.value)}</Text>
                     </View>
                   );
                 })
               )}
             </View>
-            <View style={styles.columnFooter}>
-              <Text style={styles.columnFooterLabel}>Total</Text>
-              <Text style={styles.columnFooterValue}>
+            <View style={[styles.columnFooter, { borderTopColor: colors.borderGlass }]}>
+              <Text style={[styles.columnFooterLabel, { color: colors.textMuted }]}>Total</Text>
+              <Text style={[styles.columnFooterValue, { color: colorScheme === 'dark' ? '#10B981' : '#0F5132' }]}>
                 {formatCurrency(installmentTotal)}
               </Text>
             </View>

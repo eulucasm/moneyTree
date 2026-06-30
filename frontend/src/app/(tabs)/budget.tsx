@@ -11,6 +11,7 @@ import { ChevronLeft, ChevronRight, Check, Square, Trash2, X, PlusCircle, ArrowU
 import CardSelector from '../../components/CardSelector';
 import Toast from '../../components/Toast';
 import { formatCurrency } from '../../utils/format';
+import { useTheme } from '../../hooks/useTheme';
 
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
@@ -31,6 +32,7 @@ const detectCardTypeDynamic = (desc: string, cards: any[]): string | null => {
 };
 
 export default function BudgetScreen() {
+  const { theme: colorScheme, colors } = useTheme();
   const { width } = useWindowDimensions();
   const isLargeScreen = width >= 800;
 
@@ -80,16 +82,25 @@ export default function BudgetScreen() {
 
   const selectedPeriod = formatPeriod(currentYear, currentMonth);
 
-  // Month transitions
-  const contentOpacity = useRef(new Animated.Value(1)).current;
+  // Month transitions (fade-in & slide-up)
+  const contentOpacity = useRef(new Animated.Value(0)).current;
+  const contentTranslateY = useRef(new Animated.Value(15)).current;
 
   useEffect(() => {
-    contentOpacity.setValue(0.3);
-    Animated.timing(contentOpacity, {
-      toValue: 1,
-      duration: 300,
-      useNativeDriver: true,
-    }).start();
+    contentOpacity.setValue(0);
+    contentTranslateY.setValue(15);
+    Animated.parallel([
+      Animated.timing(contentOpacity, {
+        toValue: 1,
+        duration: 350,
+        useNativeDriver: true,
+      }),
+      Animated.timing(contentTranslateY, {
+        toValue: 0,
+        duration: 350,
+        useNativeDriver: true,
+      })
+    ]).start();
   }, [selectedPeriod]);
 
   const monthsNames = [
@@ -214,35 +225,40 @@ export default function BudgetScreen() {
   const totalVariableVal = variableOutflows.reduce((sum, o) => sum + o.value, 0);
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       {/* Month Selector Bar */}
-      <View style={styles.selectorBar}>
+      <View style={[styles.selectorBar, { backgroundColor: colorScheme === 'dark' ? '#151D30' : '#E8F5E9', borderBottomColor: colorScheme === 'dark' ? 'rgba(255, 255, 255, 0.05)' : '#C8E6C9' }]}>
         <TouchableOpacity onPress={handlePrevMonth} style={styles.selectorBtn}>
-          <ChevronLeft color="#0F5132" size={24} />
+          <ChevronLeft color={colorScheme === 'dark' ? colors.text : "#0F5132"} size={24} />
         </TouchableOpacity>
-        <Text style={styles.selectorText}>
+        <Text style={[styles.selectorText, { color: colors.text }]}>
           {monthsNames[currentMonth - 1]} {currentYear}
         </Text>
         <TouchableOpacity onPress={handleNextMonth} style={styles.selectorBtn}>
-          <ChevronRight color="#0F5132" size={24} />
+          <ChevronRight color={colorScheme === 'dark' ? colors.text : "#0F5132"} size={24} />
         </TouchableOpacity>
       </View>
 
       <ScrollView contentContainerStyle={[styles.scrollContent, { paddingBottom: width < 768 ? 110 : 24 }]}>
-        <Animated.View style={{ opacity: contentOpacity, width: '100%', gap: 16 }}>
+        <Animated.View style={{ 
+          opacity: contentOpacity, 
+          transform: [{ translateY: contentTranslateY }],
+          width: '100%', 
+          gap: 16 
+        }}>
         {/* Totais do Mês Card */}
-        <View style={styles.summaryCard}>
-          <Text style={styles.summaryTitle}>Resumo Orçamentário</Text>
+        <View style={[styles.summaryCard, { backgroundColor: colors.surface, borderColor: colors.borderGlass }]}>
+          <Text style={[styles.summaryTitle, { color: colors.text }]}>Resumo Orçamentário</Text>
           
           <View style={[
             styles.cardsRow,
             isLargeScreen ? styles.rowLayout : styles.columnLayout
           ]}>
             {/* Card 1: Entradas */}
-            <View style={[styles.innerCard, !isLargeScreen && styles.innerCardMobile]}>
+            <View style={[styles.innerCard, { backgroundColor: colors.background, borderColor: colors.borderGlass }, !isLargeScreen && styles.innerCardMobile]}>
               <View style={styles.innerCardHeader}>
                 <ArrowUpRight color="#10B981" size={20} />
-                <Text style={styles.innerCardLabel}>{t('common.entries')}</Text>
+                <Text style={[styles.innerCardLabel, { color: colors.textMuted }]}>{t('common.entries')}</Text>
               </View>
               <Text style={[styles.innerCardVal, { color: '#10B981' }]}>
                 {formatCurrency(summary.entriesTotal)}
@@ -250,10 +266,10 @@ export default function BudgetScreen() {
             </View>
  
             {/* Card 2: Saídas */}
-            <View style={[styles.innerCard, !isLargeScreen && styles.innerCardMobile]}>
+            <View style={[styles.innerCard, { backgroundColor: colors.background, borderColor: colors.borderGlass }, !isLargeScreen && styles.innerCardMobile]}>
               <View style={styles.innerCardHeader}>
                 <ArrowDownRight color="#DC3545" size={20} />
-                <Text style={styles.innerCardLabel}>{t('common.exits')}</Text>
+                <Text style={[styles.innerCardLabel, { color: colors.textMuted }]}>{t('common.exits')}</Text>
               </View>
               <Text style={[styles.innerCardVal, { color: '#DC3545' }]}>
                 {formatCurrency(summary.exitsTotal)}
@@ -261,26 +277,26 @@ export default function BudgetScreen() {
             </View>
  
             {/* Card 3: Balanço Geral */}
-            <View style={[styles.innerCard, styles.innerCardHighlighted, !isLargeScreen && styles.innerCardMobile]}>
+            <View style={[styles.innerCard, styles.innerCardHighlighted, { backgroundColor: colorScheme === 'dark' ? 'rgba(16, 185, 129, 0.1)' : '#E8F5E9', borderColor: colorScheme === 'dark' ? '#10B981' : '#C8E6C9' }, !isLargeScreen && styles.innerCardMobile]}>
               <View style={styles.innerCardHeader}>
-                <Coins color="#0F5132" size={20} />
-                <Text style={[styles.innerCardLabel, { color: '#0F5132', fontWeight: 'bold' }]}>Balanço Geral</Text>
+                <Coins color={colorScheme === 'dark' ? '#10B981' : "#0F5132"} size={20} />
+                <Text style={[styles.innerCardLabel, { color: colorScheme === 'dark' ? '#10B981' : '#0F5132', fontWeight: 'bold' }]}>Balanço Geral</Text>
               </View>
               
               <View style={styles.miniTable}>
                 <View style={styles.miniTableRow}>
-                  <Text style={styles.miniTableLabel}>{t('common.surplus')}:</Text>
-                  <Text style={styles.miniTableVal}>{formatCurrency(summary.previousMonthSurplus)}</Text>
+                  <Text style={[styles.miniTableLabel, { color: colorScheme === 'dark' ? colors.textMuted : '#6C757D' }]}>{t('common.surplus')}:</Text>
+                  <Text style={[styles.miniTableVal, { color: colors.text }]}>{formatCurrency(summary.previousMonthSurplus)}</Text>
                 </View>
                 <View style={styles.miniTableRow}>
-                  <Text style={styles.miniTableLabel}>{t('common.totalSavings')}:</Text>
-                  <Text style={[styles.miniTableVal, { color: '#0F5132' }]}>
+                  <Text style={[styles.miniTableLabel, { color: colorScheme === 'dark' ? colors.textMuted : '#6C757D' }]}>{t('common.totalSavings')}:</Text>
+                  <Text style={[styles.miniTableVal, { color: colorScheme === 'dark' ? '#10B981' : '#0F5132' }]}>
                     {formatCurrency(summary.totalSavings)}
                   </Text>
                 </View>
-                <View style={styles.dividerMini} />
+                <View style={[styles.dividerMini, { backgroundColor: colorScheme === 'dark' ? 'rgba(255,255,255,0.05)' : '#C8E6C9' }]} />
                 <View style={styles.miniTableRow}>
-                  <Text style={[styles.miniTableLabel, { fontWeight: '700' }]}>{t('common.forecast')}:</Text>
+                  <Text style={[styles.miniTableLabel, { color: colorScheme === 'dark' ? colors.text : '#212529', fontWeight: '700' }]}>{t('common.forecast')}:</Text>
                   <Text style={[
                     styles.miniTableVal,
                     { 
@@ -303,16 +319,16 @@ export default function BudgetScreen() {
         ]}>
           
           {/* Card 1: Entradas */}
-          <View style={[styles.sectionCard, !isLargeScreen && styles.sectionCardMobile]}>
+          <View style={[styles.sectionCard, { backgroundColor: colors.surface, borderColor: colors.borderGlass }, !isLargeScreen && styles.sectionCardMobile]}>
             <View style={styles.sectionHeaderInside}>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, flexShrink: 1 }}>
-                <Text style={styles.sectionTitleInside}>{t('common.entries')}</Text>
+                <Text style={[styles.sectionTitleInside, { color: colors.text }]}>{t('common.entries')}</Text>
                 <TouchableOpacity onPress={() => toggleInfo('entries')}>
-                  <Info color="#0F5132" size={16} />
+                  <Info color={colors.text} size={16} />
                 </TouchableOpacity>
               </View>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-                <Text style={styles.sectionHeaderTotal}>{formatCurrency(totalEntriesVal)}</Text>
+                <Text style={[styles.sectionHeaderTotal, { color: colors.text }]}>{formatCurrency(totalEntriesVal)}</Text>
                 <TouchableOpacity 
                   onPress={() => setAddModalType('entry')} 
                   style={styles.addButton}
@@ -323,23 +339,23 @@ export default function BudgetScreen() {
             </View>
 
             {visibleInfos['entries'] && (
-              <View style={styles.infoAlert}>
-                <Text style={styles.infoAlertText}>Destinado a pagamentos recebidos.</Text>
+              <View style={[styles.infoAlert, { backgroundColor: colorScheme === 'dark' ? 'rgba(255,255,255,0.05)' : '#E8F5E9', borderColor: colors.borderGlass }]}>
+                <Text style={[styles.infoAlertText, { color: colors.textMuted }]}>Destinado a pagamentos recebidos.</Text>
               </View>
             )}
 
             <View style={styles.itemsListFlat}>
               {currentEntries.length === 0 ? (
-                <Text style={styles.noItemsText}>Nenhuma entrada cadastrada neste mês.</Text>
+                <Text style={[styles.noItemsText, { color: colors.textMuted }]}>Nenhuma entrada cadastrada neste mês.</Text>
               ) : (
                 currentEntries.map((item, index) => {
                   const isLast = index === currentEntries.length - 1;
                   return (
-                    <View key={item.id} style={[styles.itemRowFlat, isLast && styles.lastItemRowFlat]}>
-                      <Text style={styles.itemDesc}>
+                    <View key={item.id} style={[styles.itemRowFlat, { borderBottomColor: colors.borderGlass }, isLast && styles.lastItemRowFlat]}>
+                      <Text style={[styles.itemDesc, { color: colors.text }]}>
                         {item.description}
                       </Text>
-                      <Text style={styles.itemVal}>{formatCurrency(item.value)}</Text>
+                      <Text style={[styles.itemVal, { color: colors.text }]}>{formatCurrency(item.value)}</Text>
                       <TouchableOpacity 
                         onPress={() => {
                           LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
@@ -358,16 +374,16 @@ export default function BudgetScreen() {
           </View>
 
           {/* Card 2: Despesas Fixas */}
-          <View style={[styles.sectionCard, !isLargeScreen && styles.sectionCardMobile]}>
+          <View style={[styles.sectionCard, { backgroundColor: colors.surface, borderColor: colors.borderGlass }, !isLargeScreen && styles.sectionCardMobile]}>
             <View style={styles.sectionHeaderInside}>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, flexShrink: 1 }}>
-                <Text style={styles.sectionTitleInside}>Despesas Fixas</Text>
+                <Text style={[styles.sectionTitleInside, { color: colors.text }]}>Despesas Fixas</Text>
                 <TouchableOpacity onPress={() => toggleInfo('fixed')}>
-                  <Info color="#0F5132" size={16} />
+                  <Info color={colors.text} size={16} />
                 </TouchableOpacity>
               </View>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-                <Text style={styles.sectionHeaderTotal}>{formatCurrency(totalFixedVal)}</Text>
+                <Text style={[styles.sectionHeaderTotal, { color: colors.text }]}>{formatCurrency(totalFixedVal)}</Text>
                 <TouchableOpacity 
                   onPress={() => setAddModalType('exit')} 
                   style={styles.addButton}
@@ -378,14 +394,14 @@ export default function BudgetScreen() {
             </View>
 
             {visibleInfos['fixed'] && (
-              <View style={styles.infoAlert}>
-                <Text style={styles.infoAlertText}>Destinado a contas fixas como aluguel, conta de água, conta de luz, conta de telefone.</Text>
+              <View style={[styles.infoAlert, { backgroundColor: colorScheme === 'dark' ? 'rgba(255,255,255,0.05)' : '#E8F5E9', borderColor: colors.borderGlass }]}>
+                <Text style={[styles.infoAlertText, { color: colors.textMuted }]}>Destinado a contas fixas como aluguel, conta de água, conta de luz, conta de telefone.</Text>
               </View>
             )}
 
             <View style={styles.itemsListFlat}>
               {fixedOutflows.length === 0 ? (
-                <Text style={styles.noItemsText}>Nenhuma despesa fixa cadastrada neste mês.</Text>
+                <Text style={[styles.noItemsText, { color: colors.textMuted }]}>Nenhuma despesa fixa cadastrada neste mês.</Text>
               ) : (
                 fixedOutflows.map((item, index) => {
                   const isLast = index === fixedOutflows.length - 1;
@@ -394,7 +410,7 @@ export default function BudgetScreen() {
                     .filter(inst => inst.cardUsed === cardType)
                     .reduce((sum, inst) => sum + inst.value, 0) : 0;
                   return (
-                    <View key={item.id} style={[styles.itemRowFlat, isLast && styles.lastItemRowFlat, { flexDirection: 'column', alignItems: 'stretch', opacity: item.status === 'ok' ? 0.6 : 1.0 }]}>
+                    <View key={item.id} style={[styles.itemRowFlat, { borderBottomColor: colors.borderGlass }, isLast && styles.lastItemRowFlat, { flexDirection: 'column', alignItems: 'stretch', opacity: item.status === 'ok' ? 0.6 : 1.0 }]}>
                       <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                         <TouchableOpacity 
                           onPress={() => {
@@ -406,16 +422,17 @@ export default function BudgetScreen() {
                           {item.status === 'ok' ? (
                             <Check color="#10B981" size={20} />
                           ) : (
-                            <Square color="#CED4DA" size={20} />
+                            <Square color={colorScheme === 'dark' ? colors.textMuted : "#CED4DA"} size={20} />
                           )}
                         </TouchableOpacity>
                         <Text style={[
                           styles.itemDesc,
+                          { color: colors.text },
                           item.status === 'ok' && styles.crossedText
                         ]}>
                           {item.description}
                         </Text>
-                        <Text style={styles.itemVal}>{formatCurrency(item.value)}</Text>
+                        <Text style={[styles.itemVal, { color: colors.text }]}>{formatCurrency(item.value)}</Text>
                         <TouchableOpacity 
                           onPress={() => {
                             LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
@@ -428,8 +445,8 @@ export default function BudgetScreen() {
                         </TouchableOpacity>
                       </View>
                       {cardSum > 0 && (
-                        <View style={styles.cardComparisonRowFlat}>
-                          <Text style={styles.cardComparisonTextFlat}>
+                        <View style={[styles.cardComparisonRowFlat, { backgroundColor: colorScheme === 'dark' ? 'rgba(255,255,255,0.02)' : '#F8F9FA' }]}>
+                          <Text style={[styles.cardComparisonTextFlat, { color: colors.textMuted }]}>
                             Previsão de faturas: {formatCurrency(cardSum)} | Diferença: {formatCurrency(item.value - cardSum)}
                           </Text>
                         </View>
@@ -442,42 +459,42 @@ export default function BudgetScreen() {
           </View>
 
           {/* Card 3: Recorrentes */}
-          <View style={[styles.sectionCard, !isLargeScreen && styles.sectionCardMobile]}>
+          <View style={[styles.sectionCard, { backgroundColor: colors.surface, borderColor: colors.borderGlass }, !isLargeScreen && styles.sectionCardMobile]}>
             <View style={styles.sectionHeaderInside}>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, flexShrink: 1 }}>
-                <Text style={styles.sectionTitleInside}>{t('common.recurring')} ("Todo mês")</Text>
+                <Text style={[styles.sectionTitleInside, { color: colors.text }]}>{t('common.recurring')} ("Todo mês")</Text>
                 <TouchableOpacity onPress={() => toggleInfo('recurrent')}>
-                  <Info color="#0F5132" size={16} />
+                  <Info color={colors.text} size={16} />
                 </TouchableOpacity>
               </View>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-                <Text style={styles.sectionHeaderTotal}>{formatCurrency(totalRecurringVal)}</Text>
+                <Text style={[styles.sectionHeaderTotal, { color: colors.text }]}>{formatCurrency(totalRecurringVal)}</Text>
                 <TouchableOpacity 
                   onPress={() => setAddModalType('recurring')} 
                   style={styles.addButton}
                 >
-                  <PlusCircle color="#0F5132" size={20} />
+                  <PlusCircle color={colorScheme === 'dark' ? colors.text : "#0F5132"} size={20} />
                 </TouchableOpacity>
               </View>
             </View>
 
             {visibleInfos['recurrent'] && (
-              <View style={styles.infoAlert}>
-                <Text style={styles.infoAlertText}>Destinado a assinaturas (ex: Netflix, Prime Video, Google, Spotify).</Text>
+              <View style={[styles.infoAlert, { backgroundColor: colorScheme === 'dark' ? 'rgba(255,255,255,0.05)' : '#E8F5E9', borderColor: colors.borderGlass }]}>
+                <Text style={[styles.infoAlertText, { color: colors.textMuted }]}>Destinado a assinaturas (ex: Netflix, Prime Video, Google, Spotify).</Text>
               </View>
             )}
 
             <View style={styles.itemsListFlat}>
               {recurrings.length === 0 ? (
-                <Text style={styles.noItemsText}>Nenhuma despesa recorrente cadastrada.</Text>
+                <Text style={[styles.noItemsText, { color: colors.textMuted }]}>Nenhuma despesa recorrente cadastrada.</Text>
               ) : (
                 recurrings.map((item, index) => {
                   const isLast = index === recurrings.length - 1;
                   return (
-                    <View key={item.id} style={[styles.itemRowFlat, isLast && styles.lastItemRowFlat]}>
-                      <RefreshCw color="#0F5132" size={16} style={{ marginRight: 8 }} />
-                      <Text style={styles.itemDesc}>{item.description}</Text>
-                      <Text style={styles.itemVal}>{formatCurrency(item.value)}</Text>
+                    <View key={item.id} style={[styles.itemRowFlat, { borderBottomColor: colors.borderGlass }, isLast && styles.lastItemRowFlat]}>
+                      <RefreshCw color={colorScheme === 'dark' ? colors.text : "#0F5132"} size={16} style={{ marginRight: 8 }} />
+                      <Text style={[styles.itemDesc, { color: colors.text }]}>{item.description}</Text>
+                      <Text style={[styles.itemVal, { color: colors.text }]}>{formatCurrency(item.value)}</Text>
                       <TouchableOpacity 
                         onPress={() => {
                           LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
@@ -496,46 +513,46 @@ export default function BudgetScreen() {
           </View>
 
           {/* Card 4: Compras Parceladas */}
-          <View style={[styles.sectionCard, !isLargeScreen && styles.sectionCardMobile]}>
+          <View style={[styles.sectionCard, { backgroundColor: colors.surface, borderColor: colors.borderGlass }, !isLargeScreen && styles.sectionCardMobile]}>
             <View style={styles.sectionHeaderInside}>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, flexShrink: 1 }}>
-                <Text style={styles.sectionTitleInside}>Compras Parceladas</Text>
+                <Text style={[styles.sectionTitleInside, { color: colors.text }]}>Compras Parceladas</Text>
                 <TouchableOpacity onPress={() => toggleInfo('installments')}>
-                  <Info color="#0F5132" size={16} />
+                  <Info color={colors.text} size={16} />
                 </TouchableOpacity>
               </View>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-                <Text style={styles.sectionHeaderTotal}>{formatCurrency(totalInstallmentsVal)}</Text>
+                <Text style={[styles.sectionHeaderTotal, { color: colors.text }]}>{formatCurrency(totalInstallmentsVal)}</Text>
                 <TouchableOpacity 
                   onPress={handleOpenInstallmentModal} 
                   style={styles.addButton}
                 >
-                  <PlusCircle color="#0F5132" size={20} />
+                  <PlusCircle color={colorScheme === 'dark' ? colors.text : "#0F5132"} size={20} />
                 </TouchableOpacity>
               </View>
             </View>
 
             {visibleInfos['installments'] && (
-              <View style={styles.infoAlert}>
-                <Text style={styles.infoAlertText}>Destinado a compras com cartões na forma de parcelamento.</Text>
+              <View style={[styles.infoAlert, { backgroundColor: colorScheme === 'dark' ? 'rgba(255,255,255,0.05)' : '#E8F5E9', borderColor: colors.borderGlass }]}>
+                <Text style={[styles.infoAlertText, { color: colors.textMuted }]}>Destinado a compras com cartões na forma de parcelamento.</Text>
               </View>
             )}
 
             <View style={styles.itemsListFlat}>
               {installmentOutflows.length === 0 ? (
-                <Text style={styles.noItemsText}>Nenhuma parcela de cartão vencendo neste mês.</Text>
+                <Text style={[styles.noItemsText, { color: colors.textMuted }]}>Nenhuma parcela de cartão vencendo neste mês.</Text>
               ) : (
                 installmentOutflows.map((item, index) => {
                   const isLast = index === installmentOutflows.length - 1;
                   return (
-                    <View key={item.id} style={[styles.itemRowFlat, isLast && styles.lastItemRowFlat]}>
+                    <View key={item.id} style={[styles.itemRowFlat, { borderBottomColor: colors.borderGlass }, isLast && styles.lastItemRowFlat]}>
                       <Text style={[
                         styles.itemDesc,
-                        { flex: 1 }
+                        { flex: 1, color: colors.text }
                       ]} numberOfLines={1}>
                         {item.description}
                       </Text>
-                      <Text style={styles.itemVal}>{formatCurrency(item.value)}</Text>
+                      <Text style={[styles.itemVal, { color: colors.text }]}>{formatCurrency(item.value)}</Text>
                     </View>
                   );
                 })
@@ -544,16 +561,16 @@ export default function BudgetScreen() {
           </View>
 
           {/* Card 5: Despesas Variadas */}
-          <View style={[styles.sectionCard, !isLargeScreen && styles.sectionCardMobile]}>
+          <View style={[styles.sectionCard, { backgroundColor: colors.surface, borderColor: colors.borderGlass }, !isLargeScreen && styles.sectionCardMobile]}>
             <View style={styles.sectionHeaderInside}>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, flexShrink: 1 }}>
-                <Text style={styles.sectionTitleInside}>Despesas Variadas</Text>
+                <Text style={[styles.sectionTitleInside, { color: colors.text }]}>Despesas Variadas</Text>
                 <TouchableOpacity onPress={() => toggleInfo('variables')}>
-                  <Info color="#0F5132" size={16} />
+                  <Info color={colors.text} size={16} />
                 </TouchableOpacity>
               </View>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-                <Text style={styles.sectionHeaderTotal}>{formatCurrency(totalVariableVal)}</Text>
+                <Text style={[styles.sectionHeaderTotal, { color: colors.text }]}>{formatCurrency(totalVariableVal)}</Text>
                 <TouchableOpacity 
                   onPress={() => setAddModalType('variable')} 
                   style={styles.addButton}
@@ -564,19 +581,19 @@ export default function BudgetScreen() {
             </View>
 
             {visibleInfos['variables'] && (
-              <View style={styles.infoAlert}>
-                <Text style={styles.infoAlertText}>Destinado a gastos não previstos do dia a dia.</Text>
+              <View style={[styles.infoAlert, { backgroundColor: colorScheme === 'dark' ? 'rgba(255,255,255,0.05)' : '#E8F5E9', borderColor: colors.borderGlass }]}>
+                <Text style={[styles.infoAlertText, { color: colors.textMuted }]}>Destinado a gastos não previstos do dia a dia.</Text>
               </View>
             )}
 
             <View style={styles.itemsListFlat}>
               {variableOutflows.length === 0 ? (
-                <Text style={styles.noItemsText}>Nenhuma despesa variada cadastrada neste mês.</Text>
+                <Text style={[styles.noItemsText, { color: colors.textMuted }]}>Nenhuma despesa variada cadastrada neste mês.</Text>
               ) : (
                 variableOutflows.map((item, index) => {
                   const isLast = index === variableOutflows.length - 1;
                   return (
-                    <View key={item.id} style={[styles.itemRowFlat, isLast && styles.lastItemRowFlat, { opacity: item.status === 'ok' ? 0.6 : 1.0 }]}>
+                    <View key={item.id} style={[styles.itemRowFlat, { borderBottomColor: colors.borderGlass }, isLast && styles.lastItemRowFlat, { opacity: item.status === 'ok' ? 0.6 : 1.0 }]}>
                       <TouchableOpacity 
                         onPress={() => {
                           LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
@@ -587,16 +604,17 @@ export default function BudgetScreen() {
                         {item.status === 'ok' ? (
                           <Check color="#10B981" size={20} />
                         ) : (
-                          <Square color="#CED4DA" size={20} />
+                          <Square color={colorScheme === 'dark' ? colors.textMuted : "#CED4DA"} size={20} />
                         )}
                       </TouchableOpacity>
                       <Text style={[
                         styles.itemDesc,
+                        { color: colors.text },
                         item.status === 'ok' && styles.crossedText
                       ]}>
                         {item.description}
                       </Text>
-                      <Text style={styles.itemVal}>{formatCurrency(item.value)}</Text>
+                      <Text style={[styles.itemVal, { color: colors.text }]}>{formatCurrency(item.value)}</Text>
                       <TouchableOpacity 
                         onPress={() => {
                           LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);

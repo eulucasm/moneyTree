@@ -4,8 +4,10 @@ import { useFinancials, UserProfile } from '../../context/FinancialContext';
 import GlassCard from '../../components/GlassCard';
 import { Sparkles, CheckCircle2, Award, Zap, Shield } from 'lucide-react-native';
 import Toast from '../../components/Toast';
+import { useTheme } from '../../hooks/useTheme';
 
 export default function PlansScreen() {
+  const { theme: colorScheme, colors } = useTheme();
   const { width } = useWindowDimensions();
   const isLargeScreen = width >= 768;
 
@@ -70,16 +72,16 @@ export default function PlansScreen() {
   ];
 
   return (
-    <View style={{ flex: 1 }}>
+    <View style={{ flex: 1, backgroundColor: colors.background }}>
       <ScrollView
-        style={styles.container}
+        style={[styles.container, { backgroundColor: colors.background }]}
         contentContainerStyle={[styles.content, { paddingBottom: width < 768 ? 110 : 24 }]}
       >
         <View style={styles.header}>
-          <Sparkles color="#0F5132" size={32} />
+          <Sparkles color={colorScheme === 'dark' ? colors.text : "#0F5132"} size={32} />
           <View style={{ flex: 1 }}>
-            <Text style={styles.headerText}>Planos de Assinatura</Text>
-            <Text style={styles.headerSubtitle}>
+            <Text style={[styles.headerText, { color: colors.text }]}>Planos de Assinatura</Text>
+            <Text style={[styles.headerSubtitle, { color: colors.textMuted }]}>
               Escolha a melhor opção para impulsionar e gerenciar sua vida financeira.
             </Text>
           </View>
@@ -100,7 +102,7 @@ export default function PlansScreen() {
                 ]}
               >
                 <View style={styles.planHeader}>
-                  <View style={[styles.iconWrapper, { backgroundColor: p.bg }]}>
+                  <View style={[styles.iconWrapper, { backgroundColor: colorScheme === 'dark' ? 'rgba(255,255,255,0.05)' : p.bg }]}>
                     <PlanIcon color={p.color} size={28} />
                   </View>
                   {isActive && (
@@ -110,20 +112,20 @@ export default function PlansScreen() {
                   )}
                 </View>
 
-                <Text style={styles.planName}>{p.name}</Text>
+                <Text style={[styles.planName, { color: colors.text }]}>{p.name}</Text>
 
                 <View style={styles.priceContainer}>
-                  <Text style={styles.priceValue}>{p.price}</Text>
-                  <Text style={styles.pricePeriod}>{p.period}</Text>
+                  <Text style={[styles.priceValue, { color: colors.text }]}>{p.price}</Text>
+                  <Text style={[styles.pricePeriod, { color: colors.textMuted }]}>{p.period}</Text>
                 </View>
 
-                <View style={styles.separator} />
+                <View style={[styles.separator, { backgroundColor: colors.borderGlass }]} />
 
                 <View style={styles.featuresList}>
                   {p.features.map((feat, idx) => (
                     <View key={idx} style={styles.featureRow}>
                       <CheckCircle2 size={16} color="#10B981" style={{ marginRight: 8, marginTop: 2 }} />
-                      <Text style={styles.featureText}>{feat}</Text>
+                      <Text style={[styles.featureText, { color: colors.text }]}>{feat}</Text>
                     </View>
                   ))}
                 </View>
