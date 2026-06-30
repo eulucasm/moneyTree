@@ -32,6 +32,21 @@ if (process.env.FIREBASE_SERVICE_ACCOUNT) {
   console.log('[Firebase] Running in DEV/MOCK authentication mode. Set FIREBASE_SERVICE_ACCOUNT to enable token verification.');
 }
 
+// Helper to decode JWT payload without verification (for local development mock mode)
+const decodeJwtWithoutVerification = (token: string) => {
+  try {
+    const parts = token.split('.');
+    if (parts.length !== 3) return null;
+    const payloadBase64 = parts[1];
+    const base64 = payloadBase64.replace(/-/g, '+').replace(/_/g, '/');
+    const jsonPayload = Buffer.from(base64, 'base64').toString('utf8');
+    return JSON.parse(jsonPayload);
+  } catch (err) {
+    console.error('[Auth] Failed to decode JWT locally:', err);
+    return null;
+  }
+};
+
 // Authentication Middleware
 interface AuthenticatedRequest extends Request {
   userId?: string;
@@ -53,6 +68,16 @@ const authMiddleware = async (req: AuthenticatedRequest, res: Response, next: Ne
 
   // Firebase Real Authentication
   try {
+    // If running in local DEV/MOCK mode without Firebase service account, extract uid from token payload directly
+    if (!process.env.FIREBASE_SERVICE_ACCOUNT) {
+      const decoded = decodeJwtWithoutVerification(token);
+      if (decoded && decoded.sub) {
+        req.userId = decoded.sub;
+        return next();
+      }
+      return res.status(401).json({ error: 'Invalid local/mock token structure' });
+    }
+
     const decodedToken = await (admin as any).auth().verifyIdToken(token);
     req.userId = decodedToken.uid;
     next();

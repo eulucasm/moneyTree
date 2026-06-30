@@ -24,7 +24,11 @@ export default function ChartsScreen() {
   const { 
     getMonthlySummary, 
     getMonthlyOutflowsList, 
-    savingsGoal 
+    savingsGoal,
+    entries,
+    exits,
+    recurrings,
+    purchases
   } = useFinancials();
 
   const now = new Date();
@@ -40,33 +44,36 @@ export default function ChartsScreen() {
   ];
 
   // 1. Generate lists and statistics for the 7 months projection (June to Dec 2025)
-  const timelineData = [];
-  for (let i = 0; i < 7; i++) {
-    const monthIndex = (currentMonth - 1 + i) % 12;
-    const yearOffset = Math.floor((currentMonth - 1 + i) / 12);
-    const year = currentYear + yearOffset;
-    const monthStr = `${year}-${String(monthIndex + 1).padStart(2, '0')}`;
-    
-    const summary = getMonthlySummary(monthStr);
-    const outflowsList = getMonthlyOutflowsList(monthStr);
+  const timelineData = React.useMemo(() => {
+    const list = [];
+    for (let i = 0; i < 7; i++) {
+      const monthIndex = (currentMonth - 1 + i) % 12;
+      const yearOffset = Math.floor((currentMonth - 1 + i) / 12);
+      const year = currentYear + yearOffset;
+      const monthStr = `${year}-${String(monthIndex + 1).padStart(2, '0')}`;
+      
+      const summary = getMonthlySummary(monthStr);
+      const outflowsList = getMonthlyOutflowsList(monthStr);
 
-    // Group exit types
-    const fixedVal = outflowsList.filter(o => o.type === 'fixed').reduce((sum, o) => sum + o.value, 0);
-    const variableVal = outflowsList.filter(o => o.type === 'variable').reduce((sum, o) => sum + o.value, 0);
-    const recurringVal = outflowsList.filter(o => o.type === 'recurring').reduce((sum, o) => sum + o.value, 0);
-    const installmentVal = outflowsList.filter(o => o.type === 'installment').reduce((sum, o) => sum + o.value, 0);
+      // Group exit types
+      const fixedVal = outflowsList.filter(o => o.type === 'fixed').reduce((sum, o) => sum + o.value, 0);
+      const variableVal = outflowsList.filter(o => o.type === 'variable').reduce((sum, o) => sum + o.value, 0);
+      const recurringVal = outflowsList.filter(o => o.type === 'recurring').reduce((sum, o) => sum + o.value, 0);
+      const installmentVal = outflowsList.filter(o => o.type === 'installment').reduce((sum, o) => sum + o.value, 0);
 
-    timelineData.push({
-      monthStr,
-      monthName: monthsNames[monthIndex],
-      year,
-      summary,
-      fixedVal,
-      variableVal,
-      recurringVal,
-      installmentVal,
-    });
-  }
+      list.push({
+        monthStr,
+        monthName: monthsNames[monthIndex],
+        year,
+        summary,
+        fixedVal,
+        variableVal,
+        recurringVal,
+        installmentVal,
+      });
+    }
+    return list;
+  }, [currentMonth, currentYear, getMonthlySummary, getMonthlyOutflowsList, entries, exits, recurrings, purchases]);
 
   // 2. Select data for active month
   const selectedData = timelineData.find(d => d.monthStr === selectedPeriod) || timelineData[0];

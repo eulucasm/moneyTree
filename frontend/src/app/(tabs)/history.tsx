@@ -34,6 +34,9 @@ export default function HistoryScreen() {
   const getMonthlySummary = useFinanceStore(s => s.getMonthlySummary);
   const getMonthlyOutflowsList = useFinanceStore(s => s.getMonthlyOutflowsList);
   const entries = useFinanceStore(s => s.entries);
+  const exits = useFinanceStore(s => s.exits);
+  const recurrings = useFinanceStore(s => s.recurrings);
+  const purchases = useFinanceStore(s => s.purchases);
   const creditCards = useFinanceStore(s => s.creditCards);
   const userProfile = useAuthStore(s => s.userProfile);
   const userCreatedAt = userProfile?.createdAt || '2025-06';
@@ -95,7 +98,7 @@ export default function HistoryScreen() {
   const modalSummary = React.useMemo(() => {
     if (!selectedMonthDetails) return null;
     return getMonthlySummary(selectedMonthDetails.monthStr, userCreatedAt);
-  }, [selectedMonthDetails, getMonthlySummary, userCreatedAt]);
+  }, [selectedMonthDetails, getMonthlySummary, userCreatedAt, entries, exits, recurrings, purchases]);
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>

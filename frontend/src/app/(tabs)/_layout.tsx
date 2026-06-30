@@ -44,7 +44,6 @@ function CustomHeader() {
     { label: 'Faturas', path: '/installments' },
     { label: 'Histórico', path: '/history' },
     { label: 'Gráficos', path: '/charts' },
-    { label: 'Planos', path: '/plans' },
   ];
 
   const handleMouseEnter = () => {
@@ -224,17 +223,17 @@ export default function TabLayout() {
   const colorScheme = useColorScheme();
   const colors = Theme[colorScheme];
 
-  // if (!authInitialized) {
-  //   return (
-  //     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.background }}>
-  //       <Text style={{ fontSize: 16, color: colors.text, fontWeight: 'bold' }}>Carregando...</Text>
-  //     </View>
-  //   );
-  // }
+  if (!authInitialized) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.background }}>
+        <Text style={{ fontSize: 16, color: colors.text, fontWeight: 'bold' }}>Carregando...</Text>
+      </View>
+    );
+  }
 
-  // if (!user) {
-  //   return <Redirect href="/login" />;
-  // }
+  if (!user) {
+    return <Redirect href="/login" />;
+  }
 
   return (
     <Tabs
@@ -287,6 +286,7 @@ export default function TabLayout() {
       <Tabs.Screen 
         name="plans" 
         options={{ 
+          href: null,
           title: 'Planos',
           tabBarIcon: ({ color, size }) => <Sparkles color={color} size={size} />
         }} 

@@ -46,6 +46,9 @@ export default function DashboardScreen() {
   const addCreditCard = useFinanceStore(s => s.addCreditCard);
   const updateCreditCardLimit = useFinanceStore(s => s.updateCreditCardLimit);
   const deleteCreditCard = useFinanceStore(s => s.deleteCreditCard);
+  const entries = useFinanceStore(s => s.entries);
+  const exits = useFinanceStore(s => s.exits);
+  const recurrings = useFinanceStore(s => s.recurrings);
   
   const userProfile = useAuthStore(s => s.userProfile);
   const userCreatedAt = userProfile?.createdAt || '2025-06';
@@ -185,8 +188,8 @@ export default function DashboardScreen() {
   }
 
   // Get metrics for current month
-  const summary = React.useMemo(() => getMonthlySummary(selectedPeriod, userCreatedAt), [selectedPeriod, getMonthlySummary, userCreatedAt, purchases, savingsLogs]);
-  const currentOutflows = React.useMemo(() => getMonthlyOutflowsList(selectedPeriod, userCreatedAt), [selectedPeriod, getMonthlyOutflowsList, userCreatedAt, purchases]);
+  const summary = React.useMemo(() => getMonthlySummary(selectedPeriod, userCreatedAt), [selectedPeriod, getMonthlySummary, userCreatedAt, purchases, savingsLogs, entries, exits, recurrings]);
+  const currentOutflows = React.useMemo(() => getMonthlyOutflowsList(selectedPeriod, userCreatedAt), [selectedPeriod, getMonthlyOutflowsList, userCreatedAt, purchases, exits, recurrings]);
 
   // Group outflows
   const fixedAndVariableOutflows = currentOutflows.filter(o => o.type === 'fixed' || o.type === 'variable');
