@@ -34,3 +34,9 @@ logs/
 # System files
 .DS_Store
 Thumbs.db
+
+# Credentials & Service Accounts
+*-firebase-adminsdk-*.json
+*service-account*.json
+*credentials*.json
+secrets*.json
