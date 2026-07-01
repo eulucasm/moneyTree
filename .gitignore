@@ -47,3 +47,6 @@ skill/
 
 # Agent configuration files
 .gemini/
+
+# Package da IDE
+.vscode/
