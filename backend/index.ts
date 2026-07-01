@@ -105,6 +105,16 @@ const decodeJwtWithoutVerification = (token: string) => {
   }
 };
 
+// Helper function to safely send 500 error responses without leaking internal schema or connection details in production
+const sendServerError = (res: Response, prefix: string, err: any) => {
+  console.error(`${prefix}:`, err);
+  const response: Record<string, any> = { error: 'Internal server error' };
+  if (process.env.NODE_ENV !== 'production') {
+    response.details = err.message || String(err);
+  }
+  return res.status(500).json(response);
+};
+
 // Authentication Middleware
 interface AuthenticatedRequest extends Request {
   userId?: string;
@@ -197,8 +207,7 @@ app.get('/api/user/profile', authMiddleware, async (req: AuthenticatedRequest, r
       createdAt: user.createdAt,
     });
   } catch (err: any) {
-    console.error('[Profile] Error fetching/creating user profile:', err);
-    return res.status(500).json({ error: 'Internal server error', details: err.message });
+    return sendServerError(res, '[Profile] Error fetching/creating user profile', err);
   }
 });
 
@@ -244,8 +253,7 @@ app.put('/api/user/profile', authMiddleware, async (req: AuthenticatedRequest, r
 
     return res.json(user);
   } catch (err: any) {
-    console.error('[Profile] Error updating profile:', err);
-    return res.status(500).json({ error: 'Internal server error', details: err.message });
+    return sendServerError(res, '[Profile] Error updating profile', err);
   }
 });
 
@@ -258,8 +266,7 @@ app.delete('/api/user/profile', authMiddleware, async (req: AuthenticatedRequest
     });
     return res.json({ success: true, message: 'User account wiped successfully.' });
   } catch (err: any) {
-    console.error('[Profile] Error deleting account:', err);
-    return res.status(500).json({ error: 'Internal server error', details: err.message });
+    return sendServerError(res, '[Profile] Error deleting account', err);
   }
 });
 
@@ -352,8 +359,7 @@ app.get('/api/sync', authMiddleware, async (req: AuthenticatedRequest, res: Resp
       updatedAt: user.updatedAt.getTime(),
     });
   } catch (err: any) {
-    console.error('[Sync] Error pulling user data:', err);
-    return res.status(500).json({ error: 'Internal server error', details: err.message });
+    return sendServerError(res, '[Sync] Error pulling user data', err);
   }
 });
 
@@ -553,8 +559,7 @@ app.post('/api/sync', authMiddleware, async (req: AuthenticatedRequest, res: Res
 
     return res.json({ success: true, timestamp: Date.now() });
   } catch (err: any) {
-    console.error('[Sync] Error pushing user data:', err);
-    return res.status(500).json({ error: 'Internal server error', details: err.message });
+    return sendServerError(res, '[Sync] Error pushing user data', err);
   }
 });
 
@@ -568,7 +573,7 @@ const adminMiddleware = async (req: AuthenticatedRequest, res: Response, next: N
     }
     next();
   } catch (err) {
-    return res.status(500).json({ error: 'Internal server error in admin verification' });
+    return sendServerError(res, '[Admin] Internal error in admin verification', err);
   }
 };
 
@@ -612,8 +617,7 @@ app.get('/api/admin/users', authMiddleware, adminMiddleware, async (req: Authent
 
     return res.json(formatted);
   } catch (err: any) {
-    console.error('[Admin] Error fetching all users:', err);
-    return res.status(500).json({ error: 'Internal server error', details: err.message });
+    return sendServerError(res, '[Admin] Error fetching all users', err);
   }
 });
 
@@ -628,8 +632,7 @@ app.put('/api/admin/users/:userId/plan', authMiddleware, adminMiddleware, async 
     });
     return res.json(updated);
   } catch (err: any) {
-    console.error('[Admin] Error updating user plan:', err);
-    return res.status(500).json({ error: 'Internal server error', details: err.message });
+    return sendServerError(res, '[Admin] Error updating user plan', err);
   }
 });
 
@@ -644,8 +647,7 @@ app.put('/api/admin/users/:userId/suspension', authMiddleware, adminMiddleware, 
     });
     return res.json(updated);
   } catch (err: any) {
-    console.error('[Admin] Error toggling suspension:', err);
-    return res.status(500).json({ error: 'Internal server error', details: err.message });
+    return sendServerError(res, '[Admin] Error toggling suspension', err);
   }
 });
 
@@ -658,8 +660,7 @@ app.delete('/api/admin/users/:userId', authMiddleware, adminMiddleware, async (r
     });
     return res.json({ success: true });
   } catch (err: any) {
-    console.error('[Admin] Error deleting user:', err);
-    return res.status(500).json({ error: 'Internal server error', details: err.message });
+    return sendServerError(res, '[Admin] Error deleting user', err);
   }
 });
 
