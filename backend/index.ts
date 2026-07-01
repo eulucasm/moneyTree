@@ -14,13 +14,18 @@ const app = express();
 // Disable x-powered-by header explicitly
 app.disable('x-powered-by');
 
-// Secure headers via Helmet
-app.use(helmet());
+// Secure headers via Helmet (relaxed cross-origin policies for API access)
+app.use(helmet({
+  crossOriginResourcePolicy: { policy: 'cross-origin' },
+  crossOriginOpenerPolicy: { policy: 'unsafe-none' },
+}));
 
 // Dynamic CORS configurations
 const allowedOrigins = [
   'http://localhost:8081',
   'http://127.0.0.1:8081',
+  'http://localhost:19006',
+  'http://127.0.0.1:19006',
   'https://moneytree-app-eight.vercel.app',
 ];
 
@@ -38,7 +43,8 @@ app.use(cors({
     }
     
     return callback(new Error('Acesso não permitido por política de CORS'));
-  }
+  },
+  credentials: true,
 }));
 
 // Rate Limiter to prevent DOS / Bruteforce attacks (Allows 300 requests per 15 minutes)
