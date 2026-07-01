@@ -88,7 +88,6 @@ gantt
 ## 2.7. ⏳ O Que Ainda Falta (Pendências)
 
 - [ ] Importar/Migrar dados reais históricos da planilha `New Contas 2025.xlsx` para testes avançados locais.
-- [ ] Validar fluxos de transação de ponta a ponta e tratar cenários de rede offline/online no app.
 
 ---
 
@@ -99,6 +98,13 @@ gantt
 - **Decisão (30/06/2026):** Hospedagem do banco PostgreSQL na Supabase. Devido a restrições de rede local (IPv4) com a porta direta IPv6 da Supabase, foi adotado o uso de Connection Pooler (Supavisor) na porta `5432` com host pooler IPv4 (`aws-1-sa-east-1.pooler.supabase.com`) no backend.
 - **Decisão (30/06/2026):** Segurança de Credenciais. Para evitar exposição de chaves no repositório Git, as credenciais do Firebase no frontend foram migradas para variáveis de ambiente locais usando o padrão do Expo (`EXPO_PUBLIC_...`) no arquivo `frontend/.env`.
 - **Decisão (30/06/2026):** Alternância manual de temas. O app agora utiliza uma Zustand store com persistência local em AsyncStorage para permitir que o usuário mude livremente entre Light e Dark via cabeçalho.
+- **Decisão (30/06/2026):** Deploy Serverless Vercel. O backend foi reestruturado para rodar como Serverless Functions na Vercel, com suporte a CORS seguro e conexões pooling persistentes ao Supabase PostgreSQL.
+- **Decisão (30/06/2026):** Bypass local de JWT. Para acelerar o desenvolvimento local, implementou-se um decodificador de token Firebase JWT sem assinatura criptográfica (apenas decodificação base64) para ambientes onde as chaves de serviço do Firebase não estão presentes no `.env` do backend, mantendo a autenticação segura estrita ativa em produção.
+- **Decisão (30/06/2026):** Ocultação de Planos. A aba e a barra de menu superior de planos foram ocultadas com `href: null` até a integração das APIs de checkout (Stripe/Asaas).
+- **Decisão (30/06/2026):** Auto-Refresh nas Abas. As telas Dashboard, Gráficos e Histórico foram submetidas a subscrições de estado reativas às transações (`entries`, `exits`, `recurrings`, `purchases`), forçando a atualização instantânea do app quando inserções ou deleções são efetuadas.
+- **Decisão (30/06/2026):** Toggle de Edição de Perfil. O formulário de dados de perfil agora possui um estado `isEditing`. Em modo de leitura, exibe os campos em visual flat integrado (sem borda de input) e botão "Editar Dados" em cor neutra. Em modo edição, insere bordas, libera alteração e exibe botão "Salvar" na cor verde esmeralda.
+- **Decisão (30/06/2026):** Máscaras de Digitação. Máscaras de celular no formato `(DD) 99999-9999` e de data em `DD/MM/AAAA` integradas em tempo de digitação nas telas de Cadastro e Ajustes.
+- **Decisão (30/06/2026):** Validação de Senha Antiga. A alteração de senha passa a exigir a digitação da senha antiga. Em produção, isso é validado via reautenticação no Firebase Auth; em ambiente local mock, valida-se contra a senha existente no banco de dados. Contas Google OAuth têm a seção de senha totalmente oculta.
 
 ---
 
@@ -114,3 +120,9 @@ gantt
 | 30/06/2026 | Migração das credenciais hardcoded do Firebase no frontend para variáveis de ambiente locais (.env) | IA | ✅ Concluída |
 | 30/06/2026 | Integração de micro-animações premium (transições fade-in e slide-up reativas) no Dashboard e Orçamento | IA | ✅ Concluída |
 | 30/06/2026 | Botão manual de alternância de tema (Claro/Escuro) no menu superior, integrado a Zustand e persistido | IA | ✅ Concluída |
+| 30/06/2026 | Estruturação e Deploy do Backend na Vercel Serverless com banco Supabase de Produção | IA | ✅ Concluída |
+| 30/06/2026 | Implementação de bypass de validação de token Firebase JWT para testes de API locais e correção de login | IA | ✅ Concluída |
+| 30/06/2026 | Auto-refresh dinâmico reativo às stores de finanças no Dashboard, Gráficos e Histórico | IA | ✅ Concluída |
+| 30/06/2026 | Implementação de visualização/edição e máscaras de celular/data no Perfil (Ajustes e Registro) | IA | ✅ Concluída |
+| 30/06/2026 | Criação de verificação de senha antiga para troca e ocultação para contas de login Google | IA | ✅ Concluída |
+| 30/06/2026 | Modificação do card de plano vigente para "Em breve" e ocultação de rotas de planos | IA | ✅ Concluída |

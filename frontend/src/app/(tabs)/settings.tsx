@@ -182,7 +182,7 @@ export default function SettingsScreen() {
   // Form states
   const [isEditing, setIsEditing] = useState(false);
   const [firstName, setFirstName] = useState(userProfile?.firstName || 'Lucas');
-  const [lastName, setLastName] = useState(userProfile?.lastName || 'Macedo');
+  const [lastName, setLastName] = useState(userProfile?.lastName || 'Marques');
   const [city, setCity] = useState(userProfile?.city || 'Campinas');
   const [state, setState] = useState(userProfile?.state || 'SP');
   const [phone, setPhone] = useState(userProfile?.phone || '');
