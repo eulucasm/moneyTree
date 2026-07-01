@@ -2,17 +2,17 @@
 
 > Um organizador financeiro moderno, inteligente e minimalista, projetado para trazer clareza e tranquilidade para sua vida financeira. Desenvolvido com **React Native + Expo** e **Node.js + PostgreSQL** sob uma sofisticada interface *Glassmorphism* com suporte completo a temas.
 
-- [![Backend Status](https://img.shields.io/website?down_color=red&down_message=offline&label=Vercel%20Backend&up_color=emerald&up_message=online&url=https%3A%2F%2Fmoneytree-backend.vercel.app%2Fapi%2Fhealth)](https://moneytree-backend.vercel.app/)
-- [![Database](https://img.shields.io/badge/Database-Supabase%20PostgreSQL-3ecf8e?logo=supabase&logoColor=white)](https://supabase.com)
-- [![Platform](https://img.shields.io/badge/Platform-Web%20%7C%20iOS%20%7C%20Android-10B981?logo=expo&logoColor=white)](https://expo.dev)
-- [![Licença](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-+ ![React Native / Expo](https://img.shields.io/badge/React_Native-Expo-10B981?logo=react&logoColor=white)
-+ ![Node.js](https://img.shields.io/badge/Node.js-339933?logo=nodedotjs&logoColor=white)
-+ ![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white)
-+ ![PostgreSQL (Supabase)](https://img.shields.io/badge/PostgreSQL-Supabase-336791?logo=postgresql&logoColor=white)
-+ ![Prisma ORM](https://img.shields.io/badge/Prisma_ORM-2D3748?logo=prisma&logoColor=white)
-+ ![Firebase Auth](https://img.shields.io/badge/Firebase_Auth-FFCA28?logo=firebase&logoColor=black)
-+ ![Vercel Backend](https://img.shields.io/badge/Vercel_Backend-000000?logo=vercel&logoColor=white)
+[![Backend Status](https://img.shields.io/website?down_color=red&down_message=offline&label=Vercel%20Backend&up_color=emerald&up_message=online&url=https%3A%2F%2Fmoneytree-backend.vercel.app%2Fapi%2Fhealth)](https://moneytree-backend.vercel.app/)
+[![Database](https://img.shields.io/badge/Database-Supabase%20PostgreSQL-3ecf8e?logo=supabase&logoColor=white)](https://supabase.com)
+[![Platform](https://img.shields.io/badge/Platform-Web%20%7C%20iOS%20%7C%20Android-10B981?logo=expo&logoColor=white)](https://expo.dev)
+[![Licença](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+![React Native / Expo](https://img.shields.io/badge/React_Native-Expo-10B981?logo=react&logoColor=white)
+![Node.js](https://img.shields.io/badge/Node.js-339933?logo=nodedotjs&logoColor=white)
+![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white)
+![PostgreSQL (Supabase)](https://img.shields.io/badge/PostgreSQL-Supabase-336791?logo=postgresql&logoColor=white)
+![Prisma ORM](https://img.shields.io/badge/Prisma_ORM-2D3748?logo=prisma&logoColor=white)
+![Firebase Auth](https://img.shields.io/badge/Firebase_Auth-FFCA28?logo=firebase&logoColor=black)
+![Vercel Backend](https://img.shields.io/badge/Vercel_Backend-000000?logo=vercel&logoColor=white)
 
 ---
 
