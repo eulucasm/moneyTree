@@ -44,3 +44,6 @@ Thumbs.db
 # Project documentation and agent instructions
 docs/
 skill/
+
+# Agent configuration files
+.gemini/
