@@ -3,17 +3,62 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import { PrismaClient } from '@prisma/client';
 import * as admin from 'firebase-admin';
+import helmet from 'helmet';
+import rateLimit from 'express-rate-limit';
 
 dotenv.config();
 
 const prisma = new PrismaClient();
 const app = express();
 
-app.use(cors());
+// Disable x-powered-by header explicitly
+app.disable('x-powered-by');
+
+// Secure headers via Helmet
+app.use(helmet());
+
+// Dynamic CORS configurations
+const allowedOrigins = [
+  'http://localhost:8081',
+  'http://127.0.0.1:8081',
+  'https://moneytree-app-eight.vercel.app',
+];
+
+app.use(cors({
+  origin: (origin, callback) => {
+    // Allow requests with no origin (like native mobile apps or backend-to-backend calls)
+    if (!origin) return callback(null, true);
+    
+    const isLocal = origin.startsWith('http://localhost:') || 
+                    origin.startsWith('http://127.0.0.1:') || 
+                    origin.includes('192.168.');
+                    
+    if (isLocal || allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+    
+    return callback(new Error('Acesso não permitido por política de CORS'));
+  }
+}));
+
+// Rate Limiter to prevent DOS / Bruteforce attacks (Allows 300 requests per 15 minutes)
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 300,
+  message: { error: 'Muitas requisições vindas deste IP. Por favor, tente novamente em 15 minutos.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+app.use(limiter);
+
 app.use(express.json({ limit: '10mb' }));
 
 app.use((req, res, next) => {
-  console.log(`[HTTP] ${req.method} ${req.url} - Auth: ${req.headers.authorization}`);
+  const authHeader = req.headers.authorization;
+  const authLog = authHeader 
+    ? (authHeader.startsWith('Bearer ') ? `Bearer ${authHeader.substring(7, 18)}...` : '[INVALID]') 
+    : '[NONE]';
+  console.log(`[HTTP] ${req.method} ${req.url} - Auth: ${authLog}`);
   next();
 });
 

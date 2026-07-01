@@ -1,8 +1,9 @@
 import { auth } from './firebase';
 
 const getBaseUrl = () => {
-  if (process.env.EXPO_PUBLIC_API_URL) {
-    return process.env.EXPO_PUBLIC_API_URL;
+  let url = process.env.EXPO_PUBLIC_API_URL;
+  if (url) {
+    return url.trim().replace(/^["']|["']$/g, '');
   }
   if (typeof window !== 'undefined' && window.location) {
     const hostname = window.location.hostname;
