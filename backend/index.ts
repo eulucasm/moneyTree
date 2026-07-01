@@ -138,7 +138,7 @@ const authMiddleware = async (req: AuthenticatedRequest, res: Response, next: Ne
   try {
     // If Firebase Admin SDK is properly initialized, verify the token with full validation
     if (firebaseAdminReady) {
-      const decodedToken = await (admin as any).auth().verifyIdToken(token);
+      const decodedToken = await (admin as any).auth().verifyIdToken(token, true);
       req.userId = decodedToken.uid;
       return next();
     }
@@ -160,6 +160,20 @@ const authMiddleware = async (req: AuthenticatedRequest, res: Response, next: Ne
 
 
 // Endpoints
+
+// 0. POST /api/auth/logout - Revoke user sessions/tokens
+app.post('/api/auth/logout', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
+  const userId = req.userId!;
+  try {
+    if (firebaseAdminReady) {
+      await (admin as any).auth().revokeRefreshTokens(userId);
+      console.log(`[Auth] Revoked tokens for user: ${userId}`);
+    }
+    return res.json({ success: true, message: 'Tokens revoked successfully.' });
+  } catch (err: any) {
+    return sendServerError(res, '[Auth] Error revoking user tokens', err);
+  }
+});
 
 // 1. GET /api/user/profile - Fetch profile
 app.get('/api/user/profile', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
