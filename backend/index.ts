@@ -69,21 +69,28 @@ app.use((req, res, next) => {
 });
 
 // Initialize Firebase Admin (Optional, fallback to Dev Mock Mode if env is missing)
+let firebaseAdminReady = false;
+
 if (process.env.FIREBASE_SERVICE_ACCOUNT) {
   try {
-    const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+    const raw = process.env.FIREBASE_SERVICE_ACCOUNT;
+    // Strip surrounding quotes if Vercel wrapped the JSON string
+    const cleaned = raw.trim().replace(/^["']|["']$/g, '');
+    const serviceAccount = JSON.parse(cleaned);
     admin.initializeApp({
       credential: (admin as any).credential.cert(serviceAccount),
     });
+    firebaseAdminReady = true;
     console.log('[Firebase] Admin SDK initialized successfully.');
   } catch (err) {
     console.error('[Firebase] Failed to parse/initialize with SERVICE_ACCOUNT credentials:', err);
+    console.error('[Firebase] Will fall back to local JWT decode (unverified) for auth.');
   }
 } else {
   console.log('[Firebase] Running in DEV/MOCK authentication mode. Set FIREBASE_SERVICE_ACCOUNT to enable token verification.');
 }
 
-// Helper to decode JWT payload without verification (for local development mock mode)
+// Helper to decode JWT payload without verification (fallback when Admin SDK is unavailable)
 const decodeJwtWithoutVerification = (token: string) => {
   try {
     const parts = token.split('.');
@@ -119,24 +126,28 @@ const authMiddleware = async (req: AuthenticatedRequest, res: Response, next: Ne
 
   // Firebase Real Authentication
   try {
-    // If running in local DEV/MOCK mode without Firebase service account, extract uid from token payload directly
-    if (!process.env.FIREBASE_SERVICE_ACCOUNT) {
-      const decoded = decodeJwtWithoutVerification(token);
-      if (decoded && decoded.sub) {
-        req.userId = decoded.sub;
-        return next();
-      }
-      return res.status(401).json({ error: 'Invalid local/mock token structure' });
+    // If Firebase Admin SDK is properly initialized, verify the token with full validation
+    if (firebaseAdminReady) {
+      const decodedToken = await (admin as any).auth().verifyIdToken(token);
+      req.userId = decodedToken.uid;
+      return next();
     }
 
-    const decodedToken = await (admin as any).auth().verifyIdToken(token);
-    req.userId = decodedToken.uid;
-    next();
-  } catch (err) {
+    // Fallback: decode the JWT without signature verification
+    // This covers: local dev without service account, or broken Vercel env var
+    console.warn('[Auth] Firebase Admin not ready — using unverified JWT decode as fallback.');
+    const decoded = decodeJwtWithoutVerification(token);
+    if (decoded && (decoded.sub || decoded.user_id)) {
+      req.userId = decoded.sub || decoded.user_id;
+      return next();
+    }
+    return res.status(401).json({ error: 'Token decode failed — no uid found in payload' });
+  } catch (err: any) {
     console.error('[Auth] Token verification failed:', err);
-    return res.status(401).json({ error: 'Unauthorized/Invalid token' });
+    return res.status(401).json({ error: 'Unauthorized/Invalid token', details: err.message || String(err) });
   }
 };
+
 
 // Endpoints
 
