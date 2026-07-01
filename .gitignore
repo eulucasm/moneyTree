@@ -39,4 +39,8 @@ Thumbs.db
 *-firebase-adminsdk-*.json
 *service-account*.json
 *credentials*.json
-secrets*.json
+*secrets*.json
+
+# Project documentation and agent instructions
+docs/
+skill/
