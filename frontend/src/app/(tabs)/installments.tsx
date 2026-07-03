@@ -36,6 +36,7 @@ export default function InstallmentsScreen() {
     toggleInstallmentStatus,
     creditCards,
     addCreditCard,
+    updateCreditCard,
     updateCreditCardLimit,
     deleteCreditCard,
     installmentStatusMap
@@ -70,13 +71,23 @@ export default function InstallmentsScreen() {
   const [cardUsed, setCardUsed] = useState<string>('');
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  // Credit Card modal state in installments.tsx
-  const [cardModalVisible, setCardModalVisible] = useState(false);
+  // Add Credit Card modal state
+  const [addCardModalVisible, setAddCardModalVisible] = useState(false);
   const [newCardName, setNewCardName] = useState('');
   const [newCardLimit, setNewCardLimit] = useState('');
   const [newCardColor, setNewCardColor] = useState('#8B5CF6');
   const [newCardDueDate, setNewCardDueDate] = useState('');
   const [newCardBestDay, setNewCardBestDay] = useState('');
+
+  // Manage Credit Card modal state
+  const [manageCardModalVisible, setManageCardModalVisible] = useState(false);
+  const [editingCardId, setEditingCardId] = useState<string | null>(null);
+  const [editCardName, setEditCardName] = useState('');
+  const [editCardLimit, setEditCardLimit] = useState('');
+  const [editCardColor, setEditCardColor] = useState('#8B5CF6');
+  const [editCardDueDate, setEditCardDueDate] = useState('');
+  const [editCardBestDay, setEditCardBestDay] = useState('');
+
 
   const availableColors = [
     '#8B5CF6', // Nubank Purple
@@ -175,6 +186,51 @@ export default function InstallmentsScreen() {
     setNewCardDueDate('');
     setNewCardBestDay('');
     showToast('Cartão cadastrado com sucesso!', 'success');
+    setAddCardModalVisible(false);
+  };
+
+  const handleEditCreditCard = () => {
+    if (!editingCardId) return;
+    if (!editCardName.trim()) {
+      showToast('Por favor, informe o nome da instituição.', 'error');
+      return;
+    }
+    const limitVal = parseFloat(editCardLimit);
+    if (isNaN(limitVal) || limitVal <= 0) {
+      showToast('Por favor, informe um limite válido.', 'error');
+      return;
+    }
+    
+    const dueDay = parseInt(editCardDueDate, 10);
+    const bestDay = parseInt(editCardBestDay, 10);
+    
+    if (editCardDueDate && (isNaN(dueDay) || dueDay < 1 || dueDay > 31)) {
+      showToast('Por favor, informe um dia de vencimento válido (1 a 31).', 'error');
+      return;
+    }
+    if (editCardBestDay && (isNaN(bestDay) || bestDay < 1 || bestDay > 31)) {
+      showToast('Por favor, informe um melhor dia de compra válido (1 a 31).', 'error');
+      return;
+    }
+
+    updateCreditCard(editingCardId, {
+      name: editCardName,
+      limit: limitVal,
+      color: editCardColor,
+      dueDate: editCardDueDate ? dueDay : undefined,
+      bestPurchaseDay: editCardBestDay ? bestDay : undefined
+    });
+    setEditingCardId(null);
+    showToast('Cartão atualizado com sucesso!', 'success');
+  };
+
+  const startEditingCard = (card: any) => {
+    setEditingCardId(card.id);
+    setEditCardName(card.name);
+    setEditCardLimit(card.limit.toString());
+    setEditCardColor(card.color || '#8B5CF6');
+    setEditCardDueDate(card.dueDate ? card.dueDate.toString() : '');
+    setEditCardBestDay(card.bestPurchaseDay ? card.bestPurchaseDay.toString() : '');
   };
 
   // Open modal and pre-fill startDate with selected period
@@ -253,14 +309,15 @@ export default function InstallmentsScreen() {
   const monthlyOutflows = getMonthlyOutflowsList(selectedPeriod);
   const installmentOutflows = monthlyOutflows.filter(o => o.type === 'installment');
 
-  // Filter installments for the selected card
-  const filteredInstallments = installmentOutflows.filter(inst => inst.cardUsed === selectedCard);
+  // Filter for the selected card
+  const cardOutflows = monthlyOutflows.filter(o => o.type === 'installment' || o.type === 'recurring');
+  const filteredInstallments = cardOutflows.filter(inst => inst.cardUsed === selectedCard);
 
-  // Sum of installments on this card for the selected month
+  // Sum of installments and recurrings on this card for the selected month (Preview)
   const cardFaturaSum = filteredInstallments.reduce((sum, inst) => sum + inst.value, 0);
 
   const getFaturaSumForCard = (cardId: string) => {
-    return installmentOutflows
+    return cardOutflows
       .filter(inst => inst.cardUsed === cardId)
       .reduce((sum, inst) => sum + inst.value, 0);
   };
@@ -291,14 +348,27 @@ export default function InstallmentsScreen() {
               Visão direta dos valores programados para {monthsNames[currentMonth - 1]}
             </Text>
           </View>
-          <TouchableOpacity 
-            style={[styles.manageCardsBtn, { backgroundColor: colorScheme === 'dark' ? 'rgba(255,255,255,0.05)' : '#E8F5E9', borderColor: colorScheme === 'dark' ? 'rgba(255,255,255,0.1)' : '#A7F3D0' }]}
-            onPress={() => setCardModalVisible(true)}
-            activeOpacity={0.7}
-          >
-            <SettingsIcon size={14} color={colorScheme === 'dark' ? colors.text : "#0F5132"} />
-            <Text style={[styles.manageCardsBtnText, { color: colorScheme === 'dark' ? colors.text : "#0F5132" }]}>Gerenciar</Text>
-          </TouchableOpacity>
+          <View style={{ flexDirection: 'row', gap: 8 }}>
+            <TouchableOpacity 
+              style={[styles.manageCardsBtn, { backgroundColor: colorScheme === 'dark' ? 'rgba(255,255,255,0.05)' : '#E8F5E9', borderColor: colorScheme === 'dark' ? 'rgba(255,255,255,0.1)' : '#A7F3D0' }]}
+              onPress={() => setAddCardModalVisible(true)}
+              activeOpacity={0.7}
+            >
+              <Plus size={14} color={colorScheme === 'dark' ? colors.text : "#0F5132"} />
+              <Text style={[styles.manageCardsBtnText, { color: colorScheme === 'dark' ? colors.text : "#0F5132" }]}>Adicionar</Text>
+            </TouchableOpacity>
+            <TouchableOpacity 
+              style={[styles.manageCardsBtn, { backgroundColor: colorScheme === 'dark' ? 'rgba(255,255,255,0.05)' : '#E8F5E9', borderColor: colorScheme === 'dark' ? 'rgba(255,255,255,0.1)' : '#A7F3D0' }]}
+              onPress={() => {
+                setEditingCardId(null);
+                setManageCardModalVisible(true);
+              }}
+              activeOpacity={0.7}
+            >
+              <SettingsIcon size={14} color={colorScheme === 'dark' ? colors.text : "#0F5132"} />
+              <Text style={[styles.manageCardsBtnText, { color: colorScheme === 'dark' ? colors.text : "#0F5132" }]}>Gerenciar</Text>
+            </TouchableOpacity>
+          </View>
         </View>
 
         {/* Grid de Minicards de Cartões (Largura fixa para evitar esticar ímpar) */}
@@ -330,9 +400,14 @@ export default function InstallmentsScreen() {
                 <Text style={[styles.cardSelectorItemValue, { color: colors.text }]}>
                   {formatCurrency(sum)}
                 </Text>
-                <Text style={[styles.cardSelectorItemSub, { color: colors.textMuted }]}>
-                  Limite usado: {percent.toFixed(0)}%
-                </Text>
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8 }}>
+                  <Text style={{ fontSize: 12, color: colors.textMuted }}>
+                    Limite: {formatCurrency(card.limit)}
+                  </Text>
+                  <Text style={{ fontSize: 12, color: colors.textMuted }}>
+                    {percent.toFixed(0)}%
+                  </Text>
+                </View>
                 <View style={[styles.progressBarTrackMini, { backgroundColor: colorScheme === 'dark' ? 'rgba(255,255,255,0.05)' : '#E9ECEF' }]}>
                   <View style={[styles.progressBarFillMini, { width: `${percent}%`, backgroundColor: color }]} />
                 </View>
@@ -342,13 +417,21 @@ export default function InstallmentsScreen() {
         </View>
  
         {/* List Header */}
-        <View style={styles.sectionHeader}>
-          <Text style={[styles.sectionTitle, { color: colors.text }]}>
-            Parcelas Ativas - {getCardName(selectedCard)}
-          </Text>
-          <Text style={[styles.sectionSubtitle, { color: colors.textMuted }]}>
-            Fatura de {monthsNames[currentMonth - 1]}: {formatCurrency(cardFaturaSum)}
-          </Text>
+        <View style={[styles.sectionHeader, { flexDirection: 'column', alignItems: 'flex-start', gap: 12 }]}>
+          <View>
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>
+              Fatura - {getCardName(selectedCard)}
+            </Text>
+            <Text style={[styles.sectionSubtitle, { color: colors.textMuted }]}>
+              {monthsNames[currentMonth - 1]} de {currentYear}
+            </Text>
+          </View>
+          <View style={{ backgroundColor: colorScheme === 'dark' ? 'rgba(255,255,255,0.05)' : '#F8F9FA', padding: 16, borderRadius: 12, width: '100%', borderColor: colors.borderGlass, borderWidth: 1 }}>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+              <Text style={{ fontSize: 13, color: colors.textMuted }}>Total Faturado (Mês Selecionado)</Text>
+              <Text style={{ fontSize: 18, fontWeight: '700', color: colors.text }}>{formatCurrency(cardFaturaSum)}</Text>
+            </View>
+          </View>
         </View>
 
         {/* Installments List */}
@@ -368,6 +451,7 @@ export default function InstallmentsScreen() {
                   <View style={styles.purchaseLeft}>
                     <TouchableOpacity 
                       onPress={() => {
+                        if (item.type === 'recurring') return;
                         toggleInstallmentStatus(item.id as PurchaseId, selectedPeriod);
                         const isChecking = item.status !== 'ok';
                         showToast(
@@ -375,7 +459,8 @@ export default function InstallmentsScreen() {
                           'success'
                         );
                       }}
-                      style={styles.itemCheckBtn}
+                      activeOpacity={item.type === 'recurring' ? 1 : 0.2}
+                      style={[styles.itemCheckBtn, { opacity: item.type === 'recurring' ? 0.5 : 1 }]}
                     >
                       {item.status === 'ok' ? (
                         <Check color="#10B981" size={22} />
@@ -393,19 +478,23 @@ export default function InstallmentsScreen() {
                       </Text>
                       <View style={styles.metaRow}>
                         <Calendar size={12} color={colors.textMuted} />
-                        <Text style={[styles.metaText, { color: colors.textMuted }]}>Parcela {item.installmentRef}</Text>
+                        <Text style={[styles.metaText, { color: colors.textMuted }]}>
+                          {item.type === 'recurring' ? 'Assinatura Recorrente' : `Parcela ${item.installmentRef}`}
+                        </Text>
                       </View>
                     </View>
                   </View>
                   <View style={styles.purchaseRight}>
                     <Text style={[styles.totalValText, { color: colors.text }]}>{formatCurrency(item.value)}</Text>
-                    <TouchableOpacity
-                      activeOpacity={0.8}
-                      onPress={() => handleDeletePress(item.id as PurchaseId, item.description)}
-                      style={styles.deleteBtn}
-                    >
-                      <Trash2 color="#DC3545" size={18} />
-                    </TouchableOpacity>
+                    {item.type !== 'recurring' && (
+                      <TouchableOpacity
+                        activeOpacity={0.8}
+                        onPress={() => handleDeletePress(item.id as PurchaseId, item.description)}
+                        style={styles.deleteBtn}
+                      >
+                        <Trash2 color="#DC3545" size={18} />
+                      </TouchableOpacity>
+                    )}
                   </View>
                 </GlassCard>
               );
@@ -473,6 +562,11 @@ export default function InstallmentsScreen() {
                   />
                 </View>
               </View>
+              {totalValue && installments && !isNaN(parseFloat(totalValue)) && !isNaN(parseInt(installments, 10)) && parseInt(installments, 10) > 0 && (
+                <Text style={{ fontSize: 13, color: colors.textMuted, marginTop: -4, marginBottom: 8, paddingHorizontal: 4 }}>
+                  Prévia por parcela: {formatCurrency(parseFloat(totalValue) / parseInt(installments, 10))}
+                </Text>
+              )}
 
               <FinancialInput
                 label={t('installments.startDate')}
@@ -498,77 +592,23 @@ export default function InstallmentsScreen() {
         </View>
       </Modal>
 
-      {/* CREDIT CARDS MANAGER MODAL */}
+      {/* ADD CREDIT CARD MODAL */}
       <Modal
         animationType="fade"
         transparent={true}
-        visible={cardModalVisible}
-        onRequestClose={() => setCardModalVisible(false)}
+        visible={addCardModalVisible}
+        onRequestClose={() => setAddCardModalVisible(false)}
       >
         <View style={[styles.modalBg, { backgroundColor: colorScheme === 'dark' ? 'rgba(0,0,0,0.6)' : 'rgba(33, 37, 41, 0.4)' }]}>
           <View style={[styles.modalContainer, { maxWidth: 500, backgroundColor: colors.surface, borderColor: colors.borderGlass }]}>
             <View style={[styles.modalHeader, { borderBottomColor: colors.borderGlass }]}>
-              <Text style={[styles.modalTitle, { color: colors.text }]}>Gerenciar Cartões de Crédito</Text>
-              <TouchableOpacity onPress={() => setCardModalVisible(false)}>
+              <Text style={[styles.modalTitle, { color: colors.text }]}>Cadastrar Novo Cartão</Text>
+              <TouchableOpacity onPress={() => setAddCardModalVisible(false)}>
                 <X color={colors.text} size={24} />
               </TouchableOpacity>
             </View>
 
             <ScrollView contentContainerStyle={{ gap: 16 }} style={{ maxHeight: 400 }} showsVerticalScrollIndicator={true}>
-              {/* Seção 1: Lista de Cartões Existentes */}
-              <Text style={[styles.modalSubtitleSection, { color: colorScheme === 'dark' ? '#10B981' : '#0F5132' }]}>Cartões Cadastrados & Limites</Text>
-              <View style={styles.cardsManagerList}>
-                {creditCards.map(card => {
-                  return (
-                    <View key={card.id} style={[styles.cardManagerRow, { borderBottomColor: colors.borderGlass }]}>
-                      <View style={styles.cardManagerRowLeft}>
-                        <View style={[styles.brandDot, { backgroundColor: card.color || '#64748B', marginRight: 6, marginTop: 4 }]} />
-                        <View style={{ flex: 1 }}>
-                          <Text style={[styles.cardManagerName, { color: colors.text }]}>{card.name}</Text>
-                          {(card.dueDate !== undefined || card.bestPurchaseDay !== undefined) && (
-                            <Text style={{ fontSize: 10, color: colors.textMuted, marginTop: 2 }}>
-                              Venc: {card.dueDate ? `dia ${card.dueDate}` : 'N/A'} • Melhor Compra: {card.bestPurchaseDay ? `dia ${card.bestPurchaseDay}` : 'N/A'}
-                            </Text>
-                          )}
-                        </View>
-                      </View>
-                      
-                      <View style={styles.cardManagerRowRight}>
-                        <TextInput
-                          style={[styles.cardManagerLimitInput, { borderColor: colors.borderGlass, color: colors.text }]}
-                          keyboardType="numeric"
-                          placeholder="Limite"
-                          defaultValue={card.limit.toString()}
-                          onEndEditing={(e) => {
-                            const val = parseFloat(e.nativeEvent.text);
-                            if (!isNaN(val) && val >= 0) {
-                              updateCreditCardLimit(card.id, val);
-                              showToast('Limite atualizado!', 'success');
-                            }
-                          }}
-                        />
-                        {creditCards.length > 1 && (
-                          <TouchableOpacity 
-                            onPress={() => {
-                              deleteCreditCard(card.id);
-                              showToast('Cartão de crédito removido.', 'success');
-                            }}
-                            style={styles.cardManagerDeleteBtn}
-                          >
-                            <Trash2 color="#DC3545" size={16} />
-                          </TouchableOpacity>
-                        )}
-                      </View>
-                    </View>
-                  );
-                })}
-              </View>
-
-              <View style={styles.modalDivider} />
-
-              {/* Seção 2: Adicionar Novo Cartão */}
-              <Text style={styles.modalSubtitleSection}>Cadastrar Novo Cartão</Text>
-              
               <FinancialInput
                 label="Nome da Instituição"
                 placeholder="Ex: Banco do Brasil, C6 Bank"
@@ -632,6 +672,150 @@ export default function InstallmentsScreen() {
                 onPress={handleAddCreditCard}
                 style={{ marginTop: 8 }}
               />
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
+
+      {/* MANAGE CREDIT CARDS MODAL */}
+      <Modal
+        animationType="fade"
+        transparent={true}
+        visible={manageCardModalVisible}
+        onRequestClose={() => {
+          setManageCardModalVisible(false);
+          setEditingCardId(null);
+        }}
+      >
+        <View style={[styles.modalBg, { backgroundColor: colorScheme === 'dark' ? 'rgba(0,0,0,0.6)' : 'rgba(33, 37, 41, 0.4)' }]}>
+          <View style={[styles.modalContainer, { maxWidth: 500, backgroundColor: colors.surface, borderColor: colors.borderGlass }]}>
+            <View style={[styles.modalHeader, { borderBottomColor: colors.borderGlass }]}>
+              {editingCardId ? (
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                  <TouchableOpacity onPress={() => setEditingCardId(null)}>
+                    <ChevronLeft color={colors.text} size={24} />
+                  </TouchableOpacity>
+                  <Text style={[styles.modalTitle, { color: colors.text }]}>Editar Cartão</Text>
+                </View>
+              ) : (
+                <Text style={[styles.modalTitle, { color: colors.text }]}>Gerenciar Cartões</Text>
+              )}
+              <TouchableOpacity onPress={() => {
+                setManageCardModalVisible(false);
+                setEditingCardId(null);
+              }}>
+                <X color={colors.text} size={24} />
+              </TouchableOpacity>
+            </View>
+
+            <ScrollView contentContainerStyle={{ gap: 16 }} style={{ maxHeight: 400 }} showsVerticalScrollIndicator={true}>
+              {!editingCardId ? (
+                <>
+                  <Text style={[styles.modalSubtitleSection, { color: colorScheme === 'dark' ? '#10B981' : '#0F5132' }]}>Selecione um cartão para editar</Text>
+                  <View style={styles.cardsManagerList}>
+                    {creditCards.map(card => {
+                      return (
+                        <TouchableOpacity 
+                          key={card.id} 
+                          style={[styles.cardManagerRow, { borderBottomColor: colors.borderGlass }]}
+                          onPress={() => startEditingCard(card)}
+                        >
+                          <View style={styles.cardManagerRowLeft}>
+                            <View style={[styles.brandDot, { backgroundColor: card.color || '#64748B', marginRight: 6, marginTop: 4 }]} />
+                            <View style={{ flex: 1 }}>
+                              <Text style={[styles.cardManagerName, { color: colors.text }]}>{card.name}</Text>
+                              <Text style={{ fontSize: 10, color: colors.textMuted, marginTop: 2 }}>
+                                Limite: {formatCurrency(card.limit)}
+                              </Text>
+                            </View>
+                          </View>
+                          
+                          <View style={styles.cardManagerRowRight}>
+                            {creditCards.length > 1 && (
+                              <TouchableOpacity 
+                                onPress={(e) => {
+                                  e.stopPropagation();
+                                  deleteCreditCard(card.id);
+                                  showToast('Cartão de crédito removido.', 'success');
+                                }}
+                                style={styles.cardManagerDeleteBtn}
+                              >
+                                <Trash2 color="#DC3545" size={16} />
+                              </TouchableOpacity>
+                            )}
+                          </View>
+                        </TouchableOpacity>
+                      );
+                    })}
+                  </View>
+                </>
+              ) : (
+                <>
+                  <FinancialInput
+                    label="Nome da Instituição"
+                    placeholder="Ex: Banco do Brasil, C6 Bank"
+                    value={editCardName}
+                    onChangeText={setEditCardName}
+                  />
+                  
+                  <FinancialInput
+                    label="Limite Total"
+                    isCurrency={true}
+                    value={editCardLimit}
+                    onChangeText={setEditCardLimit}
+                  />
+
+                  <View style={{ flexDirection: 'row', width: '100%', gap: 12 }}>
+                    <View style={{ flex: 1 }}>
+                      <FinancialInput
+                        label="Dia do Vencimento"
+                        placeholder="Ex: 10"
+                        keyboardType="numeric"
+                        maxLength={2}
+                        value={editCardDueDate}
+                        onChangeText={setEditCardDueDate}
+                      />
+                    </View>
+                    <View style={{ flex: 1 }}>
+                      <FinancialInput
+                        label="Melhor Dia de Compra"
+                        placeholder="Ex: 3"
+                        keyboardType="numeric"
+                        maxLength={2}
+                        value={editCardBestDay}
+                        onChangeText={setEditCardBestDay}
+                      />
+                    </View>
+                  </View>
+
+                  {/* Color Selector */}
+                  <View style={styles.colorSelectorContainer}>
+                    <Text style={styles.colorSelectorLabel}>Cor Visual do Cartão</Text>
+                    <View style={styles.colorSelectorRow}>
+                      {availableColors.map(color => {
+                        const isSelected = editCardColor === color;
+                        return (
+                          <TouchableOpacity
+                            key={color}
+                            style={[
+                              styles.colorPill,
+                              { backgroundColor: color },
+                              isSelected && styles.colorPillSelected
+                            ]}
+                            onPress={() => setEditCardColor(color)}
+                          />
+                        );
+                      })}
+                    </View>
+                  </View>
+
+                  <FinancialButton
+                    title="Salvar Edições"
+                    onPress={handleEditCreditCard}
+                    style={{ marginTop: 8 }}
+                  />
+                </>
+              )}
             </ScrollView>
           </View>
         </View>

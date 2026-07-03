@@ -454,7 +454,7 @@ app.post('/api/sync', authMiddleware, async (req: AuthenticatedRequest, res: Res
       }
     }
 
-    // 3. Execute transactional updates
+    // 4. Execute transactional updates
     await prisma.$transaction(async (tx: any) => {
       // Upsert user profile
       const prof = userProfile || {};

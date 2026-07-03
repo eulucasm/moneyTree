@@ -25,8 +25,8 @@ export const FINANCE_STORAGE_KEYS = {
   SAVINGS: '@MoneyTree:savingsLogs',
   SAVINGS_GOAL: '@MoneyTree:savingsGoal',
   LANGUAGE: '@MoneyTree:language',
-  INSTALLMENT_STATUS: '@MoneyTree:installmentStatusMap',
   CREDIT_CARDS: '@MoneyTree:creditCards',
+  INSTALLMENT_STATUS: '@MoneyTree:installmentStatusMap',
   LAST_UPDATED: '@MoneyTree:lastUpdatedAt',
 };
 
@@ -44,9 +44,9 @@ interface FinanceState {
   recurrings: Recurring[];
   purchases: Purchase[];
   savingsLogs: Record<string, number | SavingsItem[]>;
+  savingsGoal: number;
   creditCards: CreditCard[];
   language: string;
-  savingsGoal: number;
   installmentStatusMap: Record<string, 'ok' | 'pending'>;
   lastUpdatedAt: number;
 
@@ -61,8 +61,7 @@ interface FinanceState {
   addExit: (desc: string, val: number, date: string, category?: 'fixed' | 'variable', dueDate?: number) => void;
   deleteExit: (id: ExitId) => void;
   toggleExitStatus: (id: ExitId) => void;
-  
-  addRecurring: (description: string, value: number) => void;
+  addRecurring: (description: string, value: number, cardUsed: string) => void;
   deleteRecurring: (id: RecurringId) => void;
   
   addPurchase: (description: string, totalValue: number, installments: number, startDate: string, cardUsed: string) => void;
@@ -70,6 +69,7 @@ interface FinanceState {
   toggleInstallmentStatus: (id: PurchaseId, date: string) => void;
   
   addCreditCard: (name: string, limit: number, color?: string, dueDate?: number, bestPurchaseDay?: number) => void;
+  updateCreditCard: (id: string, updates: Partial<CreditCard>) => void;
   updateCreditCardLimit: (id: string, newLimit: number) => void;
   deleteCreditCard: (id: string) => void;
   
@@ -77,6 +77,7 @@ interface FinanceState {
   deleteSavingsItem: (monthStr: string, id: string) => void;
   updateSavingsGoal: (goal: number) => void;
   
+
   changeLanguage: (lang: string) => void;
 
   // Computations
@@ -105,8 +106,8 @@ export const useFinanceStore = create<FinanceState>((set, get) => ({
   purchases: [],
   savingsLogs: {},
   creditCards: defaultCards,
-  language: 'pt',
   savingsGoal: 0,
+  language: 'pt',
   installmentStatusMap: {},
   lastUpdatedAt: 0,
 
@@ -117,7 +118,6 @@ export const useFinanceStore = create<FinanceState>((set, get) => ({
       entries: [],
       exits: [],
       recurrings: [],
-      purchases: [],
       savingsLogs: {},
       installmentStatusMap: {},
       savingsGoal: 0,
@@ -186,11 +186,12 @@ export const useFinanceStore = create<FinanceState>((set, get) => ({
     persist(FINANCE_STORAGE_KEYS.EXITS, newExits);
   },
 
-  addRecurring: (description, value) => {
+  addRecurring: (description, value, cardUsed) => {
     const newRecurrings: Recurring[] = [...get().recurrings, {
       id: `rec-${Date.now()}-${Math.random().toString(36).substr(2, 9)}` as RecurringId,
       description,
       value,
+      cardUsed,
     }];
     set({ recurrings: newRecurrings });
     persist(FINANCE_STORAGE_KEYS.RECURRINGS, newRecurrings);
@@ -248,6 +249,12 @@ export const useFinanceStore = create<FinanceState>((set, get) => ({
     persist(FINANCE_STORAGE_KEYS.CREDIT_CARDS, newCards);
   },
 
+  updateCreditCard: (id, updates) => {
+    const newCards = get().creditCards.map(c => c.id === id ? { ...c, ...updates } : c);
+    set({ creditCards: newCards });
+    persist(FINANCE_STORAGE_KEYS.CREDIT_CARDS, newCards);
+  },
+
   updateCreditCardLimit: (id, newLimit) => {
     const newCards = get().creditCards.map(c => c.id === id ? { ...c, limit: newLimit } : c);
     set({ creditCards: newCards });
@@ -292,6 +299,7 @@ export const useFinanceStore = create<FinanceState>((set, get) => ({
     set({ savingsGoal: goal });
     persist(FINANCE_STORAGE_KEYS.SAVINGS_GOAL, goal);
   },
+
 
   changeLanguage: (lang) => {
     set({ language: lang });

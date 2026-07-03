@@ -182,7 +182,7 @@ export default function BudgetScreen() {
       showToast('Despesa variada adicionada com sucesso!', 'success');
     } else if (addModalType === 'recurring') {
       LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-      addRecurring(desc, valParsed);
+      addRecurring(desc, valParsed, cardUsedVal);
       showToast('Assinatura recorrente adicionada!', 'success');
     } else if (addModalType === 'installment') {
       const instParsed = parseInt(installmentCount, 10);
@@ -321,13 +321,13 @@ export default function BudgetScreen() {
           {/* Card 1: Entradas */}
           <View style={[styles.sectionCard, { backgroundColor: colors.surface, borderColor: colors.borderGlass }, !isLargeScreen && styles.sectionCardMobile]}>
             <View style={styles.sectionHeaderInside}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, flexShrink: 1 }}>
-                <Text style={[styles.sectionTitleInside, { color: colors.text }]}>{t('common.entries')}</Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, flex: 1, paddingRight: 8 }}>
+                <Text style={[styles.sectionTitleInside, { color: colors.text, flexShrink: 1 }]} numberOfLines={2}>{t('common.entries')}</Text>
                 <TouchableOpacity onPress={() => toggleInfo('entries')}>
                   <Info color={colors.text} size={16} />
                 </TouchableOpacity>
               </View>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, flexShrink: 0 }}>
                 <Text style={[styles.sectionHeaderTotal, { color: colors.text }]}>{formatCurrency(totalEntriesVal)}</Text>
                 <TouchableOpacity 
                   onPress={() => setAddModalType('entry')} 
@@ -376,13 +376,13 @@ export default function BudgetScreen() {
           {/* Card 2: Despesas Fixas */}
           <View style={[styles.sectionCard, { backgroundColor: colors.surface, borderColor: colors.borderGlass }, !isLargeScreen && styles.sectionCardMobile]}>
             <View style={styles.sectionHeaderInside}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, flexShrink: 1 }}>
-                <Text style={[styles.sectionTitleInside, { color: colors.text }]}>Despesas Fixas</Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, flex: 1, paddingRight: 8 }}>
+                <Text style={[styles.sectionTitleInside, { color: colors.text, flexShrink: 1 }]} numberOfLines={2}>Despesas Fixas</Text>
                 <TouchableOpacity onPress={() => toggleInfo('fixed')}>
                   <Info color={colors.text} size={16} />
                 </TouchableOpacity>
               </View>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, flexShrink: 0 }}>
                 <Text style={[styles.sectionHeaderTotal, { color: colors.text }]}>{formatCurrency(totalFixedVal)}</Text>
                 <TouchableOpacity 
                   onPress={() => setAddModalType('exit')} 
@@ -406,9 +406,12 @@ export default function BudgetScreen() {
                 fixedOutflows.map((item, index) => {
                   const isLast = index === fixedOutflows.length - 1;
                   const cardType = detectCardTypeDynamic(item.description, creditCards);
-                  const cardSum = cardType ? installmentOutflows
-                    .filter(inst => inst.cardUsed === cardType)
-                    .reduce((sum, inst) => sum + inst.value, 0) : 0;
+                  let cardSum = 0;
+                  if (cardType) {
+                    cardSum = installmentOutflows
+                      .filter(inst => inst.cardUsed === cardType)
+                      .reduce((sum, inst) => sum + inst.value, 0);
+                  }
                   return (
                     <View key={item.id} style={[styles.itemRowFlat, { borderBottomColor: colors.borderGlass }, isLast && styles.lastItemRowFlat, { flexDirection: 'column', alignItems: 'stretch', opacity: item.status === 'ok' ? 0.6 : 1.0 }]}>
                       <View style={{ flexDirection: 'row', alignItems: 'center' }}>
@@ -461,13 +464,13 @@ export default function BudgetScreen() {
           {/* Card 3: Recorrentes */}
           <View style={[styles.sectionCard, { backgroundColor: colors.surface, borderColor: colors.borderGlass }, !isLargeScreen && styles.sectionCardMobile]}>
             <View style={styles.sectionHeaderInside}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, flexShrink: 1 }}>
-                <Text style={[styles.sectionTitleInside, { color: colors.text }]}>{t('common.recurring')} ("Todo mês")</Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, flex: 1, paddingRight: 8 }}>
+                <Text style={[styles.sectionTitleInside, { color: colors.text, flexShrink: 1 }]} numberOfLines={2}>{t('common.recurring')}</Text>
                 <TouchableOpacity onPress={() => toggleInfo('recurrent')}>
                   <Info color={colors.text} size={16} />
                 </TouchableOpacity>
               </View>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, flexShrink: 0 }}>
                 <Text style={[styles.sectionHeaderTotal, { color: colors.text }]}>{formatCurrency(totalRecurringVal)}</Text>
                 <TouchableOpacity 
                   onPress={() => setAddModalType('recurring')} 
@@ -515,13 +518,13 @@ export default function BudgetScreen() {
           {/* Card 4: Compras Parceladas */}
           <View style={[styles.sectionCard, { backgroundColor: colors.surface, borderColor: colors.borderGlass }, !isLargeScreen && styles.sectionCardMobile]}>
             <View style={styles.sectionHeaderInside}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, flexShrink: 1 }}>
-                <Text style={[styles.sectionTitleInside, { color: colors.text }]}>Compras Parceladas</Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, flex: 1, paddingRight: 8 }}>
+                <Text style={[styles.sectionTitleInside, { color: colors.text, flexShrink: 1 }]} numberOfLines={2}>Compras Parceladas</Text>
                 <TouchableOpacity onPress={() => toggleInfo('installments')}>
                   <Info color={colors.text} size={16} />
                 </TouchableOpacity>
               </View>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, flexShrink: 0 }}>
                 <Text style={[styles.sectionHeaderTotal, { color: colors.text }]}>{formatCurrency(totalInstallmentsVal)}</Text>
                 <TouchableOpacity 
                   onPress={handleOpenInstallmentModal} 
@@ -563,13 +566,13 @@ export default function BudgetScreen() {
           {/* Card 5: Despesas Variadas */}
           <View style={[styles.sectionCard, { backgroundColor: colors.surface, borderColor: colors.borderGlass }, !isLargeScreen && styles.sectionCardMobile]}>
             <View style={styles.sectionHeaderInside}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, flexShrink: 1 }}>
-                <Text style={[styles.sectionTitleInside, { color: colors.text }]}>Despesas Variadas</Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, flex: 1, paddingRight: 8 }}>
+                <Text style={[styles.sectionTitleInside, { color: colors.text, flexShrink: 1 }]} numberOfLines={2}>Despesas Variadas</Text>
                 <TouchableOpacity onPress={() => toggleInfo('variables')}>
                   <Info color={colors.text} size={16} />
                 </TouchableOpacity>
               </View>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, flexShrink: 0 }}>
                 <Text style={[styles.sectionHeaderTotal, { color: colors.text }]}>{formatCurrency(totalVariableVal)}</Text>
                 <TouchableOpacity 
                   onPress={() => setAddModalType('variable')} 
@@ -688,7 +691,14 @@ export default function BudgetScreen() {
             <ScrollView contentContainerStyle={{ gap: 12 }} showsVerticalScrollIndicator={false}>
               <FinancialInput
                 label={addModalType === 'installment' ? 'Nome do Produto' : 'Descrição'}
-                placeholder={addModalType === 'installment' ? 'Ex: Celular Novo' : 'Ex: Salário, Claro, Spotify'}
+                placeholder={
+                  addModalType === 'installment' ? 'Ex: Celular Novo' :
+                  addModalType === 'entry' ? 'Ex: Salário, freela, jobs' :
+                  addModalType === 'exit' ? 'Ex: Água, Luz, aluguel, etc...' :
+                  addModalType === 'recurring' ? 'Ex: Spotify, netflix, assinaturas...' :
+                  addModalType === 'variable' ? 'Ex: padaria, mercado, rolês, etc...' :
+                  'Ex: Salário, Claro, Spotify'
+                }
                 value={desc}
                 onChangeText={setDesc}
               />
@@ -719,6 +729,11 @@ export default function BudgetScreen() {
                     value={installmentCount}
                     onChangeText={setInstallmentCount}
                   />
+                  {val && installmentCount && !isNaN(parseFloat(val)) && !isNaN(parseInt(installmentCount, 10)) && parseInt(installmentCount, 10) > 0 && (
+                    <Text style={{ fontSize: 13, color: colors.textMuted, marginTop: -4, marginBottom: 8, paddingHorizontal: 4 }}>
+                      Prévia por parcela: {formatCurrency(parseFloat(val) / parseInt(installmentCount, 10))}
+                    </Text>
+                  )}
 
                   <FinancialInput
                     label="Mês de Início"
@@ -726,13 +741,15 @@ export default function BudgetScreen() {
                     value={startDateVal}
                     onChangeText={setStartDateVal}
                   />
-
-                  <CardSelector
-                    selectedCard={cardUsedVal}
-                    onSelect={setCardUsedVal}
-                    cards={creditCards.map(c => ({ key: c.id, name: c.name, color: c.color || '#64748B' }))}
-                  />
                 </>
+              )}
+
+              {(addModalType === 'installment' || addModalType === 'recurring') && (
+                <CardSelector
+                  selectedCard={cardUsedVal}
+                  onSelect={setCardUsedVal}
+                  cards={creditCards.map(c => ({ key: c.id, name: c.name, color: c.color || '#64748B' }))}
+                />
               )}
 
               {formError ? <Text style={styles.formErrorText}>{formError}</Text> : null}
@@ -942,6 +959,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
   },
+
   itemsListFlat: {
     gap: 0,
   },

@@ -195,15 +195,15 @@ export default function DashboardScreen() {
   const fixedAndVariableOutflows = currentOutflows.filter(o => o.type === 'fixed' || o.type === 'variable');
   const recurringOutflows = currentOutflows.filter(o => o.type === 'recurring');
   const installmentOutflows = currentOutflows.filter(o => o.type === 'installment');
+  const cardOutflows = currentOutflows.filter(o => o.type === 'installment' || o.type === 'recurring');
 
   const fixedAndVariableTotal = fixedAndVariableOutflows.reduce((sum, o) => sum + o.value, 0);
   const recurringTotal = recurringOutflows.reduce((sum, o) => sum + o.value, 0);
   const installmentTotal = installmentOutflows.reduce((sum, o) => sum + o.value, 0);
-
-  const creditCardTotal = installmentTotal;
+  const creditCardTotal = summary.exitsTotal - fixedAndVariableTotal;
 
   const getCardUsedLimit = (cardKey: string) => {
-    return installmentOutflows
+    return cardOutflows
       .filter(item => item.cardUsed === cardKey)
       .reduce((sum, item) => sum + item.value, 0);
   };
@@ -1422,6 +1422,7 @@ const styles = StyleSheet.create({
   },
   listContainer: {
     gap: 12,
+    flex: 1,
   },
   listItem: {
     flexDirection: 'row',
@@ -1882,7 +1883,6 @@ const styles = StyleSheet.create({
     gap: 24,
   },
   unifiedColumn: {
-    flex: 1,
     backgroundColor: '#FFFFFF',
     borderRadius: 12,
     borderWidth: 1,

@@ -26,6 +26,7 @@ export interface Recurring {
   id: RecurringId;
   description: string;
   value: number;
+  cardUsed: string;
 }
 
 export interface MonthSummary {

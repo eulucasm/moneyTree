@@ -51,6 +51,7 @@ export function computeMonthlyOutflowsList(
       value: r.value,
       type: 'recurring',
       status: 'ok', // recurrings are computed as auto-paid placeholders
+      cardUsed: r.cardUsed || 'nubank',
     });
   });
 
@@ -128,9 +129,15 @@ export function computeMonthlySummary(
       .filter(e => e.date === m)
       .reduce((sum, e) => sum + e.value, 0);
 
-    // Exits list sum
     const monthlyOutflows = isBeforeCutoff ? [] : computeMonthlyOutflowsList(m, exits, recurrings, purchases, installmentStatusMap, cutoffMonth);
-    const monthlyExitsTotal = monthlyOutflows.reduce((sum, o) => sum + o.value, 0);
+    
+    let monthlyExitsTotal = 0;
+    if (!isBeforeCutoff) {
+      // Add fixed and variable
+      monthlyExitsTotal += monthlyOutflows.filter(o => o.type === 'fixed' || o.type === 'variable').reduce((sum, o) => sum + o.value, 0);
+
+      monthlyExitsTotal += monthlyOutflows.filter(o => o.type === 'installment' || o.type === 'recurring').reduce((sum, o) => sum + o.value, 0);
+    }
 
     const monthlySavingsLogs = isBeforeCutoff ? 0 : (savingsLogs[m] || 0);
     let savingsPlaced = 0;

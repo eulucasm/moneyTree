@@ -169,14 +169,18 @@ export function useGlobalSync() {
             let sourceData: any;
             let sourceLabel: string;
 
-            if (cloudHasData) {
-              // Cloud has data — always trust it (it's the source of truth)
+            if (localHasData && localTime > cloudTime) {
+              // Local data is newer (e.g., user refreshed before sync finished)
+              sourceData = localData;
+              sourceLabel = 'AsyncStorage (local - newer)';
+            } else if (cloudHasData) {
+              // Cloud has data and is newer or equal
               sourceData = cloudData;
               sourceLabel = 'Cloud (Supabase)';
             } else if (localHasData) {
               // Cloud empty but local has data — use local and push to cloud
               sourceData = localData;
-              sourceLabel = 'AsyncStorage (local)';
+              sourceLabel = 'AsyncStorage (local - cloud empty)';
             } else {
               // Both empty — use cloud defaults
               sourceData = cloudData;
@@ -376,26 +380,30 @@ export function useGlobalSync() {
       }, 300);
     };
 
-    const unsubFinance = useFinanceStore.subscribe((state, prevState) => {
+    let prevFinanceState = useFinanceStore.getState();
+    const unsubFinance = useFinanceStore.subscribe((state) => {
       if (!isSyncingFromCloud.current && (
-        state.entries !== prevState.entries ||
-        state.exits !== prevState.exits ||
-        state.recurrings !== prevState.recurrings ||
-        state.purchases !== prevState.purchases ||
-        state.savingsLogs !== prevState.savingsLogs ||
-        state.creditCards !== prevState.creditCards ||
-        state.savingsGoal !== prevState.savingsGoal ||
-        state.language !== prevState.language ||
-        state.installmentStatusMap !== prevState.installmentStatusMap
+        state.entries !== prevFinanceState.entries ||
+        state.exits !== prevFinanceState.exits ||
+        state.recurrings !== prevFinanceState.recurrings ||
+        state.purchases !== prevFinanceState.purchases ||
+        state.savingsLogs !== prevFinanceState.savingsLogs ||
+        state.creditCards !== prevFinanceState.creditCards ||
+        state.savingsGoal !== prevFinanceState.savingsGoal ||
+        state.language !== prevFinanceState.language ||
+        state.installmentStatusMap !== prevFinanceState.installmentStatusMap
       )) {
          handleStateChange();
       }
+      prevFinanceState = state;
     });
 
-    const unsubAuth = useAuthStore.subscribe((state, prevState) => {
-      if (state.userProfile !== prevState.userProfile && !isSyncingFromCloud.current) {
+    let prevAuthState = useAuthStore.getState();
+    const unsubAuth = useAuthStore.subscribe((state) => {
+      if (state.userProfile !== prevAuthState.userProfile && !isSyncingFromCloud.current) {
          handleStateChange();
       }
+      prevAuthState = state;
     });
 
     // SAFETY NET: Periodic sync every 30 seconds to catch any missed changes
