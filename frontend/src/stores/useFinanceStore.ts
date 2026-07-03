@@ -84,8 +84,8 @@ interface FinanceState {
   getMonthlySummary: (monthStr: string, userCreatedAt: string) => MonthSummary;
 }
 
-import { syncToFirestoreNow } from '../services/syncFirestore';
-
+// Persist to AsyncStorage only. Cloud sync is handled by the Zustand subscriber
+// in useGlobalSync.ts which debounces, retries, and validates before sending.
 const persist = async (key: string, data: any) => {
   try {
     await AsyncStorage.setItem(key, JSON.stringify(data));
@@ -95,11 +95,8 @@ const persist = async (key: string, data: any) => {
   } catch (err) {
     console.error(`Error saving key ${key}:`, err);
   }
-  // Also sync to Firestore immediately (fire-and-forget)
-  syncToFirestoreNow().catch(err => {
-    console.warn(`[persist] Firestore sync failed for ${key}:`, err);
-  });
 };
+
 
 export const useFinanceStore = create<FinanceState>((set, get) => ({
   entries: [],

@@ -394,7 +394,35 @@ app.post('/api/sync', authMiddleware, async (req: AuthenticatedRequest, res: Res
   } = req.body;
 
   try {
+    // GUARD: Reject empty-state overwrites that would wipe existing data
+    const incomingIsEmpty = entries.length === 0 && exits.length === 0 &&
+      recurrings.length === 0 && purchases.length === 0 && creditCards.length === 0;
+
+    if (incomingIsEmpty) {
+      const existingCounts = await prisma.user.findUnique({
+        where: { id: userId },
+        select: {
+          _count: {
+            select: { entries: true, exits: true, recurrings: true, purchases: true }
+          }
+        }
+      });
+
+      if (existingCounts) {
+        const c = existingCounts._count;
+        const dbHasData = c.entries > 0 || c.exits > 0 || c.recurrings > 0 || c.purchases > 0;
+        if (dbHasData) {
+          console.warn(`[Sync] BLOCKED empty overwrite for user ${userId} — DB has ${c.entries}E/${c.exits}X/${c.recurrings}R/${c.purchases}P`);
+          return res.status(409).json({
+            error: 'Empty state rejected — user has existing data in the database.',
+            code: 'EMPTY_OVERWRITE_BLOCKED'
+          });
+        }
+      }
+    }
+
     // 1. Flatten savingsLogs map
+
     const savingsItemsList: any[] = [];
     for (const [monthStr, items] of Object.entries(savingsLogs)) {
       if (Array.isArray(items)) {

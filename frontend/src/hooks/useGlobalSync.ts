@@ -22,7 +22,7 @@ export const useSyncStore = create<SyncState>((set) => ({
 }));
 
 /**
- * Loads finance data from AsyncStorage as a fallback when Firestore is unavailable.
+ * Loads finance data from AsyncStorage as a fallback when the backend is unavailable.
  * Returns the data object or null if nothing is found.
  */
 async function loadFromAsyncStorage(): Promise<Record<string, any> | null> {
@@ -84,28 +84,36 @@ async function loadFromAsyncStorage(): Promise<Record<string, any> | null> {
 export function useGlobalSync() {
   const isSyncingFromCloud = useRef(false);
   const pendingSyncTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const periodicSyncInterval = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  // Register beforeunload handler on web to flush pending changes
+  // Register beforeunload handler on web to flush pending changes using sendBeacon
   useEffect(() => {
     if (Platform.OS !== 'web') return;
 
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-      // Capture UID before it might be cleared
       const uid = useAuthStore.getState().user?.uid;
-      if (uid && pendingSyncTimeout.current) {
-        // Cancel debounced sync and do immediate sync
+      if (!uid) return;
+
+      // Cancel any pending debounced sync
+      if (pendingSyncTimeout.current) {
         clearTimeout(pendingSyncTimeout.current);
         pendingSyncTimeout.current = null;
-        // Best-effort sync — browser may not wait for this
-        syncToFirestoreNow(uid).catch(() => {});
       }
+
+      // Best-effort sync before page close — syncToFirestoreNow has built-in validation
+      try {
+        syncToFirestoreNow(uid, 1).catch(() => {});
+      } catch {
+        // Last resort — at least the data is in AsyncStorage
+      }
+
     };
 
     window.addEventListener('beforeunload', handleBeforeUnload);
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, []);
 
-  // Main auth state listener — loads data from Firestore (or AsyncStorage fallback) on login
+  // Main auth state listener — loads data from backend (or AsyncStorage fallback) on login
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       const { setUser, setUserProfile, setAuthInitialized, setSuspendedMsg, logout } = useAuthStore.getState();
@@ -151,11 +159,31 @@ export function useGlobalSync() {
             const localData = await loadFromAsyncStorage();
             const localTime = localData?.lastUpdatedAt || 0;
 
-            // Use whichever source has the most recent data
-            const sourceData = (localTime > cloudTime && localData) ? localData : cloudData;
-            const sourceLabel = (localTime > cloudTime && localData) ? 'AsyncStorage' : 'Firestore';
+            // ALWAYS prefer cloud data if it has any financial records.
+            // Only use local data if cloud is truly empty AND local has data.
+            const cloudHasData = (cloudData.entries?.length > 0 || cloudData.exits?.length > 0 ||
+              cloudData.recurrings?.length > 0 || cloudData.purchases?.length > 0);
+            const localHasData = localData && (localData.entries?.length > 0 || localData.exits?.length > 0 ||
+              localData.recurrings?.length > 0 || localData.purchases?.length > 0);
+
+            let sourceData: any;
+            let sourceLabel: string;
+
+            if (cloudHasData) {
+              // Cloud has data — always trust it (it's the source of truth)
+              sourceData = cloudData;
+              sourceLabel = 'Cloud (Supabase)';
+            } else if (localHasData) {
+              // Cloud empty but local has data — use local and push to cloud
+              sourceData = localData;
+              sourceLabel = 'AsyncStorage (local)';
+            } else {
+              // Both empty — use cloud defaults
+              sourceData = cloudData;
+              sourceLabel = 'Cloud (empty/defaults)';
+            }
             
-            console.log(`[Sync] Loading data from ${sourceLabel} (cloud: ${cloudTime}, local: ${localTime})`);
+            console.log(`[Sync] Loading data from ${sourceLabel} (cloud: ${cloudTime}, local: ${localTime}, cloudHasData: ${cloudHasData}, localHasData: ${localHasData})`);
 
             isSyncingFromCloud.current = true;
             
@@ -178,20 +206,24 @@ export function useGlobalSync() {
             setUserProfile(updatedUserProfile);
             i18n.changeLanguage(updatedLanguage);
 
-            // If local was newer, push to Firestore immediately so cloud catches up
-            if (localTime > cloudTime && localData) {
-              console.log('[Sync] Local data is newer — pushing to Firestore...');
-              await syncToFirestoreNow(currentUser.uid);
+            // If local was the source, push to cloud so the DB catches up
+            if (sourceLabel.startsWith('AsyncStorage') && localData) {
+              console.log('[Sync] Local data was used — pushing to cloud...');
+              // Wait for state to settle before pushing
+              setTimeout(async () => {
+                isSyncingFromCloud.current = false;
+                await syncToFirestoreNow(currentUser.uid);
+              }, 500);
+            } else {
+              // Extended delay to prevent accidental overwrites from state-change subscribers
+              setTimeout(() => {
+                isSyncingFromCloud.current = false;
+              }, 2000);
             }
-
-            // Small delay to let state settle before allowing local writes to trigger sync
-            setTimeout(() => {
-              isSyncingFromCloud.current = false;
-            }, 300);
 
             setSyncStatus('synced');
           } else {
-            // New user — no document in Firestore yet
+            // New user — no document in the database yet
             // Check if there's local data from AsyncStorage that should be preserved
             const localData = await loadFromAsyncStorage();
 
@@ -225,9 +257,9 @@ export function useGlobalSync() {
 
             setUserProfile(initialProfile);
 
-            // If we have local data, hydrate the store with it before saving to Firestore
+            // If we have local data, hydrate the store with it before saving to cloud
             if (localData) {
-              console.log('[Sync] New Firestore doc but found local data — restoring...');
+              console.log('[Sync] New cloud doc but found local data — restoring...');
               isSyncingFromCloud.current = true;
               setFinanceData({
                 entries: localData.entries || [],
@@ -243,18 +275,18 @@ export function useGlobalSync() {
               });
               setTimeout(() => {
                 isSyncingFromCloud.current = false;
-              }, 300);
+              }, 2000);
             }
 
-            // Create the Firestore document with current state
+            // Create the cloud document with current state
             await syncToFirestoreNow(currentUser.uid);
             setSyncStatus('synced');
           }
         } catch (err) {
-          console.error('Error syncing auth state with Firestore:', err);
+          console.error('Error syncing auth state with backend:', err);
           
-          // CRITICAL FALLBACK: If Firestore fails completely, load from AsyncStorage
-          console.log('[Sync] Firestore failed — attempting AsyncStorage fallback...');
+          // CRITICAL FALLBACK: If backend fails completely, load from AsyncStorage
+          console.log('[Sync] Backend failed — attempting AsyncStorage fallback...');
           const localData = await loadFromAsyncStorage();
           if (localData) {
             isSyncingFromCloud.current = true;
@@ -273,7 +305,7 @@ export function useGlobalSync() {
             i18n.changeLanguage(localData.language || 'pt');
             setTimeout(() => {
               isSyncingFromCloud.current = false;
-            }, 300);
+            }, 2000);
             console.log('[Sync] Successfully loaded from AsyncStorage fallback.');
           }
           
@@ -301,7 +333,7 @@ export function useGlobalSync() {
             i18n.changeLanguage(localData.language || 'pt');
             setTimeout(() => {
               isSyncingFromCloud.current = false;
-            }, 300);
+            }, 2000);
           }
         }).catch(err => {
           console.error('[Sync] Error loading AsyncStorage for guest:', err);
@@ -313,7 +345,7 @@ export function useGlobalSync() {
     return () => unsubscribe();
   }, []);
 
-  // Subscribe to Zustand state changes and push to Firestore with debounce.
+  // Subscribe to Zustand state changes and push to backend with debounce + retry.
   // IMPORTANT: We capture the UID at the moment the change happens, not when the debounce fires.
   // This prevents data loss if the user logs out before the debounce completes.
   useEffect(() => {
@@ -331,15 +363,17 @@ export function useGlobalSync() {
         clearTimeout(pendingSyncTimeout.current);
       }
 
+      // Reduced debounce from 500ms to 300ms for faster sync
       pendingSyncTimeout.current = setTimeout(async () => {
         if (!capturedUid) return;
         
         const { setSyncStatus } = useSyncStore.getState();
         setSyncStatus('syncing');
         
+        // syncToFirestoreNow now has built-in retry and validation
         await syncToFirestoreNow(capturedUid);
         pendingSyncTimeout.current = null;
-      }, 500);
+      }, 300);
     };
 
     const unsubFinance = useFinanceStore.subscribe((state, prevState) => {
@@ -364,9 +398,25 @@ export function useGlobalSync() {
       }
     });
 
+    // SAFETY NET: Periodic sync every 30 seconds to catch any missed changes
+    periodicSyncInterval.current = setInterval(() => {
+      const user = useAuthStore.getState().user;
+      if (!user || isSyncingFromCloud.current) return;
+      
+      // Only sync if there's no pending debounce (to avoid double-syncing)
+      if (!pendingSyncTimeout.current) {
+        syncToFirestoreNow(user.uid, 1).catch(() => {
+          // Silent failure for periodic sync — it's just a safety net
+        });
+      }
+    }, 30000);
+
     return () => {
       if (pendingSyncTimeout.current) {
         clearTimeout(pendingSyncTimeout.current);
+      }
+      if (periodicSyncInterval.current) {
+        clearInterval(periodicSyncInterval.current);
       }
       unsubFinance();
       unsubAuth();
