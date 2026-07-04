@@ -314,6 +314,7 @@ export default function SettingsScreen() {
           text: 'Sair',
           style: 'destructive',
           onPress: async () => {
+            await clearAllData();
             await logout();
             showAlert('Deslogado!', 'Sua sessão foi encerrada com sucesso.', [
               {
@@ -354,19 +355,23 @@ export default function SettingsScreen() {
       onConfirm: async () => {
         try {
           await deleteAccount();
-          showAlert('Sucesso!', 'Sua conta e dados foram apagados com sucesso.', [
-            {
-              text: 'OK',
-              onPress: () => {
-                router.replace('/login');
-              }
-            }
-          ]);
+          await clearAllData();
+          router.replace('/login');
         } catch (err: any) {
           if (err.message === 'reauth_required') {
             showAlert(
               'Ação de Segurança',
-              'Para excluir sua conta, você precisa ter feito login recentemente. Por favor, saia e faça login novamente para realizar esta ação.'
+              'Para excluir sua conta definitivamente, você precisa ter feito login recentemente. Você será redirecionado para a tela de login.',
+              [
+                {
+                  text: 'OK',
+                  onPress: async () => {
+                    await clearAllData();
+                    await logout();
+                    router.replace('/login');
+                  }
+                }
+              ]
             );
           } else {
             showAlert('Erro', 'Ocorreu um erro ao excluir sua conta: ' + err.message);
