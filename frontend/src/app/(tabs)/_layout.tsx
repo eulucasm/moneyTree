@@ -13,7 +13,8 @@ import {
   X,
   Sparkles,
   Sun,
-  Moon
+  Moon,
+  LogOut
 } from 'lucide-react-native';
 import { useFinancials } from '../../context/FinancialContext';
 import { useThemeStore } from '../../stores/useThemeStore';
@@ -25,11 +26,12 @@ import { useNotifications } from '../../hooks/useNotifications';
 function CustomHeader() {
   const router = useRouter();
   const pathname = usePathname();
-  const { userProfile } = useFinancials();
+  const { userProfile, logout } = useFinancials();
   const avatarScale = useRef(new Animated.Value(1)).current;
   const { width } = useWindowDimensions();
   const isLargeScreen = width >= 768;
   const [menuOpen, setMenuOpen] = useState(false);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
   const notifications = useNotifications();
 
@@ -63,6 +65,9 @@ function CustomHeader() {
   };
 
   const handlePress = () => {
+    // Abre ou fecha o menu imediatamente, sem esperar a animação
+    setUserMenuOpen(!userMenuOpen);
+
     Animated.sequence([
       Animated.spring(avatarScale, {
         toValue: 0.9,
@@ -73,9 +78,17 @@ function CustomHeader() {
         friction: 3,
         useNativeDriver: Platform.OS !== 'web',
       })
-    ]).start(() => {
-      router.push('/settings');
-    });
+    ]).start();
+  };
+
+  const handleLogout = async () => {
+    setUserMenuOpen(false);
+    try {
+      await logout();
+      router.replace('/login');
+    } catch (e) {
+      console.error(e);
+    }
   };
 
   const initials = (
@@ -151,31 +164,58 @@ function CustomHeader() {
             <Bell size={20} color={colors.textSecondary} />
             {notifications.length > 0 && <View style={styles.notificationBadge} />}
           </TouchableOpacity>
-          <TouchableOpacity 
-            activeOpacity={0.8}
-            onPress={handlePress}
-            // @ts-ignore
-            onMouseEnter={handleMouseEnter}
-            onMouseLeave={handleMouseLeave}
-          >
-            <Animated.View style={[
-              styles.avatar, 
-              { transform: [{ scale: avatarScale }] },
-              colorScheme === 'dark' ? { backgroundColor: 'rgba(16, 185, 129, 0.1)', borderColor: 'rgba(16, 185, 129, 0.3)' } : null,
-              userProfile?.activePlan === 'premium' && {
-                backgroundColor: colorScheme === 'dark' ? '#78350F' : '#FEF3C7',
-                borderColor: '#F59E0B'
-              }
-            ]}>
-              <Text style={[
-                styles.avatarText,
-                { color: colorScheme === 'dark' ? '#10B981' : '#0F5132' },
-                userProfile?.activePlan === 'premium' && { color: colorScheme === 'dark' ? '#FBBF24' : '#B45309' }
+          <View style={{ position: 'relative', zIndex: 99 }}>
+            <TouchableOpacity 
+              activeOpacity={0.8}
+              onPress={handlePress}
+              // @ts-ignore
+              onMouseEnter={handleMouseEnter}
+              onMouseLeave={handleMouseLeave}
+            >
+              <Animated.View style={[
+                styles.avatar, 
+                { transform: [{ scale: avatarScale }] },
+                colorScheme === 'dark' ? { backgroundColor: 'rgba(16, 185, 129, 0.1)', borderColor: 'rgba(16, 185, 129, 0.3)' } : null,
+                userProfile?.activePlan === 'premium' && {
+                  backgroundColor: colorScheme === 'dark' ? '#78350F' : '#FEF3C7',
+                  borderColor: '#F59E0B'
+                }
               ]}>
-                {initials}
-              </Text>
-            </Animated.View>
-          </TouchableOpacity>
+                <Text style={[
+                  styles.avatarText,
+                  { color: colorScheme === 'dark' ? '#10B981' : '#0F5132' },
+                  userProfile?.activePlan === 'premium' && { color: colorScheme === 'dark' ? '#FBBF24' : '#B45309' }
+                ]}>
+                  {initials}
+                </Text>
+              </Animated.View>
+            </TouchableOpacity>
+
+            {userMenuOpen && (
+              <View style={[
+                styles.userDropdownMenu, 
+                { backgroundColor: colorScheme === 'dark' ? '#151D30' : '#FFFFFF', borderColor: colors.borderGlass }
+              ]}>
+                <TouchableOpacity 
+                  style={[styles.userDropdownItem, { borderBottomColor: colors.borderGlass }]} 
+                  onPress={() => {
+                    setUserMenuOpen(false);
+                    router.push('/settings');
+                  }}
+                >
+                  <SettingsIcon size={18} color={colors.text} style={{ marginRight: 10 }} />
+                  <Text style={[styles.userDropdownText, { color: colors.text }]}>Configurações</Text>
+                </TouchableOpacity>
+                <TouchableOpacity 
+                  style={styles.userDropdownItem} 
+                  onPress={handleLogout}
+                >
+                  <LogOut size={18} color="#DC3545" style={{ marginRight: 10 }} />
+                  <Text style={[styles.userDropdownText, { color: '#DC3545' }]}>Sair</Text>
+                </TouchableOpacity>
+              </View>
+            )}
+          </View>
         </View>
       </View>
 
@@ -500,5 +540,35 @@ const styles = StyleSheet.create({
   mobileDropdownTextActive: {
     color: '#0F5132',
     fontWeight: '700',
+  },
+  userDropdownMenu: {
+    position: 'absolute',
+    top: 50,
+    right: 0,
+    width: 200,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#E9ECEF',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
+    elevation: 5,
+    overflow: 'hidden',
+    zIndex: 100,
+  },
+  userDropdownItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F8F9FA',
+  },
+  userDropdownText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#212529',
   },
 });
