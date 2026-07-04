@@ -140,6 +140,7 @@ export default function RegisterScreen() {
         createdAt: currentPeriod,
         role: (email.trim().toLowerCase() === 'eulucasm@icloud.com' || email.trim().toLowerCase() === 'lucaspoletis@gmail.com') ? 'admin' : 'user',
         status: 'active',
+        hasSeenWelcome: false,
       });
 
       showToast('Conta criada com sucesso!', 'success');

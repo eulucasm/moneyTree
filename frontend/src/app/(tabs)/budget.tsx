@@ -12,6 +12,7 @@ import CardSelector from '../../components/CardSelector';
 import Toast from '../../components/Toast';
 import { formatCurrency } from '../../utils/format';
 import { useTheme } from '../../hooks/useTheme';
+import { getEarliestDataMonth } from '../../services/summaryCalculator';
 
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
@@ -209,8 +210,17 @@ export default function BudgetScreen() {
     setAddModalType(null);
   };
 
-  const summary = React.useMemo(() => getMonthlySummary(selectedPeriod, userCreatedAt), [selectedPeriod, getMonthlySummary, userCreatedAt, purchases, exits, recurrings, entries, savingsLogs, installmentStatusMap]);
-  const currentOutflows = React.useMemo(() => getMonthlyOutflowsList(selectedPeriod, userCreatedAt), [selectedPeriod, getMonthlyOutflowsList, userCreatedAt, purchases, exits, recurrings, installmentStatusMap]);
+  const summary = React.useMemo(() => {
+    const baseUserCreatedAt = userProfile?.createdAt || '2025-06';
+    const trueCutoff = getEarliestDataMonth(baseUserCreatedAt, entries, exits, purchases);
+    return getMonthlySummary(selectedPeriod, trueCutoff);
+  }, [selectedPeriod, getMonthlySummary, userProfile, purchases, exits, recurrings, entries, savingsLogs, installmentStatusMap]);
+
+  const currentOutflows = React.useMemo(() => {
+    const baseUserCreatedAt = userProfile?.createdAt || '2025-06';
+    const trueCutoff = getEarliestDataMonth(baseUserCreatedAt, entries, exits, purchases);
+    return getMonthlyOutflowsList(selectedPeriod, trueCutoff);
+  }, [selectedPeriod, getMonthlyOutflowsList, userProfile, purchases, exits, recurrings, installmentStatusMap]);
   const currentEntries = entries.filter(e => e.date === selectedPeriod);
 
   const fixedOutflows = currentOutflows.filter(o => o.type === 'fixed');

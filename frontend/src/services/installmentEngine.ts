@@ -54,10 +54,12 @@ export function generateInstallments(purchase: Purchase): InstallmentItem[] {
     const indexStr = String(i + 1).padStart(2, '0');
     const totalStr = String(purchase.installments).padStart(2, '0');
     
+    const isAdjustment = purchase.installments === 1 && purchase.description.startsWith('Ajuste de Fatura');
+    
     items.push({
       id: `${purchase.id}-inst-${i + 1}`,
       purchaseId: purchase.id,
-      description: `${purchase.description} (${indexStr}/${totalStr})`,
+      description: isAdjustment ? purchase.description : `${purchase.description} (${indexStr}/${totalStr})`,
       value: purchase.monthlyValue,
       installmentIndex: i + 1,
       totalInstallments: purchase.installments,

@@ -27,6 +27,7 @@ import CardSelector from '../../components/CardSelector';
 import Toast from '../../components/Toast';
 import { useRouter } from 'expo-router';
 import { useTheme } from '../../hooks/useTheme';
+import { getEarliestDataMonth } from '../../services/summaryCalculator';
 
 export default function DashboardScreen() {
   const { theme: colorScheme, colors } = useTheme();
@@ -49,6 +50,7 @@ export default function DashboardScreen() {
   const entries = useFinanceStore(s => s.entries);
   const exits = useFinanceStore(s => s.exits);
   const recurrings = useFinanceStore(s => s.recurrings);
+  const installmentStatusMap = useFinanceStore(s => s.installmentStatusMap);
   
   const userProfile = useAuthStore(s => s.userProfile);
   const userCreatedAt = userProfile?.createdAt || '2025-06';
@@ -88,6 +90,21 @@ export default function DashboardScreen() {
   const [newCardColor, setNewCardColor] = useState('#8B5CF6');
   const [newCardDueDate, setNewCardDueDate] = useState('');
   const [newCardBestDay, setNewCardBestDay] = useState('');
+
+  // Welcome Modal state
+  const [welcomeModalVisible, setWelcomeModalVisible] = useState(false);
+  const setUserProfile = useAuthStore(s => s.setUserProfile);
+
+  useEffect(() => {
+    if (userProfile && userProfile.hasSeenWelcome === false) {
+      setWelcomeModalVisible(true);
+    }
+  }, [userProfile]);
+
+  const handleCloseWelcome = () => {
+    setWelcomeModalVisible(false);
+    setUserProfile({ hasSeenWelcome: true });
+  };
 
   // Toast state
   const [toastVisible, setToastVisible] = useState(false);
@@ -188,8 +205,17 @@ export default function DashboardScreen() {
   }
 
   // Get metrics for current month
-  const summary = React.useMemo(() => getMonthlySummary(selectedPeriod, userCreatedAt), [selectedPeriod, getMonthlySummary, userCreatedAt, purchases, savingsLogs, entries, exits, recurrings]);
-  const currentOutflows = React.useMemo(() => getMonthlyOutflowsList(selectedPeriod, userCreatedAt), [selectedPeriod, getMonthlyOutflowsList, userCreatedAt, purchases, exits, recurrings]);
+  const summary = React.useMemo(() => {
+    const baseUserCreatedAt = userProfile?.createdAt || '2025-06';
+    const trueCutoff = getEarliestDataMonth(baseUserCreatedAt, entries, exits, purchases);
+    return getMonthlySummary(selectedPeriod, trueCutoff);
+  }, [selectedPeriod, getMonthlySummary, userProfile, entries, exits, recurrings, purchases, savingsLogs, installmentStatusMap]);
+
+  const currentOutflows = React.useMemo(() => {
+    const baseUserCreatedAt = userProfile?.createdAt || '2025-06';
+    const trueCutoff = getEarliestDataMonth(baseUserCreatedAt, entries, exits, purchases);
+    return getMonthlyOutflowsList(selectedPeriod, trueCutoff);
+  }, [selectedPeriod, getMonthlyOutflowsList, userProfile, entries, exits, recurrings, purchases, installmentStatusMap]);
 
   // Group outflows
   const fixedAndVariableOutflows = currentOutflows.filter(o => o.type === 'fixed' || o.type === 'variable');
@@ -924,7 +950,7 @@ export default function DashboardScreen() {
                         <View style={[styles.brandDot, { backgroundColor: card.color || '#64748B', marginRight: 6, marginTop: 4 }]} />
                         <View style={{ flex: 1 }}>
                           <Text style={[styles.cardManagerName, { color: colors.text }]}>{card.name}</Text>
-                          {(card.dueDate !== undefined || card.bestPurchaseDay !== undefined) && (
+                          {(card.dueDate != null || card.bestPurchaseDay != null) && (
                             <Text style={{ fontSize: 10, color: colors.textMuted, marginTop: 2 }}>
                               Venc: {card.dueDate ? `dia ${card.dueDate}` : 'N/A'} • Melhor Compra: {card.bestPurchaseDay ? `dia ${card.bestPurchaseDay}` : 'N/A'}
                             </Text>
@@ -1035,6 +1061,35 @@ export default function DashboardScreen() {
           </View>
         </View>
       </Modal>
+
+      {/* Welcome Modal */}
+      <Modal visible={welcomeModalVisible} animationType="fade" transparent>
+        <View style={{ flex: 1, backgroundColor: colorScheme === 'dark' ? 'rgba(0,0,0,0.7)' : 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center', padding: 16 }}>
+          <View style={{ width: '100%', maxWidth: 420 }}>
+            <GlassCard style={{ padding: 32, borderRadius: 24, alignItems: 'center' }}>
+              <View style={{ width: 72, height: 72, borderRadius: 36, backgroundColor: colorScheme === 'dark' ? 'rgba(16, 185, 129, 0.15)' : 'rgba(15, 81, 50, 0.1)', justifyContent: 'center', alignItems: 'center', marginBottom: 24 }}>
+                <Sparkles size={36} color={colorScheme === 'dark' ? '#10B981' : '#0F5132'} />
+              </View>
+              <Text style={[{ color: colors.text, fontSize: 26, fontWeight: '800', textAlign: 'center', marginBottom: 16, letterSpacing: -0.5 }]}>
+                Bem-vindo ao{'\n'}Money Tree!
+              </Text>
+              <Text style={[{ color: colors.textMuted, textAlign: 'center', fontSize: 15, lineHeight: 24, marginBottom: 32 }]}>
+                Estamos muito felizes em ter você aqui. Para começar com o pé direito, que tal cadastrar seus cartões na aba de <Text style={{fontWeight: 'bold', color: colors.text}}>Faturas</Text>?
+                {'\n\n'}
+                <Text style={{fontWeight: 'bold', color: colorScheme === 'dark' ? '#10B981' : '#0F5132'}}>Dica de ouro:</Text> Mantenha seus gastos atualizados para o sistema projetar com exatidão o seu futuro financeiro.
+              </Text>
+              <TouchableOpacity 
+                activeOpacity={0.8}
+                style={[{ backgroundColor: colorScheme === 'dark' ? '#10B981' : '#0F5132', width: '100%', paddingVertical: 16, borderRadius: 16, alignItems: 'center', shadowColor: colorScheme === 'dark' ? '#10B981' : '#0F5132', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.25, shadowRadius: 16, elevation: 8 }]} 
+                onPress={handleCloseWelcome}
+              >
+                <Text style={[{ fontSize: 16, fontWeight: 'bold', color: '#FFFFFF', letterSpacing: 0.5 }]}>Vamos lá!</Text>
+              </TouchableOpacity>
+            </GlassCard>
+          </View>
+        </View>
+      </Modal>
+
       <Toast 
         message={toastMessage} 
         type={toastType} 

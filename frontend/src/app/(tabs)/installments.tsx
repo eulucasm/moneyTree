@@ -20,7 +20,8 @@ import {
   ChevronRight, 
   Check, 
   Square,
-  Settings as SettingsIcon
+  Settings as SettingsIcon,
+  Edit2
 } from 'lucide-react-native';
 
 export default function InstallmentsScreen() {
@@ -87,6 +88,11 @@ export default function InstallmentsScreen() {
   const [editCardColor, setEditCardColor] = useState('#8B5CF6');
   const [editCardDueDate, setEditCardDueDate] = useState('');
   const [editCardBestDay, setEditCardBestDay] = useState('');
+
+  // Adjust Invoice state
+  const [adjustModalVisible, setAdjustModalVisible] = useState(false);
+  const [adjustRealValue, setAdjustRealValue] = useState('');
+  const [adjustCalculatedTotal, setAdjustCalculatedTotal] = useState(0);
 
 
   const availableColors = [
@@ -269,6 +275,33 @@ export default function InstallmentsScreen() {
     showToast('Compra parcelada registrada com sucesso!', 'success');
   };
 
+  const handleOpenAdjustModal = (calculatedTotal: number) => {
+    setAdjustCalculatedTotal(calculatedTotal);
+    setAdjustRealValue(calculatedTotal.toString());
+    setAdjustModalVisible(true);
+  };
+
+  const handleAdjustInvoiceSubmit = () => {
+    const valParsed = parseFloat(adjustRealValue);
+    if (isNaN(valParsed)) {
+      showToast('Valor inválido.', 'error');
+      return;
+    }
+    const diff = valParsed - adjustCalculatedTotal;
+    if (diff < 0) {
+      showToast('O valor real não pode ser menor que a soma das assinaturas/parcelas. Remova itens incorretos primeiro.', 'error');
+      return;
+    }
+    if (diff === 0) {
+      setAdjustModalVisible(false);
+      return;
+    }
+
+    addPurchase('Ajuste de Fatura / Gastos Diversos', diff, 1, selectedPeriod, selectedCard);
+    setAdjustModalVisible(false);
+    showToast('Ajuste aplicado com sucesso!', 'success');
+  };
+
   const handleDeletePress = (purchaseId: PurchaseId, desc: string) => {
     if (Platform.OS === 'web') {
       const confirmWeb = window.confirm(`Deseja excluir o parcelamento "${desc}" e todas as suas parcelas futuras?`);
@@ -427,10 +460,18 @@ export default function InstallmentsScreen() {
             </Text>
           </View>
           <View style={{ backgroundColor: colorScheme === 'dark' ? 'rgba(255,255,255,0.05)' : '#F8F9FA', padding: 16, borderRadius: 12, width: '100%', borderColor: colors.borderGlass, borderWidth: 1 }}>
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
               <Text style={{ fontSize: 13, color: colors.textMuted }}>Total Faturado (Mês Selecionado)</Text>
-              <Text style={{ fontSize: 18, fontWeight: '700', color: colors.text }}>{formatCurrency(cardFaturaSum)}</Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+                <Text style={{ fontSize: 18, fontWeight: '700', color: colors.text }}>{formatCurrency(cardFaturaSum)}</Text>
+                <TouchableOpacity onPress={() => handleOpenAdjustModal(cardFaturaSum)} style={{ padding: 6, backgroundColor: colorScheme === 'dark' ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)', borderRadius: 12 }}>
+                  <Edit2 size={14} color={colors.text} />
+                </TouchableOpacity>
+              </View>
             </View>
+            <Text style={{ fontSize: 11, color: colors.textMuted, marginTop: 8, lineHeight: 16 }}>
+              Use o botão de editar para ajustar o total. O app irá inserir um ajuste manual na fatura, caso haja discrepância com pequenos gastos avulsos.
+            </Text>
           </View>
         </View>
 
@@ -479,7 +520,11 @@ export default function InstallmentsScreen() {
                       <View style={styles.metaRow}>
                         <Calendar size={12} color={colors.textMuted} />
                         <Text style={[styles.metaText, { color: colors.textMuted }]}>
-                          {item.type === 'recurring' ? 'Assinatura Recorrente' : `Parcela ${item.installmentRef}`}
+                          {item.type === 'recurring' 
+                            ? 'Assinatura Recorrente' 
+                            : item.description.startsWith('Ajuste de Fatura') 
+                              ? 'Ajuste Manual' 
+                              : `Parcela ${item.installmentRef}`}
                         </Text>
                       </View>
                     </View>
@@ -826,6 +871,46 @@ export default function InstallmentsScreen() {
         visible={toastVisible} 
         onHide={() => setToastVisible(false)} 
       />
+
+      {/* ADJUST INVOICE MODAL */}
+      <Modal
+        animationType="fade"
+        transparent={true}
+        visible={adjustModalVisible}
+        onRequestClose={() => setAdjustModalVisible(false)}
+      >
+        <View style={[styles.modalBg, { backgroundColor: colorScheme === 'dark' ? 'rgba(0,0,0,0.6)' : 'rgba(33, 37, 41, 0.4)' }]}>
+          <View style={[styles.modalContainer, { maxWidth: 400, backgroundColor: colors.surface, borderColor: colors.borderGlass }]}>
+            <View style={[styles.modalHeader, { borderBottomColor: colors.borderGlass }]}>
+              <Text style={[styles.modalTitle, { color: colors.text }]}>Corrigir Valor da Fatura</Text>
+              <TouchableOpacity onPress={() => setAdjustModalVisible(false)}>
+                <X color={colors.text} size={24} />
+              </TouchableOpacity>
+            </View>
+
+            <ScrollView contentContainerStyle={{ gap: 16, paddingBottom: 16 }} showsVerticalScrollIndicator={false}>
+              <View style={{ backgroundColor: colorScheme === 'dark' ? 'rgba(255,255,255,0.05)' : '#E8F5E9', borderColor: colors.borderGlass, padding: 12, borderRadius: 8, borderWidth: 1 }}>
+                <Text style={{ color: colors.textMuted, fontSize: 13, lineHeight: 20 }}>
+                  O app calculou um total de <Text style={{ fontWeight: 'bold', color: colors.text }}>{formatCurrency(adjustCalculatedTotal)}</Text>. 
+                  Se o valor real do seu banco for maior, informe abaixo para adicionar um item de "Ajuste / Gastos Diversos" automaticamente.
+                </Text>
+              </View>
+
+              <FinancialInput
+                label="Valor Real da Fatura"
+                isCurrency={true}
+                value={adjustRealValue}
+                onChangeText={setAdjustRealValue}
+              />
+
+              <FinancialButton
+                title="Aplicar Ajuste"
+                onPress={handleAdjustInvoiceSubmit}
+              />
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }

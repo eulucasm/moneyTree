@@ -109,10 +109,10 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       await user.delete();
       set({ user: null });
     } catch (err: any) {
-      console.error('Error deleting account:', err);
       if (err.code === 'auth/requires-recent-login') {
         throw new Error('reauth_required');
       }
+      console.error('Error deleting account:', err);
       throw err;
     }
   },

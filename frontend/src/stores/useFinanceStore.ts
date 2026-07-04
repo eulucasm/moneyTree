@@ -30,13 +30,7 @@ export const FINANCE_STORAGE_KEYS = {
   LAST_UPDATED: '@MoneyTree:lastUpdatedAt',
 };
 
-export const defaultCards: CreditCard[] = [
-  { id: 'nubank', name: 'Nubank', limit: 8000, color: '#8B5CF6' },
-  { id: 'mercadopago', name: 'Mercado Pago', limit: 4000, color: '#0EA5E9' },
-  { id: 'caixa', name: 'Caixa', limit: 5000, color: '#F97316' },
-  { id: 'bradesco', name: 'Bradesco', limit: 10000, color: '#EF4444' },
-  { id: 'other', name: 'Outros', limit: 3000, color: '#64748B' },
-];
+export const defaultCards: CreditCard[] = [];
 
 interface FinanceState {
   entries: Entry[];
@@ -118,6 +112,7 @@ export const useFinanceStore = create<FinanceState>((set, get) => ({
       entries: [],
       exits: [],
       recurrings: [],
+      purchases: [],
       savingsLogs: {},
       installmentStatusMap: {},
       savingsGoal: 0,

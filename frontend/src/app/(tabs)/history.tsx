@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { StyleSheet, Text, View, ScrollView, TouchableOpacity, Platform, LayoutAnimation, UIManager, Modal, useWindowDimensions } from 'react-native';
 import { useFinanceStore } from '../../stores/useFinanceStore';
 import { useAuthStore } from '../../stores/useAuthStore';
+import { getEarliestDataMonth } from '../../services/summaryCalculator';
 import GlassCard from '../../components/GlassCard';
 import { formatCurrency } from '../../utils/format';
 import { useTheme } from '../../hooks/useTheme';
@@ -57,8 +58,9 @@ export default function HistoryScreen() {
   // Generate list of up to 24 rolling months prior to the current month, starting from the user's creation cutoff
   const getPastMonths = () => {
     const list: Array<MonthItem> = [];
-    const userCreatedAt = userProfile?.createdAt || '2025-06';
-    const [startYear, startMonth] = userCreatedAt.split('-').map(Number);
+    const baseUserCreatedAt = userProfile?.createdAt || '2025-06';
+    const trueCutoff = getEarliestDataMonth(baseUserCreatedAt, entries, exits, purchases);
+    const [startYear, startMonth] = trueCutoff.split('-').map(Number);
     
     let year = startYear;
     let month = startMonth;
@@ -97,8 +99,17 @@ export default function HistoryScreen() {
 
   const modalSummary = React.useMemo(() => {
     if (!selectedMonthDetails) return null;
-    return getMonthlySummary(selectedMonthDetails.monthStr, userCreatedAt);
-  }, [selectedMonthDetails, getMonthlySummary, userCreatedAt, entries, exits, recurrings, purchases]);
+    const baseUserCreatedAt = userProfile?.createdAt || '2025-06';
+    const trueCutoff = getEarliestDataMonth(baseUserCreatedAt, entries, exits, purchases);
+    return getMonthlySummary(selectedMonthDetails.monthStr, trueCutoff);
+  }, [selectedMonthDetails, getMonthlySummary, userProfile, entries, exits, purchases]);
+
+  const modalOutflows = React.useMemo(() => {
+    if (!selectedMonthDetails) return [];
+    const baseUserCreatedAt = userProfile?.createdAt || '2025-06';
+    const trueCutoff = getEarliestDataMonth(baseUserCreatedAt, entries, exits, purchases);
+    return getMonthlyOutflowsList(selectedMonthDetails.monthStr, trueCutoff);
+  }, [selectedMonthDetails, getMonthlyOutflowsList, userProfile, entries, exits, purchases]);
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>

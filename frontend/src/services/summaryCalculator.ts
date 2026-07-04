@@ -14,6 +14,29 @@ import {
 } from '../types/finance';
 
 /**
+ * Determines the true start month by comparing the user's account creation date
+ * against the earliest explicit date in entries, exits, or purchases.
+ */
+export function getEarliestDataMonth(
+  userCreatedAt: string,
+  entries: Entry[],
+  exits: Exit[],
+  purchases: Purchase[]
+): string {
+  let earliest = userCreatedAt;
+  entries.forEach(e => {
+    if (e.date < earliest) earliest = e.date;
+  });
+  exits.forEach(e => {
+    if (e.date < earliest) earliest = e.date;
+  });
+  purchases.forEach(p => {
+    if (p.startDate < earliest) earliest = p.startDate;
+  });
+  return earliest;
+}
+
+/**
  * Computes all outflows for a given month, compiling fixed, recurring, and installments.
  */
 export function computeMonthlyOutflowsList(
@@ -51,7 +74,7 @@ export function computeMonthlyOutflowsList(
       value: r.value,
       type: 'recurring',
       status: 'ok', // recurrings are computed as auto-paid placeholders
-      cardUsed: r.cardUsed || 'nubank',
+      cardUsed: r.cardUsed,
     });
   });
 

@@ -146,7 +146,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   title: {
-    fontFamily: 'Inter-SemiBold',
+    fontWeight: '600',
     fontSize: 18,
   },
   closeBtn: {
@@ -163,12 +163,12 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   emptyText: {
-    fontFamily: 'Inter-SemiBold',
+    fontWeight: '600',
     fontSize: 16,
     marginTop: 8,
   },
   emptySub: {
-    fontFamily: 'Inter-Regular',
+    fontWeight: '400',
     fontSize: 14,
     textAlign: 'center',
   },
@@ -190,11 +190,11 @@ const styles = StyleSheet.create({
     paddingRight: 16,
   },
   notifTitle: {
-    fontFamily: 'Inter-SemiBold',
+    fontWeight: '600',
     fontSize: 15,
   },
   notifMessage: {
-    fontFamily: 'Inter-Regular',
+    fontWeight: '400',
     fontSize: 14,
     lineHeight: 20,
     paddingLeft: 32, // align with text

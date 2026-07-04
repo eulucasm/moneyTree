@@ -12,4 +12,5 @@ export interface UserProfile {
   role?: 'admin' | 'user';
   status?: 'active' | 'suspended';
   email?: string;
+  hasSeenWelcome?: boolean;
 }

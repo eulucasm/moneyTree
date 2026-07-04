@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import { StyleSheet, Text, Animated, View, Platform } from 'react-native';
 import { CheckCircle, AlertCircle } from 'lucide-react-native';
 import { useTheme } from '../hooks/useTheme';
+import GlassCard from './GlassCard';
 
 interface ToastProps {
   message: string;
@@ -66,55 +67,56 @@ export const Toast: React.FC<ToastProps> = ({ message, type, visible, onHide }) 
     <Animated.View
       pointerEvents="none"
       style={[
-        styles.toastContainer,
-        {
-          backgroundColor: isSuccess
-            ? (isDark ? 'rgba(16, 185, 129, 0.15)' : '#E8F5E9')
-            : (isDark ? 'rgba(220, 53, 69, 0.15)' : '#FCE8E6'),
-          borderColor: isSuccess
-            ? (isDark ? 'rgba(16, 185, 129, 0.3)' : '#A7F3D0')
-            : (isDark ? 'rgba(220, 53, 69, 0.3)' : '#FECACA'),
-        },
+        styles.toastWrapper,
         {
           transform: [{ translateY: slideAnim }],
           opacity: opacityAnim,
         }
       ]}
     >
-      <View style={styles.toastContent}>
-        {isSuccess ? (
-          <CheckCircle color={isDark ? '#10B981' : '#0F5132'} size={20} style={styles.icon} />
-        ) : (
-          <AlertCircle color="#DC3545" size={20} style={styles.icon} />
-        )}
-        <Text style={[
-          styles.toastText, 
-          { color: isSuccess ? (isDark ? '#10B981' : '#0F5132') : (isDark ? '#FCA5A5' : '#C53030') }
-        ]}>
-          {message}
-        </Text>
-      </View>
+      <GlassCard
+        style={[
+          styles.toastContainer,
+          {
+            backgroundColor: isSuccess
+              ? (isDark ? 'rgba(16, 185, 129, 0.15)' : 'rgba(16, 185, 129, 0.1)')
+              : (isDark ? 'rgba(220, 53, 69, 0.15)' : 'rgba(220, 53, 69, 0.1)'),
+            borderColor: isSuccess
+              ? (isDark ? 'rgba(16, 185, 129, 0.4)' : 'rgba(16, 185, 129, 0.3)')
+              : (isDark ? 'rgba(220, 53, 69, 0.4)' : 'rgba(220, 53, 69, 0.3)'),
+          }
+        ]}
+      >
+        <View style={styles.toastContent}>
+          {isSuccess ? (
+            <CheckCircle color={isDark ? '#10B981' : '#0F5132'} size={20} style={styles.icon} />
+          ) : (
+            <AlertCircle color="#DC3545" size={20} style={styles.icon} />
+          )}
+          <Text style={[
+            styles.toastText, 
+            { color: isSuccess ? (isDark ? '#10B981' : '#0F5132') : (isDark ? '#FCA5A5' : '#C53030') }
+          ]}>
+            {message}
+          </Text>
+        </View>
+      </GlassCard>
     </Animated.View>
   );
 };
 
 const styles = StyleSheet.create({
-  toastContainer: {
+  toastWrapper: {
     position: 'absolute',
     top: 0,
     alignSelf: 'center',
     width: '90%',
     maxWidth: 400,
+    zIndex: 99999,
+  },
+  toastContainer: {
     paddingVertical: 14,
     paddingHorizontal: 18,
-    borderRadius: 16,
-    borderWidth: 1,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.08,
-    shadowRadius: 16,
-    elevation: 6,
-    zIndex: 99999,
   },
   toastContent: {
     flexDirection: 'row',
