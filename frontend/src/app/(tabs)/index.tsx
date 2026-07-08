@@ -399,7 +399,7 @@ export default function DashboardScreen() {
                 ? 'Muito bem! Projeção de sobra positiva para o final deste mês.' 
                 : 'Atenção: Suas despesas programadas estão superiores às suas entradas este mês.'}
             </Text>
-            <Text style={[styles.cardSubText, { color: colors.textMuted, fontSize: 11, fontStyle: 'italic', opacity: 0.8 }]}>
+            <Text style={[styles.cardSubText, { color: colors.textMuted, fontSize: 11, fontStyle: 'italic', opacity: 0.8, marginBottom: 8 }]}>
               Composição: (Entradas + Sobra Anterior) - Saídas Totais
             </Text>
           </View>
