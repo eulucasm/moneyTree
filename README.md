@@ -35,6 +35,7 @@ Desenvolvido sob o conceito de **Apple-like Glassmorphism** (efeitos translúcid
 *   **Tema Claro (Off-White):** Fundo suave em `#F8F9FA` com textos no sofisticado Verde Floresta (`#0F5132`) e detalhes em Verde Esmeralda (`#10B981`).
 *   **Tema Escuro (Dark Forest):** Fundo profundo em `#0B0F19` com superfícies translúcidas em `#151D30` e realces em Verde Esmeralda Vibrante, projetado para conforto visual noturno.
 *   **Acessibilidade Visual:** Micro-animações premium de entrada, contrastes otimizados em ambos os temas e identificação de cartões por cores institucionais (roxo para Nubank, laranja para Itaú, etc.).
+*   **Alta Performance Web:** Landing page otimizada com *Hardware Acceleration* (`transform-gpu`), roteamento *client-side* imediato e injeção por contexto de contêineres de scroll dinâmico garantindo 60fps na Web.
 
 ---
 
@@ -74,7 +75,10 @@ moneyTree/
     └── src/
         ├── app/              # Estrutura de rotas e abas (Expo Router)
         │   ├── (tabs)/       # Abas principais (Dashboard, Orçamento, Histórico, etc.)
-        │   └── _layout.tsx   # Layout de autenticação e navegação geral
+        │   ├── _layout.tsx   # Layout de autenticação e navegação geral
+        │   ├── index.web.tsx # Landing Page Web Pública
+        │   ├── privacidade.tsx # Política de Privacidade
+        │   └── termos.tsx    # Termos de Uso
         ├── components/       # Componentes refraturados (GlassCard, Toast, Modais)
         ├── context/          # Contexto de finanças de alto nível
         ├── hooks/            # Hooks customizados (useTheme, useColorScheme)
