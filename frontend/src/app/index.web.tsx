@@ -127,6 +127,22 @@ export default function App() {
               {mobileMenuOpen ? <X /> : <Menu />}
             </button>
           </div>
+
+          {/* MENU MOBILE EXPANDIDO */}
+          {mobileMenuOpen && (
+            <div className="md:hidden absolute top-[120%] left-4 right-4 bg-white/80 backdrop-blur-2xl border border-white/60 rounded-3xl shadow-[0_16px_40px_rgb(0,0,0,0.08)] flex flex-col p-6 gap-6 animate-[fadeIn_0.2s_ease-out]">
+              <a href="#features" onClick={() => setMobileMenuOpen(false)} className="text-lg font-bold text-[#0F5132] px-2">Recursos</a>
+              <a href="#futuro" onClick={() => setMobileMenuOpen(false)} className="text-lg font-bold text-[#0F5132] px-2">Previsões</a>
+              <a href="#seguranca" onClick={() => setMobileMenuOpen(false)} className="text-lg font-bold text-[#0F5132] px-2">Segurança</a>
+              
+              <div className="w-full h-px bg-gray-200/50 my-1"></div>
+              
+              <div className="flex flex-col gap-3">
+                <a href="/login" onClick={(e) => { setMobileMenuOpen(false); handleLogin(e); }} className="text-center text-[#0F5132] font-bold text-base py-3 border border-gray-200/60 rounded-2xl hover:bg-white/50 transition-colors">Entrar</a>
+                <a href="/register" onClick={(e) => { setMobileMenuOpen(false); handleRegister(e); }} className="text-center bg-[#10B981] hover:bg-[#0ea5e9] transition-colors text-white py-3 rounded-2xl font-bold text-base shadow-lg shadow-emerald-500/20">Começar Agora</a>
+              </div>
+            </div>
+          )}
         </div>
       </nav>
 
