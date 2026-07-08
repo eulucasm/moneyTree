@@ -6,7 +6,6 @@ import GlassCard from '../../components/GlassCard';
 import { useTheme } from '../../hooks/useTheme';
 import { 
   Trash2, 
-  Globe, 
   Sparkles, 
   User, 
   Download, 
@@ -79,8 +78,6 @@ export default function SettingsScreen() {
   const isLargeScreen = width >= 768;
 
   const { 
-    language, 
-    changeLanguage, 
     clearAllData, 
     userProfile, 
     updateUserProfile,
@@ -443,13 +440,6 @@ export default function SettingsScreen() {
     };
     reader.readAsText(file);
   };
-
-  const languages = [
-    { key: 'pt', label: t('settings.languages.pt') },
-    { key: 'en', label: t('settings.languages.en') },
-    { key: 'es', label: t('settings.languages.es') },
-    { key: 'fr', label: t('settings.languages.fr') },
-  ];
 
   const isSuccess = customConfirm.type === 'success';
   const isInfo = customConfirm.type === 'info';
@@ -940,45 +930,12 @@ export default function SettingsScreen() {
             </View>
           </GlassCard>
 
-          {/* Languages Section */}
-          <GlassCard style={styles.card}>
-            <View style={styles.sectionHeader}>
-              <Globe color={colorScheme === 'dark' ? colors.text : "#0F5132"} size={24} />
-              <Text style={[styles.sectionTitle, { color: colors.text }]}>{t('common.language')}</Text>
-            </View>
-            <View style={styles.langList}>
-              {languages.map((lang) => {
-                const isSelected = language === lang.key;
-                return (
-                  <TouchableOpacity
-                    key={lang.key}
-                    activeOpacity={0.8}
-                    onPress={() => changeLanguage(lang.key)}
-                    style={[
-                      styles.langItem,
-                      { borderBottomColor: colors.borderGlass },
-                      isSelected ? [styles.langItemSelected, colorScheme === 'dark' && { backgroundColor: 'rgba(16, 185, 129, 0.15)' }] : { backgroundColor: colors.surface, borderColor: colors.borderGlass },
-                    ]}
-                  >
-                    <Text style={[
-                      styles.langText,
-                      isSelected ? { color: colorScheme === 'dark' ? '#10B981' : '#0F5132', fontWeight: 'bold' } : { color: colors.text }
-                    ]}>
-                      {lang.label}
-                    </Text>
-                    {isSelected && <View style={styles.activeDot} />}
-                  </TouchableOpacity>
-                );
-              })}
-            </View>
-          </GlassCard>
-
           {/* Danger Zone Section */}
           <GlassCard style={[styles.card, styles.dangerCard, { borderColor: '#EF4444' }]}>
             <View style={styles.sectionHeader}>
               <Trash2 color="#DC3545" size={24} />
               <Text style={[styles.sectionTitle, { color: '#DC3545' }]}>
-                {t('common.cleanData')}
+                Limpar Todos os Dados
               </Text>
             </View>
             <Text style={[styles.dangerDescription, { color: colors.textMuted }]}>
@@ -989,7 +946,7 @@ export default function SettingsScreen() {
               onPress={handleCleanData}
               style={[styles.dangerButton, { backgroundColor: colorScheme === 'dark' ? 'rgba(220, 53, 69, 0.05)' : '#FFF5F5' }]}
             >
-              <Text style={styles.dangerButtonText}>{t('common.cleanData')}</Text>
+              <Text style={styles.dangerButtonText}>Limpar Todos os Dados</Text>
             </TouchableOpacity>
           </GlassCard>
 

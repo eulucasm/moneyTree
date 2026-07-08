@@ -99,6 +99,17 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       }
       await signOut(auth);
       set({ user: null });
+
+      // Wipe local state and AsyncStorage keys to prevent data leakage to the next user
+      try {
+        const { useFinanceStore } = require('./useFinanceStore');
+        const { useInvestmentStore } = require('./useInvestmentStore');
+        await useFinanceStore.getState().clearAllData();
+        await useInvestmentStore.getState().clearAllData();
+        console.log('[Auth] Local data cleared successfully.');
+      } catch (e) {
+        console.warn('[Auth] Failed to clear local data on logout:', e);
+      }
     } catch (err) {
       console.error('Error logging out:', err);
     }

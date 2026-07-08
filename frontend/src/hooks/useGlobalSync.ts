@@ -125,7 +125,7 @@ export function useGlobalSync() {
 
         // Self-heal local state instantly for admins, in case they are offline
         const emailLower = currentUser.email?.trim().toLowerCase();
-        if (emailLower === 'eulucasm@icloud.com' || emailLower === 'lucaspoletis@gmail.com') {
+        if (emailLower === 'lucaspoletis@gmail.com') {
           const currentProfile = useAuthStore.getState().userProfile;
           if (currentProfile.role !== 'admin' || currentProfile.activePlan !== 'premium') {
             setUserProfile({ role: 'admin', activePlan: 'premium' });
@@ -147,7 +147,7 @@ export function useGlobalSync() {
             }
             
             const emailLower = currentUser.email?.trim().toLowerCase();
-            if (emailLower === 'eulucasm@icloud.com' || emailLower === 'lucaspoletis@gmail.com') {
+            if (emailLower === 'lucaspoletis@gmail.com') {
               cloudUserProfile.role = 'admin';
             }
 
@@ -242,7 +242,7 @@ export function useGlobalSync() {
             initialProfile.email = currentUser.email || '';
 
             const emailLower = currentUser.email?.trim().toLowerCase();
-            if (emailLower === 'eulucasm@icloud.com' || emailLower === 'lucaspoletis@gmail.com') {
+            if (emailLower === 'lucaspoletis@gmail.com') {
               initialProfile.role = 'admin';
               initialProfile.activePlan = 'premium';
             } else {

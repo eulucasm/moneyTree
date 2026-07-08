@@ -15,7 +15,8 @@ import {
   Sun,
   Moon,
   LogOut,
-  TrendingUp
+  TrendingUp,
+  Target
 } from 'lucide-react-native';
 import { useFinancials } from '../../context/FinancialContext';
 import { useThemeStore } from '../../stores/useThemeStore';
@@ -30,7 +31,7 @@ function CustomHeader() {
   const { userProfile, logout } = useFinancials();
   const avatarScale = useRef(new Animated.Value(1)).current;
   const { width } = useWindowDimensions();
-  const isLargeScreen = width >= 768;
+  const isLargeScreen = width >= 1100;
   const [menuOpen, setMenuOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
@@ -44,9 +45,9 @@ function CustomHeader() {
   const navLinks = [
     { label: 'Dashboard', path: '/' },
     { label: 'Contas e Orçamento', path: '/budget' },
-    { label: 'Investimentos', path: '/investments' },
     { label: 'Faturas', path: '/installments' },
     { label: 'Histórico', path: '/history' },
+    { label: 'Investimentos', path: '/investments' },
     { label: 'Gráficos', path: '/charts' },
   ];
 
@@ -104,10 +105,10 @@ function CustomHeader() {
         {/* Logo */}
         <View style={styles.logoContainer}>
           <View style={styles.logoIcon}>
-            <Text style={styles.logoIconText}>v</Text>
+            <Target size={18} color="#FFFFFF" />
           </View>
           <Text style={[styles.logoText, { color: colors.text }]}>
-            verde<Text style={styles.logoTextHighlight}>co.</Text>
+            Money Tree
           </Text>
         </View>
 
@@ -138,16 +139,7 @@ function CustomHeader() {
 
         {/* Ações */}
         <View style={styles.actionsContainer}>
-          {/* Botão de Menu Hamburger para telas menores */}
-          {!isLargeScreen && (
-            <TouchableOpacity 
-              style={[styles.hamburgerButton, { backgroundColor: colorScheme === 'dark' ? 'rgba(255, 255, 255, 0.05)' : '#F8F9FA' }]} 
-              onPress={() => setMenuOpen(!menuOpen)}
-              activeOpacity={0.7}
-            >
-              {menuOpen ? <X size={22} color={colors.text} /> : <MenuIcon size={22} color={colors.text} />}
-            </TouchableOpacity>
-          )}
+          {/* O botão de Menu Hamburger foi removido, navegação no mobile é apenas via Tab Bar */}
 
           {/* Botão de Alternância de Tema Claro/Escuro */}
           <TouchableOpacity 
@@ -221,37 +213,7 @@ function CustomHeader() {
         </View>
       </View>
 
-      {/* Dropdown de Navegação Mobile */}
-      {!isLargeScreen && menuOpen && (
-        <View style={[styles.mobileDropdown, { backgroundColor: colorScheme === 'dark' ? '#151D30' : '#FFFFFF', borderBottomColor: colors.borderGlass }]}>
-          {navLinks.map((link) => {
-            const isActive = pathname === link.path || (link.path === '/' && pathname === '/index');
-            return (
-              <TouchableOpacity 
-                key={link.path} 
-                activeOpacity={0.7}
-                onPress={() => {
-                  setMenuOpen(false);
-                  router.push(link.path as any);
-                }}
-                style={[
-                  styles.mobileDropdownItem, 
-                  isActive && styles.mobileDropdownItemActive,
-                  { borderBottomColor: isActive ? colors.borderGlassActive : (colorScheme === 'dark' ? 'rgba(255,255,255,0.03)' : '#F8F9FA') }
-                ]}
-              >
-                <Text style={[
-                  styles.mobileDropdownText, 
-                  isActive && styles.mobileDropdownTextActive,
-                  { color: isActive ? colors.text : colors.textMuted }
-                ]}>
-                  {link.label}
-                </Text>
-              </TouchableOpacity>
-            );
-          })}
-        </View>
-      )}
+      {/* O Dropdown Mobile foi removido, pois duplicava os links da Tab Bar */}
       
       <NotificationModal visible={modalVisible} onClose={() => setModalVisible(false)} />
     </View>
@@ -305,13 +267,6 @@ export default function TabLayout() {
         }} 
       />
       <Tabs.Screen 
-        name="investments" 
-        options={{ 
-          title: 'Investir',
-          tabBarIcon: ({ color, size }) => <TrendingUp color={color} size={size} />
-        }} 
-      />
-      <Tabs.Screen 
         name="installments" 
         options={{ 
           title: 'Faturas',
@@ -323,6 +278,13 @@ export default function TabLayout() {
         options={{ 
           title: 'Histórico',
           tabBarIcon: ({ color, size }) => <HistoryIcon color={color} size={size} />
+        }} 
+      />
+      <Tabs.Screen 
+        name="investments" 
+        options={{ 
+          title: 'Investir',
+          tabBarIcon: ({ color, size }) => <TrendingUp color={color} size={size} />
         }} 
       />
       <Tabs.Screen 
@@ -383,24 +345,20 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     backgroundColor: '#10B981',
-    borderRadius: 4,
+    borderRadius: 8,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  logoIconText: {
-    color: '#FFFFFF',
-    fontWeight: 'bold',
-    fontSize: 18,
-    lineHeight: 22,
+    shadowColor: '#10B981',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+    elevation: 4,
   },
   logoText: {
     fontSize: 20,
     fontWeight: 'bold',
     color: '#0F5132',
     letterSpacing: -0.5,
-  },
-  logoTextHighlight: {
-    color: '#10B981',
   },
   navLinks: {
     flexDirection: 'row',

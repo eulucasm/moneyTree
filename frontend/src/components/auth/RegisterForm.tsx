@@ -103,7 +103,7 @@ export default function RegisterForm({ showToast }: RegisterFormProps) {
         phone: phone.trim(),
         loginType: 'email',
         createdAt: currentPeriod,
-        role: (email.trim().toLowerCase() === 'eulucasm@icloud.com' || email.trim().toLowerCase() === 'lucaspoletis@gmail.com') ? 'admin' : 'user',
+        role: (email.trim().toLowerCase() === 'lucaspoletis@gmail.com') ? 'admin' : 'user',
         status: 'active',
         hasSeenWelcome: false,
       });

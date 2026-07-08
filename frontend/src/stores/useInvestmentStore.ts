@@ -43,6 +43,7 @@ interface InvestmentState {
   addAsset: (asset: Omit<InvestmentAsset, 'id'>) => void;
   updateAsset: (id: string, value: number) => void;
   deleteAsset: (id: string) => void;
+  clearAllData: () => Promise<void>;
   
   // Computations
   getTotalInvested: () => number;
@@ -113,6 +114,15 @@ export const useInvestmentStore = create<InvestmentState>((set, get) => ({
     const newPortfolio = { ...get().portfolio, assets: newAssets };
     set({ portfolio: newPortfolio });
     persist(newPortfolio);
+  },
+
+  clearAllData: async () => {
+    set({ portfolio: defaultPortfolio });
+    try {
+      await AsyncStorage.removeItem(INVESTMENT_STORAGE_KEYS.PORTFOLIO);
+    } catch (err) {
+      console.error('Error clearing Investment AsyncStorage:', err);
+    }
   },
 
   getTotalInvested: () => {

@@ -29,6 +29,7 @@ export async function syncToBackendNow(capturedUid?: string, retries = 3): Promi
   const uid = capturedUid || useAuthStore.getState().user?.uid;
   if (!uid) {
     console.warn('[Sync] syncToBackendNow called with no UID — skipping.');
+    useSyncStore.getState().setSyncStatus('synced');
     return;
   }
 
@@ -38,6 +39,7 @@ export async function syncToBackendNow(capturedUid?: string, retries = 3): Promi
   // GUARD: Never push an empty state that would overwrite real data in the DB
   if (!hasFinancialData(fState)) {
     console.warn('[Sync] Skipping sync — local state has no financial data (would overwrite DB).');
+    useSyncStore.getState().setSyncStatus('synced');
     return;
   }
 

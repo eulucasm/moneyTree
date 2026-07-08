@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Modal, Platform, useWindowDimensions } from 'react-native';
+import { useRouter } from 'expo-router';
 import { useFinancials } from '../../context/FinancialContext';
 import { useInvestmentStore, AssetClass } from '../../stores/useInvestmentStore';
 import { useFinanceStore } from '../../stores/useFinanceStore';
@@ -28,6 +29,7 @@ const parseCurrencyInput = (text: string) => {
 };
 
 export default function InvestmentsScreen() {
+  const router = useRouter();
   const { userProfile, updateProfile } = useFinancials();
   const { width } = useWindowDimensions();
   const isLargeScreen = width >= 768;
@@ -264,6 +266,94 @@ export default function InvestmentsScreen() {
         </View>
       </View>
 
+
+      {/* Rebalancing Table */}
+      <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.borderGlass, marginTop: 24 }]}>
+        <View style={styles.sectionHeader}>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>Rebalanceamento Inteligente</Text>
+        </View>
+        
+        <View style={[styles.tableHeader, { borderBottomColor: colors.borderGlass }]}>
+          <Text style={[styles.colHeader, { flex: 2, color: colors.textMuted }]}>Classe</Text>
+          <Text style={[styles.colHeader, { flex: 1, textAlign: 'center', color: colors.textMuted }]}>Atual</Text>
+          <Text style={[styles.colHeader, { flex: 1, textAlign: 'center', color: colors.textMuted }]}>Ideal</Text>
+          <Text style={[styles.colHeader, { flex: 1.5, textAlign: 'right', color: colors.textMuted }]}>Sugestão</Text>
+        </View>
+
+        {rebalancingPlan.map(plan => {
+          const classColor = renderClassColor(plan.assetClass);
+          return (
+            <View key={plan.assetClass} style={[styles.tableRow, { borderBottomColor: colors.borderGlass }]}>
+              <View style={[styles.colClass, { flex: 2 }]}>
+                <View style={[styles.colorDot, { backgroundColor: classColor }]} />
+                <Text style={[styles.cellText, { color: colors.text, fontWeight: '600' }]}>{plan.assetClass}</Text>
+              </View>
+              <Text style={[styles.cellText, { flex: 1, textAlign: 'center', color: colors.text }]}>
+                {plan.currentPercentage.toFixed(1)}%
+              </Text>
+              <Text style={[styles.cellText, { flex: 1, textAlign: 'center', color: colors.text }]}>
+                {plan.idealPercentage.toFixed(1)}%
+              </Text>
+              <Text style={[
+                styles.cellText, 
+                { flex: 1.5, textAlign: 'right', fontWeight: 'bold' },
+                plan.suggestedContribution > 0 ? { color: '#10B981' } : { color: colors.textMuted }
+              ]}>
+                {plan.suggestedContribution > 0 ? `+ ${formatCurrency(plan.suggestedContribution)}` : '-'}
+              </Text>
+            </View>
+          );
+        })}
+      </View>
+
+      {/* Assets List */}
+      <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.borderGlass, marginTop: 24 }]}>
+        <View style={styles.sectionHeader}>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>Meus Ativos</Text>
+          <TouchableOpacity 
+            style={styles.btnAddAsset}
+            onPress={() => setAddAssetModalVisible(true)}
+          >
+            <Plus size={16} color="#FFFFFF" />
+            <Text style={styles.btnAddAssetText}>Adicionar Ativo</Text>
+          </TouchableOpacity>
+        </View>
+
+        {portfolio.assets.length === 0 ? (
+          <View style={styles.emptyState}>
+            <TrendingUp size={48} color={colors.borderGlassActive} />
+            <Text style={[styles.emptyStateText, { color: colors.textMuted }]}>Nenhum ativo cadastrado.</Text>
+          </View>
+        ) : (
+          <View>
+             {[...portfolio.assets].reverse().slice(0, 5).map(asset => (
+                <View key={asset.id} style={[styles.assetRow, { borderBottomColor: colors.borderGlass }]}>
+                  <View style={styles.assetInfo}>
+                    <Text style={[styles.assetTicker, { color: colors.text }]}>{asset.ticker}</Text>
+                    <View style={[styles.badgeClass, { backgroundColor: `${renderClassColor(asset.assetClass)}15` }]}>
+                      <Text style={[styles.badgeClassText, { color: renderClassColor(asset.assetClass) }]}>{asset.assetClass}</Text>
+                    </View>
+                  </View>
+                  <View style={styles.assetActions}>
+                    <Text style={[styles.assetValue, { color: colors.text }]}>{formatCurrency(asset.currentValue)}</Text>
+                    <TouchableOpacity onPress={() => deleteAsset(asset.id)} style={styles.btnDelete}>
+                      <X size={16} color="#DC3545" />
+                    </TouchableOpacity>
+                  </View>
+                </View>
+             ))}
+              {portfolio.assets.length > 5 && (
+                <TouchableOpacity 
+                  style={{ marginTop: 16, padding: 12, alignItems: 'center', backgroundColor: colorScheme === 'dark' ? 'rgba(255,255,255,0.05)' : '#F8F9FA', borderRadius: 8, borderWidth: 1, borderColor: colors.borderGlass }}
+                  onPress={() => router.push('/all-assets')}
+                >
+                  <Text style={{ color: colors.text, fontWeight: '600' }}>Mostrar todos</Text>
+                </TouchableOpacity>
+              )}
+          </View>
+        )}
+      </View>
+
       {/* CARD DE POUPANÇA E RESERVA DE EMERGÊNCIA */}
       <GlassCard style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.borderGlass, marginTop: 24 }]}>
         <View style={{ flexDirection: isLargeScreen ? 'row' : 'column', alignItems: isLargeScreen ? 'center' : 'stretch', gap: 16, justifyContent: 'space-between', marginBottom: 24 }}>
@@ -333,85 +423,6 @@ export default function InvestmentsScreen() {
           </View>
         </View>
       </GlassCard>
-
-      {/* Rebalancing Table */}
-      <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.borderGlass, marginTop: 24 }]}>
-        <View style={styles.sectionHeader}>
-          <Text style={[styles.sectionTitle, { color: colors.text }]}>Rebalanceamento Inteligente</Text>
-        </View>
-        
-        <View style={[styles.tableHeader, { borderBottomColor: colors.borderGlass }]}>
-          <Text style={[styles.colHeader, { flex: 2, color: colors.textMuted }]}>Classe</Text>
-          <Text style={[styles.colHeader, { flex: 1, textAlign: 'center', color: colors.textMuted }]}>Atual</Text>
-          <Text style={[styles.colHeader, { flex: 1, textAlign: 'center', color: colors.textMuted }]}>Ideal</Text>
-          <Text style={[styles.colHeader, { flex: 1.5, textAlign: 'right', color: colors.textMuted }]}>Sugestão</Text>
-        </View>
-
-        {rebalancingPlan.map(plan => {
-          const classColor = renderClassColor(plan.assetClass);
-          return (
-            <View key={plan.assetClass} style={[styles.tableRow, { borderBottomColor: colors.borderGlass }]}>
-              <View style={[styles.colClass, { flex: 2 }]}>
-                <View style={[styles.colorDot, { backgroundColor: classColor }]} />
-                <Text style={[styles.cellText, { color: colors.text, fontWeight: '600' }]}>{plan.assetClass}</Text>
-              </View>
-              <Text style={[styles.cellText, { flex: 1, textAlign: 'center', color: colors.text }]}>
-                {plan.currentPercentage.toFixed(1)}%
-              </Text>
-              <Text style={[styles.cellText, { flex: 1, textAlign: 'center', color: colors.text }]}>
-                {plan.idealPercentage.toFixed(1)}%
-              </Text>
-              <Text style={[
-                styles.cellText, 
-                { flex: 1.5, textAlign: 'right', fontWeight: 'bold' },
-                plan.suggestedContribution > 0 ? { color: '#10B981' } : { color: colors.textMuted }
-              ]}>
-                {plan.suggestedContribution > 0 ? `+ ${formatCurrency(plan.suggestedContribution)}` : '-'}
-              </Text>
-            </View>
-          );
-        })}
-      </View>
-
-      {/* Assets List */}
-      <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.borderGlass, marginTop: 24 }]}>
-        <View style={styles.sectionHeader}>
-          <Text style={[styles.sectionTitle, { color: colors.text }]}>Meus Ativos</Text>
-          <TouchableOpacity 
-            style={styles.btnAddAsset}
-            onPress={() => setAddAssetModalVisible(true)}
-          >
-            <Plus size={16} color="#FFFFFF" />
-            <Text style={styles.btnAddAssetText}>Adicionar Ativo</Text>
-          </TouchableOpacity>
-        </View>
-
-        {portfolio.assets.length === 0 ? (
-          <View style={styles.emptyState}>
-            <TrendingUp size={48} color={colors.borderGlassActive} />
-            <Text style={[styles.emptyStateText, { color: colors.textMuted }]}>Nenhum ativo cadastrado.</Text>
-          </View>
-        ) : (
-          <View>
-             {portfolio.assets.map(asset => (
-                <View key={asset.id} style={[styles.assetRow, { borderBottomColor: colors.borderGlass }]}>
-                  <View style={styles.assetInfo}>
-                    <Text style={[styles.assetTicker, { color: colors.text }]}>{asset.ticker}</Text>
-                    <View style={[styles.badgeClass, { backgroundColor: `${renderClassColor(asset.assetClass)}15` }]}>
-                      <Text style={[styles.badgeClassText, { color: renderClassColor(asset.assetClass) }]}>{asset.assetClass}</Text>
-                    </View>
-                  </View>
-                  <View style={styles.assetActions}>
-                    <Text style={[styles.assetValue, { color: colors.text }]}>{formatCurrency(asset.currentValue)}</Text>
-                    <TouchableOpacity onPress={() => deleteAsset(asset.id)} style={styles.btnDelete}>
-                      <X size={16} color="#DC3545" />
-                    </TouchableOpacity>
-                  </View>
-                </View>
-             ))}
-          </View>
-        )}
-      </View>
 
       {/* Modals here... */}
       <Modal visible={addAssetModalVisible} transparent animationType="slide">
