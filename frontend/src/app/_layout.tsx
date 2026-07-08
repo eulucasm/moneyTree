@@ -53,8 +53,11 @@ function RootLayoutNav() {
     <GlobalSyncProvider>
       <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
         <Stack>
+          <Stack.Screen name="index" options={{ headerShown: false }} />
           <Stack.Screen name="login" options={{ headerShown: false }} />
           <Stack.Screen name="register" options={{ headerShown: false }} />
+          <Stack.Screen name="privacidade" options={{ headerShown: false }} />
+          <Stack.Screen name="termos" options={{ headerShown: false }} />
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
           <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
         </Stack>
