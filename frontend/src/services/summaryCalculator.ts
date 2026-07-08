@@ -192,8 +192,8 @@ export function computeMonthlySummary(
     const prevSurplus = isBeforeCutoff ? 0 : cumulativeSurplus;
     const prevSavings = isBeforeCutoff ? 0 : cumulativeSavings;
 
-    // Leftover: Entradas + previous surplus + savings (dinheiro guardado) - exits
-    const leftover = isBeforeCutoff ? 0 : (monthlyEntriesTotal + prevSurplus + savingsPlaced - monthlyExitsTotal);
+    // Leftover: Entradas + previous surplus - exits (Caixinha agora fica na aba Investimentos e é contada à parte)
+    const leftover = isBeforeCutoff ? 0 : (monthlyEntriesTotal + prevSurplus - monthlyExitsTotal);
     
     if (isBeforeCutoff) {
       cumulativeSurplus = 0;

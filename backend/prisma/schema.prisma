@@ -31,6 +31,7 @@ model User {
   savingsItems         SavingsItem[]
   creditCards          CreditCard[]
   installmentStatusMap InstallmentStatus[]
+  investmentPortfolio  InvestmentPortfolio?
 }
 
 model Entry {
@@ -129,4 +130,32 @@ model InstallmentStatus {
 
   @@index([userId])
   @@index([userId, date])
+}
+
+model InvestmentPortfolio {
+  id              String @id @default(uuid())
+  userId          String @unique
+  
+  targetStocks    Float @default(20)
+  targetForeign   Float @default(20)
+  targetETFs      Float @default(5)
+  targetREITs     Float @default(25)
+  targetFixed     Float @default(25)
+  targetCrypto    Float @default(5)
+  
+  assets          InvestmentAsset[]
+  user            User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model InvestmentAsset {
+  id              String @id @default(uuid())
+  portfolioId     String
+  assetClass      String 
+  subCategory     String?
+  ticker          String
+  currentValue    Float
+  
+  portfolio       InvestmentPortfolio @relation(fields: [portfolioId], references: [id], onDelete: Cascade)
+  
+  @@index([portfolioId])
 }

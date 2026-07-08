@@ -14,7 +14,8 @@ import {
   Sparkles,
   Sun,
   Moon,
-  LogOut
+  LogOut,
+  TrendingUp
 } from 'lucide-react-native';
 import { useFinancials } from '../../context/FinancialContext';
 import { useThemeStore } from '../../stores/useThemeStore';
@@ -43,6 +44,7 @@ function CustomHeader() {
   const navLinks = [
     { label: 'Dashboard', path: '/' },
     { label: 'Contas e Orçamento', path: '/budget' },
+    { label: 'Investimentos', path: '/investments' },
     { label: 'Faturas', path: '/installments' },
     { label: 'Histórico', path: '/history' },
     { label: 'Gráficos', path: '/charts' },
@@ -300,6 +302,13 @@ export default function TabLayout() {
         options={{ 
           title: 'Contas',
           tabBarIcon: ({ color, size }) => <Coins color={color} size={size} />
+        }} 
+      />
+      <Tabs.Screen 
+        name="investments" 
+        options={{ 
+          title: 'Investir',
+          tabBarIcon: ({ color, size }) => <TrendingUp color={color} size={size} />
         }} 
       />
       <Tabs.Screen 

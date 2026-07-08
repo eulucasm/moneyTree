@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { StyleSheet, Text, View, ScrollView, TouchableOpacity, Platform, DimensionValue, useWindowDimensions } from 'react-native';
 import { useFinancials } from '../../context/FinancialContext';
+import { useInvestmentStore } from '../../stores/useInvestmentStore';
 import GlassCard from '../../components/GlassCard';
 import { useTheme } from '../../hooks/useTheme';
 import { 
@@ -30,6 +31,8 @@ export default function ChartsScreen() {
     recurrings,
     purchases
   } = useFinancials();
+
+  const { getTotalInvested, getRebalancingPlan } = useInvestmentStore();
 
   const now = new Date();
   const currentYear = now.getFullYear();
@@ -113,6 +116,55 @@ export default function ChartsScreen() {
   const variablePercent = totalSelExits > 0 ? (selectedData.variableVal / totalSelExits) * 100 : 0;
   const recurringPercent = totalSelExits > 0 ? (selectedData.recurringVal / totalSelExits) * 100 : 0;
   const installmentPercent = totalSelExits > 0 ? (selectedData.installmentVal / totalSelExits) * 100 : 0;
+
+  // Entries distribution
+  const currentEntries = entries.filter(e => e.date.startsWith(selectedPeriod));
+  const totalSelEntries = selSummary.entriesTotal;
+  const entriesByDesc = currentEntries.reduce((acc: any, e) => {
+    const key = e.description || 'Outros';
+    acc[key] = (acc[key] || 0) + e.value;
+    return acc;
+  }, {});
+  const entriesArray = Object.keys(entriesByDesc).map(desc => ({
+    name: desc,
+    value: entriesByDesc[desc],
+    percent: totalSelEntries > 0 ? (entriesByDesc[desc] / totalSelEntries) * 100 : 0
+  })).sort((a, b) => b.value - a.value);
+  const entryColors = ['#10B981', '#059669', '#34D399', '#6EE7B7', '#A7F3D0'];
+
+  // Investments distribution
+  const totalInvestedBase = getTotalInvested();
+  const totalSavings = selSummary.totalSavings;
+  const totalInvested = totalInvestedBase + totalSavings;
+  
+  const rebalancingPlan = getRebalancingPlan(0).filter(p => p.currentValue > 0);
+  if (totalSavings > 0) {
+    rebalancingPlan.push({
+      assetClass: 'Reserva' as any,
+      currentValue: totalSavings,
+      currentPercentage: (totalSavings / totalInvested) * 100,
+      idealPercentage: 0,
+      suggestedContribution: 0,
+    });
+  }
+  
+  if (totalSavings > 0 && totalInvested > 0) {
+    rebalancingPlan.forEach(p => {
+      if (p.assetClass !== 'Reserva') {
+        p.currentPercentage = (p.currentValue / totalInvested) * 100;
+      }
+    });
+  }
+
+  const classColors: Record<string, string> = {
+    'Ações': '#DC3545',
+    'Exterior': '#10B981',
+    'ETFs': '#0D6EFD',
+    'FIIs': '#6F42C1',
+    'Renda Fixa': '#FD7E14',
+    'Criptomoedas': '#E83E8C',
+    'Reserva': '#0EA5E9'
+  };
 
   // Render a clean percentage indicator
   const renderPercentageIndicator = (pct: number) => `${pct.toFixed(0)}%`;
@@ -290,84 +342,84 @@ export default function ChartsScreen() {
           )}
         </GlassCard>
 
-        {/* CHART 3: Savings Accumulation Timeline with Target Goal */}
-        <GlassCard style={[styles.card, isLargeScreen ? styles.gridCard : { width: '100%' }]}>
+        {/* CHART 3: Income Distribution */}
+        <GlassCard style={[styles.card, isLargeScreen ? styles.gridCard : { width: '100%', marginTop: 24 }]}>
           <View style={styles.sectionHeader}>
-            <Target color={colorScheme === 'dark' ? colors.text : "#0F5132"} size={22} />
-            <Text style={[styles.sectionTitle, { color: colors.text }]}>Evolução da Reserva</Text>
+            <PieChart color={colorScheme === 'dark' ? colors.text : "#10B981"} size={22} />
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>Distribuição das Entradas</Text>
           </View>
           <Text style={[styles.chartSubtitle, { color: colors.textMuted }]}>
-            Poupança e Caixinhas vs Meta de {formatCurrency(savingsGoal)}
+            Composição da receita em {selectedData.monthName}
           </Text>
 
-          <View style={styles.savingsChartWrapper}>
-            {/* The savings grid timeline */}
-            <View style={styles.savingsGraphContent}>
-              {/* Target Line */}
-              {savingsGoal > 0 && (
-                <View 
-                  style={[
-                    styles.goalLine, 
-                    { bottom: `${Math.min((savingsGoal / maxSavingsVal) * 100, 95)}%` as DimensionValue }
-                  ]}
-                >
-                  <View style={[styles.goalLineBadge, { backgroundColor: colorScheme === 'dark' ? 'rgba(16, 185, 129, 0.15)' : '#E6F4EA', borderColor: '#10B981' }]}>
-                    <Text style={[styles.goalLineBadgeText, { color: colorScheme === 'dark' ? '#10B981' : '#137333' }]}>Meta</Text>
-                  </View>
-                </View>
-              )}
+          {totalSelEntries > 0 ? (
+            <View style={styles.categoryDistributionContainer}>
+              <View style={styles.segmentedBar}>
+                {entriesArray.map((e, idx) => e.percent > 0 && (
+                  <View key={e.name} style={[styles.segment, { width: `${e.percent}%` as DimensionValue, backgroundColor: entryColors[idx % entryColors.length] }]} />
+                ))}
+              </View>
 
-              <View style={styles.savingsColumnsContainer}>
-                {timelineData.map((item) => {
-                  const currentSavings = item.summary.totalSavings;
-                  const isGoalReached = savingsGoal > 0 && currentSavings >= savingsGoal;
-                  return (
-                    <View key={item.monthStr} style={styles.savingsCol}>
-                      <View style={[styles.savingsColTrack, { backgroundColor: colorScheme === 'dark' ? 'rgba(255,255,255,0.03)' : '#F1F3F5' }]}>
-                        <View 
-                          style={[
-                            styles.savingsColFill, 
-                            { 
-                              height: scaleSavingsHeight(currentSavings),
-                              backgroundColor: isGoalReached ? '#10B981' : (colorScheme === 'dark' ? '#0EAF62' : '#0F5132') 
-                            }
-                          ]}
-                        >
-                          {currentSavings > 0 && (
-                            <Text style={styles.colValText}>
-                              {currentSavings >= 1000 ? `${(currentSavings / 1000).toFixed(1)}k` : currentSavings.toFixed(0)}
-                            </Text>
-                          )}
-                        </View>
-                      </View>
+              <View style={styles.categoryList}>
+                {entriesArray.map((e, idx) => (
+                  <View key={e.name} style={[styles.categoryRow, { backgroundColor: colors.surface, borderColor: colors.borderGlass }]}>
+                    <View style={[styles.catIconBox, { backgroundColor: colorScheme === 'dark' ? 'rgba(16, 185, 129, 0.2)' : '#E8F5E9' }]}>
+                      <View style={[styles.catDot, { backgroundColor: entryColors[idx % entryColors.length] }]} />
                     </View>
-                  );
-                })}
+                    <View style={styles.catDetails}>
+                      <Text style={[styles.catName, { color: colors.text }]}>{e.name}</Text>
+                      <Text style={[styles.catAmount, { color: colors.textMuted }]}>{formatCurrency(e.value)}</Text>
+                    </View>
+                    <Text style={[styles.catPct, { color: colors.text }]}>{renderPercentageIndicator(e.percent)}</Text>
+                  </View>
+                ))}
               </View>
             </View>
-
-            {/* Labels Row below graph area */}
-            <View style={styles.savingsLabelsRow}>
-              {timelineData.map((item) => (
-                <View key={item.monthStr} style={styles.savingsLabelCol}>
-                  <Text style={[styles.savingsMonthText, { color: colors.textMuted }]}>
-                    {item.monthName.slice(0, 3)}
-                  </Text>
-                </View>
-              ))}
+          ) : (
+            <View style={styles.emptyContainer}>
+              <Text style={[styles.emptyText, { color: colors.textMuted }]}>Sem entradas registradas neste período.</Text>
             </View>
-          </View>
+          )}
+        </GlassCard>
 
-          <View style={[styles.savingsSummaryFooter, { borderTopColor: colors.borderGlass, backgroundColor: colorScheme === 'dark' ? 'rgba(255,255,255,0.01)' : '#F8F9FA' }]}>
-            <View style={styles.reserveStatusRow}>
-              <Text style={[styles.reserveStatusLabel, { color: colors.text }]}>
-                Reserva Atualizada ({timelineData[timelineData.length - 1].monthName.slice(0, 3)}/{timelineData[timelineData.length - 1].year}):
-              </Text>
-              <Text style={[styles.reserveStatusVal, { color: colorScheme === 'dark' ? '#10B981' : '#0F5132' }]}>
-                {formatCurrency(timelineData[timelineData.length - 1].summary.totalSavings)}
-              </Text>
-            </View>
+        {/* CHART 4: Investments Distribution */}
+        <GlassCard style={[styles.card, isLargeScreen ? styles.gridCard : { width: '100%', marginTop: 24 }]}>
+          <View style={styles.sectionHeader}>
+            <Target color={colorScheme === 'dark' ? colors.text : "#0F5132"} size={22} />
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>Alocação da Carteira</Text>
           </View>
+          <Text style={[styles.chartSubtitle, { color: colors.textMuted }]}>
+            Distribuição do seu patrimônio em investimentos
+          </Text>
+
+          {totalInvested > 0 ? (
+            <View style={styles.categoryDistributionContainer}>
+              <View style={styles.segmentedBar}>
+                {rebalancingPlan.map(p => p.currentPercentage > 0 && (
+                  <View key={p.assetClass} style={[styles.segment, { width: `${p.currentPercentage}%` as DimensionValue, backgroundColor: classColors[p.assetClass] || '#6C757D' }]} />
+                ))}
+              </View>
+
+              <View style={styles.categoryList}>
+                {rebalancingPlan.map(p => (
+                  <View key={p.assetClass} style={[styles.categoryRow, { backgroundColor: colors.surface, borderColor: colors.borderGlass }]}>
+                    <View style={[styles.catIconBox, { backgroundColor: colorScheme === 'dark' ? 'rgba(255,255,255,0.05)' : '#F8F9FA' }]}>
+                      <View style={[styles.catDot, { backgroundColor: classColors[p.assetClass] || '#6C757D' }]} />
+                    </View>
+                    <View style={styles.catDetails}>
+                      <Text style={[styles.catName, { color: colors.text }]}>{p.assetClass}</Text>
+                      <Text style={[styles.catAmount, { color: colors.textMuted }]}>{formatCurrency(p.currentValue)}</Text>
+                    </View>
+                    <Text style={[styles.catPct, { color: colors.text }]}>{renderPercentageIndicator(p.currentPercentage)}</Text>
+                  </View>
+                ))}
+              </View>
+            </View>
+          ) : (
+            <View style={styles.emptyContainer}>
+              <Text style={[styles.emptyText, { color: colors.textMuted }]}>Nenhum investimento registrado.</Text>
+            </View>
+          )}
         </GlassCard>
       </View>
     </ScrollView>

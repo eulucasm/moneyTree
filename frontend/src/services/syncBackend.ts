@@ -42,6 +42,7 @@ export async function syncToBackendNow(capturedUid?: string, retries = 3): Promi
   }
 
   const newTimestamp = Date.now();
+  const iState = require('../stores/useInvestmentStore').useInvestmentStore.getState();
 
   const statePayload = {
     entries: fState.entries,
@@ -54,6 +55,7 @@ export async function syncToBackendNow(capturedUid?: string, retries = 3): Promi
     savingsGoal: fState.savingsGoal,
     userProfile: aState.userProfile,
     installmentStatusMap: fState.installmentStatusMap,
+    investmentPortfolio: iState.portfolio,
     updatedAt: newTimestamp
   };
 

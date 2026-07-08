@@ -207,6 +207,10 @@ export function useGlobalSync() {
             
             setUserProfile(updatedUserProfile);
             i18n.changeLanguage(updatedLanguage);
+            
+            if (sourceData.investmentPortfolio) {
+              require('../stores/useInvestmentStore').useInvestmentStore.setState({ portfolio: sourceData.investmentPortfolio });
+            }
 
             // If local was the source, push to cloud so the DB catches up
             if (sourceLabel.startsWith('AsyncStorage') && localData) {

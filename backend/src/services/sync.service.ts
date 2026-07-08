@@ -11,6 +11,7 @@ export const getSyncData = async (userId: string) => {
       savingsItems: true,
       creditCards: true,
       installmentStatusMap: true,
+      investmentPortfolio: { include: { assets: true } }
     },
   });
 
@@ -26,6 +27,7 @@ export const getSyncData = async (userId: string) => {
       language: 'pt',
       installmentStatusMap: {},
       userProfile: null,
+      investmentPortfolio: null,
     };
   }
 
@@ -80,6 +82,7 @@ export const getSyncData = async (userId: string) => {
       birthDate: user.birthDate || '',
       createdAt: user.createdAt,
     },
+    investmentPortfolio: user.investmentPortfolio,
     updatedAt: user.updatedAt.getTime(),
   };
 };
@@ -96,10 +99,11 @@ export const postSyncData = async (userId: string, data: any) => {
     language = 'pt',
     installmentStatusMap = {},
     userProfile = null,
+    investmentPortfolio = null,
   } = data;
 
   const incomingIsEmpty = entries.length === 0 && exits.length === 0 &&
-    recurrings.length === 0 && purchases.length === 0 && creditCards.length === 0;
+    recurrings.length === 0 && purchases.length === 0 && creditCards.length === 0 && !investmentPortfolio;
 
   if (incomingIsEmpty) {
     const existingCounts = await prisma.user.findUnique({
@@ -284,6 +288,45 @@ export const postSyncData = async (userId: string, data: any) => {
           status: i.status,
         })),
       });
+    }
+
+    if (investmentPortfolio) {
+      const p = investmentPortfolio;
+      const createdPortfolio = await tx.investmentPortfolio.upsert({
+        where: { userId },
+        update: {
+          targetStocks: p.targetStocks,
+          targetForeign: p.targetForeign,
+          targetETFs: p.targetETFs,
+          targetREITs: p.targetREITs,
+          targetFixed: p.targetFixed,
+          targetCrypto: p.targetCrypto,
+        },
+        create: {
+          userId,
+          targetStocks: p.targetStocks,
+          targetForeign: p.targetForeign,
+          targetETFs: p.targetETFs,
+          targetREITs: p.targetREITs,
+          targetFixed: p.targetFixed,
+          targetCrypto: p.targetCrypto,
+        }
+      });
+
+      await tx.investmentAsset.deleteMany({ where: { portfolioId: createdPortfolio.id } });
+      
+      if (p.assets && p.assets.length > 0) {
+        await tx.investmentAsset.createMany({
+          data: p.assets.map((a: any) => ({
+            id: a.id,
+            portfolioId: createdPortfolio.id,
+            assetClass: a.assetClass,
+            subCategory: a.subCategory,
+            ticker: a.ticker,
+            currentValue: parseFloat(a.currentValue),
+          })),
+        });
+      }
     }
   });
 

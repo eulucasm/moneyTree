@@ -400,7 +400,7 @@ export default function DashboardScreen() {
                 : 'Atenção: Suas despesas programadas estão superiores às suas entradas este mês.'}
             </Text>
             <Text style={[styles.cardSubText, { color: colors.textMuted, fontSize: 11, fontStyle: 'italic', opacity: 0.8 }]}>
-              Composição: (Entradas + Dinheiro Guardado + Sobra Anterior) - Saídas Totais
+              Composição: (Entradas + Sobra Anterior) - Saídas Totais
             </Text>
           </View>
         </View>
@@ -559,80 +559,6 @@ export default function DashboardScreen() {
           })}
         </View>
       </GlassCard>
-
-      {/* CARD DE POUPANÇA E RESERVA DE EMERGÊNCIA */}
-      <GlassCard style={[styles.savingsCard, { backgroundColor: colors.surface, borderColor: colors.borderGlass }]}>
-        <View style={[styles.savingsCardHeader, { flexDirection: isMediumScreen ? 'row' : 'column', alignItems: isMediumScreen ? 'center' : 'stretch', gap: 16 }]}>
-          <View style={styles.savingsCardHeaderLeft}>
-            <View style={[styles.iconWrapperSavings, { backgroundColor: colorScheme === 'dark' ? 'rgba(16, 185, 129, 0.15)' : '#E8F5E9' }]}>
-              <Target size={24} color={colorScheme === 'dark' ? colors.text : "#0F5132"} />
-            </View>
-            <View>
-              <Text style={[styles.savingsTitle, { color: colors.text }]}>Poupança & Reserva de Emergência</Text>
-              <Text style={[styles.savingsSubtitle, { color: colors.textMuted }]}>Guarde dinheiro e acompanhe sua meta de segurança</Text>
-            </View>
-          </View>
-          <View style={styles.savingsActions}>
-            <TouchableOpacity 
-              style={[styles.savingsBtnEdit, { backgroundColor: colorScheme === 'dark' ? 'rgba(255,255,255,0.05)' : '#E8F5E9' }]} 
-              activeOpacity={0.7}
-              onPress={() => {
-                setNewGoalValue(savingsGoal.toString());
-                setGoalModalVisible(true);
-              }}
-            >
-              <Edit size={14} color={colorScheme === 'dark' ? colors.text : "#0F5132"} />
-              <Text style={[styles.savingsBtnEditText, { color: colorScheme === 'dark' ? colors.text : "#0F5132" }]}>Meta</Text>
-            </TouchableOpacity>
-            <TouchableOpacity 
-              style={styles.savingsBtnAdd} 
-              activeOpacity={0.7}
-              onPress={() => {
-                setSavingsDesc('');
-                setSavingsAmount('');
-                setSavingsType('poupança');
-                setSavingsBank(creditCards[0]?.id || 'nubank');
-                setSavingsModalVisible(true);
-              }}
-            >
-              <Plus size={14} color="#FFFFFF" />
-              <Text style={styles.savingsBtnAddText}>Guardar</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-
-        <View style={[styles.savingsBody, { backgroundColor: colorScheme === 'dark' ? 'rgba(255,255,255,0.02)' : '#F8F9FA' }]}>
-          <View style={styles.savingsMetricsRow}>
-            <View>
-              <Text style={[styles.savingsMetricLabel, { color: colors.textMuted }]}>Poupado Acumulado</Text>
-              <Text style={[styles.savingsMetricVal, { color: colors.text }]}>
-                {formatCurrency(totalSavings)}
-              </Text>
-            </View>
-            <View style={{ alignItems: 'flex-end' }}>
-              <Text style={[styles.savingsMetricLabel, { color: colors.textMuted }]}>Sua Meta</Text>
-              <Text style={[styles.savingsMetricValGoal, { color: colors.text }]}>
-                {formatCurrency(savingsGoal)}
-              </Text>
-            </View>
-          </View>
-
-          {/* Progress Bar */}
-          <View style={styles.progressBarWrapper}>
-            <View style={[styles.progressBarTrackLarge, { backgroundColor: colorScheme === 'dark' ? 'rgba(255,255,255,0.05)' : '#E9ECEF' }]}>
-              <View style={[styles.progressBarFillLarge, { width: `${progressPercent}%` }]} />
-            </View>
-            <Text style={[styles.progressPercentText, { color: colors.textMuted }]}>{progressPercent.toFixed(1)}% atingido</Text>
-          </View>
-
-          <View style={[styles.savingsDivider, { backgroundColor: colors.borderGlass }]} />
-          <View style={[styles.savingsColumnsContainer, { flexDirection: isMediumScreen ? 'row' : 'column', gap: 24 }]}>
-            {renderSavingsList(poupancaItems, '💰 Poupança Tradicional')}
-            {renderSavingsList(caixinhaItems, '📦 Caixinhas / Metas')}
-          </View>
-        </View>
-      </GlassCard>
-
       {/* CARD ÚNICO: FLUXO DE CAIXA DETALHADO */}
       <GlassCard style={[styles.unifiedOutflowsCard, { backgroundColor: colors.surface, borderColor: colors.borderGlass }]}>
         <View style={styles.unifiedHeader}>
