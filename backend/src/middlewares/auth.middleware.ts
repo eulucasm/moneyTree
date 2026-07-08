@@ -29,7 +29,11 @@ export const authMiddleware = async (req: AuthenticatedRequest, res: Response, n
 
   const token = authHeader.split('Bearer ')[1];
 
+  const isDev = process.env.NODE_ENV !== 'production';
   if (token.startsWith('mock-uid-')) {
+    if (!isDev) {
+      return res.status(401).json({ error: 'Mock tokens are not allowed in production' });
+    }
     req.userId = token.replace('mock-uid-', '');
     return next();
   }

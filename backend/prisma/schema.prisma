@@ -8,22 +8,22 @@ generator client {
 }
 
 model User {
-  id                   String              @id // Firebase auth uid
-  firstName            String
-  lastName             String
-  city                 String
-  state                String
-  loginType            String
-  activePlan           String
-  role                 String              @default("user")
-  status               String              @default("active")
-  savingsGoal          Float               @default(0)
-  language             String              @default("pt")
-  phone                String?
-  birthDate            String?
-  createdAt            String              // "YYYY-MM"
-  updatedAt            DateTime            @updatedAt
-  
+  id          String   @id // Firebase auth uid
+  firstName   String
+  lastName    String
+  city        String
+  state       String
+  loginType   String
+  activePlan  String
+  role        String   @default("user")
+  status      String   @default("active")
+  savingsGoal Float    @default(0)
+  language    String   @default("pt")
+  phone       String?
+  birthDate   String?
+  createdAt   String // "YYYY-MM"
+  updatedAt   DateTime @updatedAt
+
   entries              Entry[]
   exits                Exit[]
   recurrings           Recurring[]
@@ -34,81 +34,99 @@ model User {
 }
 
 model Entry {
-  id          String   @id
+  id          String @id
   userId      String
   description String
   value       Float
-  date        String   // "YYYY-MM-DD"
-  status      String   // "ok" | "pending"
-  
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  date        String // "YYYY-MM-DD"
+  status      String // "ok" | "pending"
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([userId, date])
 }
 
 model Exit {
-  id          String   @id
+  id          String @id
   userId      String
   description String
   value       Float
-  date        String   // "YYYY-MM-DD"
-  status      String   // "ok" | "pending"
-  category    String   // "fixed" | "variable"
+  date        String // "YYYY-MM-DD"
+  status      String // "ok" | "pending"
+  category    String // "fixed" | "variable"
   dueDate     Int?
-  
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([userId, date])
 }
 
 model Recurring {
-  id          String   @id
+  id          String @id
   userId      String
   description String
   value       Float
-  
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
 
 model Purchase {
-  id           String   @id
+  id           String @id
   userId       String
   description  String
   totalValue   Float
   installments Int
-  startDate    String   // "YYYY-MM-DD"
+  startDate    String // "YYYY-MM-DD"
   cardUsed     String
-  
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([userId, startDate])
 }
 
 model SavingsItem {
-  id          String   @id
+  id          String @id
   userId      String
-  monthStr    String   // "YYYY-MM"
-  type        String   // "poupança" | "caixinha"
+  monthStr    String // "YYYY-MM"
+  type        String // "poupança" | "caixinha"
   bank        String
   amount      Float
   description String
-  
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([userId, monthStr])
 }
 
 model CreditCard {
-  id              String   @id
+  id              String  @id
   userId          String
   name            String
   limit           Float
   color           String?
   dueDate         Int?
   bestPurchaseDay Int?
-  
-  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
 
 model InstallmentStatus {
-  id          String   @id @default(uuid())
-  userId      String
-  purchaseId  String
-  date        String   // "YYYY-MM"
-  status      String   // "ok" | "pending"
-  
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-}
+  id         String @id @default(uuid())
+  userId     String
+  purchaseId String
+  date       String // "YYYY-MM"
+  status     String // "ok" | "pending"
 
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([userId, date])
+}

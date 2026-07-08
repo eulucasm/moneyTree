@@ -25,7 +25,7 @@ export const apiFetch = async (endpoint: string, options: RequestInit = {}) => {
 
   if (user) {
     try {
-      const token = await user.getIdToken(true);
+      const token = await user.getIdToken(false);
       headers['Authorization'] = `Bearer ${token}`;
     } catch (err) {
       console.warn('[API] Failed to get Firebase ID token:', err);

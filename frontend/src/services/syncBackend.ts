@@ -21,7 +21,7 @@ function hasFinancialData(fState: any): boolean {
  * @param capturedUid - Optional pre-captured UID (used during logout/beforeunload)
  * @param retries - Number of retry attempts remaining (default 3)
  */
-export async function syncToFirestoreNow(capturedUid?: string, retries = 3): Promise<void> {
+export async function syncToBackendNow(capturedUid?: string, retries = 3): Promise<void> {
   const { useAuthStore } = require('../stores/useAuthStore');
   const { useFinanceStore } = require('../stores/useFinanceStore');
   const { useSyncStore } = require('../hooks/useGlobalSync');
@@ -83,7 +83,7 @@ export async function syncToFirestoreNow(capturedUid?: string, retries = 3): Pro
       const delay = Math.pow(2, 3 - retries) * 1000;
       console.log(`[Sync] Retrying in ${delay}ms...`);
       await new Promise(resolve => setTimeout(resolve, delay));
-      return syncToFirestoreNow(capturedUid, retries - 1);
+      return syncToBackendNow(capturedUid, retries - 1);
     }
 
     useSyncStore.getState().setSyncStatus('error');

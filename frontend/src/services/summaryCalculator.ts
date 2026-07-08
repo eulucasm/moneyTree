@@ -125,6 +125,9 @@ const getMonthsRange = (start: string, end: string): string[] => {
   return list;
 };
 
+let cachedInputs: any = null;
+let cachedSummaryMap: Record<string, MonthSummary> = {};
+
 export function computeMonthlySummary(
   monthStr: string,
   entries: Entry[],
@@ -136,6 +139,22 @@ export function computeMonthlySummary(
   startMonth = '2025-01',
   cutoffMonth?: string
 ): MonthSummary {
+  if (
+    cachedInputs &&
+    cachedInputs.entries === entries &&
+    cachedInputs.exits === exits &&
+    cachedInputs.recurrings === recurrings &&
+    cachedInputs.purchases === purchases &&
+    cachedInputs.savingsLogs === savingsLogs &&
+    cachedInputs.installmentStatusMap === installmentStatusMap &&
+    cachedInputs.startMonth === startMonth &&
+    cachedInputs.cutoffMonth === cutoffMonth
+  ) {
+    if (cachedSummaryMap[monthStr]) {
+      return cachedSummaryMap[monthStr];
+    }
+  }
+
   // Generate all sequential months from startMonth to the target monthStr (no skipped months!)
   const sortedMonths = getMonthsRange(startMonth, monthStr);
 
@@ -173,8 +192,8 @@ export function computeMonthlySummary(
     const prevSurplus = isBeforeCutoff ? 0 : cumulativeSurplus;
     const prevSavings = isBeforeCutoff ? 0 : cumulativeSavings;
 
-    // Leftover: Entries + previous surplus - exits - savings
-    const leftover = isBeforeCutoff ? 0 : (monthlyEntriesTotal + prevSurplus - monthlyExitsTotal - savingsPlaced);
+    // Leftover: Entradas + previous surplus + savings (dinheiro guardado) - exits
+    const leftover = isBeforeCutoff ? 0 : (monthlyEntriesTotal + prevSurplus + savingsPlaced - monthlyExitsTotal);
     
     if (isBeforeCutoff) {
       cumulativeSurplus = 0;
@@ -194,6 +213,9 @@ export function computeMonthlySummary(
       forecastLeftover: leftover,
     };
   });
+
+  cachedInputs = { entries, exits, recurrings, purchases, savingsLogs, installmentStatusMap, startMonth, cutoffMonth };
+  cachedSummaryMap = summaryMap;
 
   return summaryMap[monthStr] || {
     entriesTotal: 0,

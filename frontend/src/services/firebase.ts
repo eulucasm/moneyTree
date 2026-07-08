@@ -1,6 +1,6 @@
 import { initializeApp, getApps, getApp } from 'firebase/app';
 import * as authMethods from 'firebase/auth';
-import { initializeFirestore } from 'firebase/firestore';
+
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Platform } from 'react-native';
 import { FirebaseConfig } from '../constants/FirebaseConfig';
@@ -24,8 +24,4 @@ if (Platform.OS === 'web') {
   }
 }
 
-const db = initializeFirestore(app, {
-  ignoreUndefinedProperties: true,
-});
-
-export { app, auth, db };
+export { app, auth };

@@ -6,7 +6,7 @@ import { Platform } from 'react-native';
 import { auth } from '../services/firebase';
 import { useAuthStore, ASYNC_STORAGE_KEYS as AUTH_KEYS } from '../stores/useAuthStore';
 import { useFinanceStore, FINANCE_STORAGE_KEYS, defaultCards } from '../stores/useFinanceStore';
-import { syncToFirestoreNow } from '../services/syncFirestore';
+import { syncToBackendNow } from '../services/syncBackend';
 import { create } from 'zustand';
 import i18n from '../i18n';
 import { apiFetch } from '../services/api';
@@ -94,19 +94,17 @@ export function useGlobalSync() {
       const uid = useAuthStore.getState().user?.uid;
       if (!uid) return;
 
+      
       // Cancel any pending debounced sync
       if (pendingSyncTimeout.current) {
         clearTimeout(pendingSyncTimeout.current);
         pendingSyncTimeout.current = null;
       }
 
-      // Best-effort sync before page close — syncToFirestoreNow has built-in validation
-      try {
-        syncToFirestoreNow(uid, 1).catch(() => {});
-      } catch {
-        // Last resort — at least the data is in AsyncStorage
+      // Best-effort sync before page close — syncToBackendNow has built-in validation
+      if (uid) {
+        syncToBackendNow(uid, 1).catch(() => {});
       }
-
     };
 
     window.addEventListener('beforeunload', handleBeforeUnload);
@@ -216,7 +214,7 @@ export function useGlobalSync() {
               // Wait for state to settle before pushing
               setTimeout(async () => {
                 isSyncingFromCloud.current = false;
-                await syncToFirestoreNow(currentUser.uid);
+                await syncToBackendNow(currentUser.uid);
               }, 500);
             } else {
               // Extended delay to prevent accidental overwrites from state-change subscribers
@@ -283,7 +281,7 @@ export function useGlobalSync() {
             }
 
             // Create the cloud document with current state
-            await syncToFirestoreNow(currentUser.uid);
+            await syncToBackendNow(currentUser.uid);
             setSyncStatus('synced');
           }
         } catch (err) {
@@ -374,8 +372,8 @@ export function useGlobalSync() {
         const { setSyncStatus } = useSyncStore.getState();
         setSyncStatus('syncing');
         
-        // syncToFirestoreNow now has built-in retry and validation
-        await syncToFirestoreNow(capturedUid);
+        // syncToBackendNow now has built-in retry and validation
+        await syncToBackendNow(capturedUid);
         pendingSyncTimeout.current = null;
       }, 300);
     };
@@ -413,8 +411,8 @@ export function useGlobalSync() {
       
       // Only sync if there's no pending debounce (to avoid double-syncing)
       if (!pendingSyncTimeout.current) {
-        syncToFirestoreNow(user.uid, 1).catch(() => {
-          // Silent failure for periodic sync — it's just a safety net
+        syncToBackendNow(user.uid, 1).catch(() => {
+          console.warn('[Periodic Sync] Failed silently in background');
         });
       }
     }, 30000);

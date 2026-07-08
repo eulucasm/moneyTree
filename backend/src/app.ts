@@ -70,4 +70,8 @@ app.get('/', (req, res) => {
   res.json({ message: 'Money Tree Sync API (Vercel Serverless) is active.' });
 });
 
+app.get('/api/health', (req, res) => {
+  res.json({ status: 'healthy', timestamp: new Date().toISOString(), version: process.env.npm_package_version || '1.0.0' });
+});
+
 export default app;

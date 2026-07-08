@@ -393,11 +393,16 @@ export default function DashboardScreen() {
           <Text style={[styles.cardValueMain, { color: colors.text }]}>
             {formatCurrency(summary.forecastLeftover)}
           </Text>
-          <Text style={[styles.cardSubText, { color: colors.textMuted }]}>
-            {summary.forecastLeftover >= 0 
-              ? 'Muito bem! Projeção de sobra positiva para o final deste mês.' 
-              : 'Atenção: Suas despesas programadas estão superiores às suas entradas este mês.'}
-          </Text>
+          <View style={{ marginTop: 8 }}>
+            <Text style={[styles.cardSubText, { color: colors.textMuted, marginBottom: 4 }]}>
+              {summary.forecastLeftover >= 0 
+                ? 'Muito bem! Projeção de sobra positiva para o final deste mês.' 
+                : 'Atenção: Suas despesas programadas estão superiores às suas entradas este mês.'}
+            </Text>
+            <Text style={[styles.cardSubText, { color: colors.textMuted, fontSize: 11, fontStyle: 'italic', opacity: 0.8 }]}>
+              Composição: (Entradas + Dinheiro Guardado + Sobra Anterior) - Saídas Totais
+            </Text>
+          </View>
         </View>
 
         {/* Card: Entradas */}

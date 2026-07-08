@@ -80,17 +80,21 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       // Sync all data to Vercel BEFORE signing out.
       const uid = get().user?.uid;
       if (uid) {
-        const { syncToFirestoreNow } = require('../services/syncFirestore');
-        console.log('[Auth] Flushing data to Vercel before logout...');
-        await syncToFirestoreNow(uid);
-        console.log('[Auth] Data flushed successfully. Proceeding with logout.');
-
-        // Revoke JWT tokens on Vercel backend
         try {
-          await apiFetch('/api/auth/logout', { method: 'POST' });
-          console.log('[Auth] Backend tokens revoked.');
+          const { syncToBackendNow } = require('../services/syncBackend');
+          console.log('[Auth] Flushing data to Vercel before logout...');
+          await syncToBackendNow(uid);
+          console.log('[Auth] Data flushed successfully. Proceeding with logout.');
+
+          // Revoke JWT tokens on Vercel backend
+          try {
+            await apiFetch('/api/auth/logout', { method: 'POST' });
+            console.log('[Auth] Backend tokens revoked.');
+          } catch (err) {
+            console.warn('[Auth] Failed to revoke backend tokens:', err);
+          }
         } catch (err) {
-          console.warn('[Auth] Failed to revoke backend tokens:', err);
+          console.warn('[Auth] Failed to sync before logout:', err);
         }
       }
       await signOut(auth);
