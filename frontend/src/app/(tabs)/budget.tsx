@@ -7,7 +7,7 @@ import { useTranslation } from 'react-i18next';
 import GlassCard from '../../components/GlassCard';
 import FinancialInput from '../../components/FinancialInput';
 import FinancialButton from '../../components/FinancialButton';
-import { ChevronLeft, ChevronRight, Check, Square, Trash2, X, PlusCircle, ArrowUpRight, ArrowDownRight, RefreshCw, Coins, Info, CreditCard } from 'lucide-react-native';
+import { ChevronLeft, ChevronRight, Check, Square, Trash2, X, PlusCircle, ArrowUpRight, ArrowDownRight, RefreshCw, Coins, Info, CreditCard, Plus } from 'lucide-react-native';
 import CardSelector from '../../components/CardSelector';
 import Toast from '../../components/Toast';
 import { formatCurrency } from '../../utils/format';
@@ -236,17 +236,26 @@ export default function BudgetScreen() {
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
-      {/* Month Selector Bar */}
-      <View style={[styles.selectorBar, { backgroundColor: colorScheme === 'dark' ? '#151D30' : '#E8F5E9', borderColor: colorScheme === 'dark' ? 'rgba(255, 255, 255, 0.05)' : '#C8E6C9' }]}>
-        <TouchableOpacity onPress={handlePrevMonth} style={[styles.selectorBtn, { backgroundColor: colorScheme === 'dark' ? 'rgba(255, 255, 255, 0.05)' : '#F1F3F5' }]}>
-          <ChevronLeft color={colorScheme === 'dark' ? colors.text : "#0F5132"} size={24} />
-        </TouchableOpacity>
-        <Text style={[styles.selectorText, { color: colors.text }]}>
-          {monthsNames[currentMonth - 1]} {currentYear}
-        </Text>
-        <TouchableOpacity onPress={handleNextMonth} style={[styles.selectorBtn, { backgroundColor: colorScheme === 'dark' ? 'rgba(255, 255, 255, 0.05)' : '#F1F3F5' }]}>
-          <ChevronRight color={colorScheme === 'dark' ? colors.text : "#0F5132"} size={24} />
-        </TouchableOpacity>
+      {/* HEADER & MONTH SELECTOR (SaaS Layout) */}
+      <View style={[styles.headerArea, !isLargeScreen && styles.headerAreaMobile]}>
+        <View style={[styles.headerTitles, isLargeScreen && { flex: 1, alignItems: 'flex-start' }]}>
+          <Text style={[styles.headerTitle, { color: colors.text }]}>Orçamento</Text>
+          <Text style={[styles.headerSubtitle, { color: colors.textMuted }]}>Gestão detalhada do mês</Text>
+        </View>
+
+        <View style={[styles.selectorPill, { backgroundColor: colorScheme === 'dark' ? '#151C2C' : '#FFFFFF', borderColor: colors.borderGlass }]}>
+          <TouchableOpacity onPress={handlePrevMonth} style={styles.selectorBtnPill}>
+            <ChevronLeft color={colorScheme === 'dark' ? '#8B9BB4' : "#64748B"} size={16} />
+          </TouchableOpacity>
+          <Text style={[styles.selectorTextPill, { color: colors.text }]}>
+            {monthsNames[currentMonth - 1]} {currentYear}
+          </Text>
+          <TouchableOpacity onPress={handleNextMonth} style={styles.selectorBtnPill}>
+            <ChevronRight color={colorScheme === 'dark' ? '#8B9BB4' : "#64748B"} size={16} />
+          </TouchableOpacity>
+        </View>
+
+        {isLargeScreen && <View style={{ flex: 1 }} />}
       </View>
 
       <ScrollView contentContainerStyle={[styles.scrollContent, { paddingBottom: width < 768 ? 110 : 24 }]}>
@@ -256,237 +265,312 @@ export default function BudgetScreen() {
           width: '100%', 
           gap: 16 
         }}>
-        {/* Totais do Mês Card */}
-        <View style={[styles.summaryCard, { backgroundColor: colors.surface, borderColor: colors.borderGlass }]}>
-          <Text style={[styles.summaryTitle, { color: colors.text }]}>Resumo Orçamentário</Text>
-          
+        {/* SECTION 1: RESUMO ORÇAMENTÁRIO (3 Cards) */}
+        <View style={[
+          styles.cardsRow,
+          isLargeScreen ? styles.rowLayout : styles.columnLayout
+        ]}>
+          {/* Card 1: Entradas */}
+          <View style={[styles.summaryMetricCard, { backgroundColor: colors.surface, borderColor: colors.borderGlass }]}>
+            <View style={styles.metricHeader}>
+              <ArrowUpRight color="#10B981" size={16} />
+              <Text style={[styles.metricLabel, { color: colors.textMuted }]}>{t('common.entries')}</Text>
+            </View>
+            <Text style={[styles.metricVal, { color: '#10B981' }]}>
+              {formatCurrency(summary.entriesTotal)}
+            </Text>
+          </View>
+
+          {/* Card 2: Saídas */}
+          <View style={[styles.summaryMetricCard, { backgroundColor: colors.surface, borderColor: colors.borderGlass }]}>
+            <View style={styles.metricHeader}>
+              <ArrowDownRight color="#DC3545" size={16} />
+              <Text style={[styles.metricLabel, { color: colors.textMuted }]}>{t('common.exits')}</Text>
+            </View>
+            <Text style={[styles.metricVal, { color: colors.text }]}>
+              {formatCurrency(summary.exitsTotal)}
+            </Text>
+          </View>
+
+          {/* Card 3: Balanço Geral (Ledger Style) */}
           <View style={[
-            styles.cardsRow,
-            isLargeScreen ? styles.rowLayout : styles.columnLayout
+            styles.summaryLedgerCard, 
+            { backgroundColor: colors.surface, borderColor: colorScheme === 'dark' ? (summary.forecastLeftover >= 0 ? 'rgba(16,185,129,0.2)' : 'rgba(239,68,68,0.2)') : (summary.forecastLeftover >= 0 ? 'rgba(16,185,129,0.3)' : 'rgba(239,68,68,0.3)') }
           ]}>
-            {/* Card 1: Entradas */}
-            <View style={[styles.innerCard, { backgroundColor: colors.background, borderColor: colors.borderGlass }, !isLargeScreen && styles.innerCardMobile]}>
-              <View style={styles.innerCardHeader}>
-                <ArrowUpRight color="#10B981" size={20} />
-                <Text style={[styles.innerCardLabel, { color: colors.textMuted }]}>{t('common.entries')}</Text>
-              </View>
-              <Text style={[styles.innerCardVal, { color: '#10B981' }]}>
-                {formatCurrency(summary.entriesTotal)}
-              </Text>
+            <View style={[styles.ledgerAccentTop, { backgroundColor: summary.forecastLeftover >= 0 ? '#10B981' : '#DC3545' }]} />
+            
+            <View style={styles.metricHeader}>
+              <Coins color={colorScheme === 'dark' ? '#8B9BB4' : "#64748B"} size={16} />
+              <Text style={[styles.metricLabel, { color: colors.text }]}>Balanço Geral</Text>
             </View>
- 
-            {/* Card 2: Saídas */}
-            <View style={[styles.innerCard, { backgroundColor: colors.background, borderColor: colors.borderGlass }, !isLargeScreen && styles.innerCardMobile]}>
-              <View style={styles.innerCardHeader}>
-                <ArrowDownRight color="#DC3545" size={20} />
-                <Text style={[styles.innerCardLabel, { color: colors.textMuted }]}>{t('common.exits')}</Text>
+            
+            <View style={[styles.ledgerContent, { borderBottomColor: colorScheme === 'dark' ? 'rgba(38, 51, 77, 0.5)' : '#E5E7EB' }]}>
+              <View style={styles.ledgerRow}>
+                <Text style={[styles.ledgerLabel, { color: colorScheme === 'dark' ? '#8B9BB4' : '#64748B' }]}>Sobrou do Mês Passado:</Text>
+                <Text style={[styles.ledgerVal, { color: colors.text }]}>{formatCurrency(summary.previousMonthSurplus)}</Text>
               </View>
-              <Text style={[styles.innerCardVal, { color: '#DC3545' }]}>
-                {formatCurrency(summary.exitsTotal)}
-              </Text>
+              <View style={styles.ledgerRow}>
+                <Text style={[styles.ledgerLabel, { color: colorScheme === 'dark' ? '#8B9BB4' : '#64748B' }]}>Total em Poupança:</Text>
+                <Text style={[styles.ledgerVal, { color: '#10B981' }]}>{formatCurrency(summary.totalSavings)}</Text>
+              </View>
             </View>
- 
-            {/* Card 3: Balanço Geral */}
-            <View style={[styles.innerCard, styles.innerCardHighlighted, { backgroundColor: colorScheme === 'dark' ? 'rgba(16, 185, 129, 0.1)' : '#E8F5E9', borderColor: colorScheme === 'dark' ? '#10B981' : '#C8E6C9' }, !isLargeScreen && styles.innerCardMobile]}>
-              <View style={styles.innerCardHeader}>
-                <Coins color={colorScheme === 'dark' ? '#10B981' : "#0F5132"} size={20} />
-                <Text style={[styles.innerCardLabel, { color: colorScheme === 'dark' ? '#10B981' : '#0F5132', fontWeight: 'bold' }]}>Balanço Geral</Text>
-              </View>
-              
-              <View style={styles.miniTable}>
-                <View style={styles.miniTableRow}>
-                  <Text style={[styles.miniTableLabel, { color: colorScheme === 'dark' ? colors.textMuted : '#6C757D' }]}>{t('common.surplus')}:</Text>
-                  <Text style={[styles.miniTableVal, { color: colors.text }]}>{formatCurrency(summary.previousMonthSurplus)}</Text>
-                </View>
-                <View style={styles.miniTableRow}>
-                  <Text style={[styles.miniTableLabel, { color: colorScheme === 'dark' ? colors.textMuted : '#6C757D' }]}>{t('common.totalSavings')}:</Text>
-                  <Text style={[styles.miniTableVal, { color: colorScheme === 'dark' ? '#10B981' : '#0F5132' }]}>
-                    {formatCurrency(summary.totalSavings)}
-                  </Text>
-                </View>
-                <View style={[styles.dividerMini, { backgroundColor: colorScheme === 'dark' ? 'rgba(255,255,255,0.05)' : '#C8E6C9' }]} />
-                <View style={styles.miniTableRow}>
-                  <Text style={[styles.miniTableLabel, { color: colorScheme === 'dark' ? colors.text : '#212529', fontWeight: '700' }]}>{t('common.forecast')}:</Text>
-                  <Text style={[
-                    styles.miniTableVal,
-                    { 
-                      color: summary.forecastLeftover >= 0 ? '#10B981' : '#DC3545',
-                      fontWeight: '800'
-                    }
-                  ]}>
-                    {formatCurrency(summary.forecastLeftover)}
-                  </Text>
-                </View>
-              </View>
+
+            <View style={[styles.ledgerRow, { marginTop: 16 }]}>
+              <Text style={[styles.ledgerLabel, { color: colorScheme === 'dark' ? '#8B9BB4' : '#64748B' }]}>Previsão de Sobra:</Text>
+              <Text style={[
+                styles.ledgerValTotal,
+                { color: summary.forecastLeftover >= 0 ? '#10B981' : '#DC3545' }
+              ]}>
+                {formatCurrency(summary.forecastLeftover)}
+              </Text>
             </View>
           </View>
         </View>
 
-        {/* Container Grid de Categorias */}
+        {/* Container Grid de Categorias (Masonry Layout) */}
         <View style={[
           styles.sectionsGrid,
           isLargeScreen ? styles.sectionsGridRow : styles.sectionsGridColumn
         ]}>
           
-          {/* Card 1: Entradas */}
-          <View style={[styles.sectionCard, { backgroundColor: colors.surface, borderColor: colors.borderGlass }, !isLargeScreen && styles.sectionCardMobile]}>
-            <View style={styles.sectionHeaderInside}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, flex: 1, paddingRight: 8 }}>
-                <Text style={[styles.sectionTitleInside, { color: colors.text, flexShrink: 1 }]} numberOfLines={2}>{t('common.entries')}</Text>
-                <TouchableOpacity onPress={() => toggleInfo('entries')}>
-                  <Info color={colors.text} size={16} />
-                </TouchableOpacity>
+          {/* COLUNA ESQUERDA */}
+          <View style={[styles.masonryColumn, !isLargeScreen && styles.masonryColumnMobile]}>
+            
+            {/* Card 1: Entradas */}
+            <View style={[styles.sectionCard, { backgroundColor: colorScheme === 'dark' ? '#182133' : colors.surface, borderColor: colorScheme === 'dark' ? '#26334D' : colors.borderGlass }]}>
+              <View style={[styles.sectionHeaderInside, { borderBottomColor: colorScheme === 'dark' ? 'rgba(255,255,255,0.05)' : colors.borderGlass }]}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, flex: 1, paddingRight: 8 }}>
+                  <Text style={[styles.sectionTitleInside, { color: colors.text, flexShrink: 1 }]} numberOfLines={2}>{t('common.entries')}</Text>
+                  <TouchableOpacity onPress={() => toggleInfo('entries')}>
+                    <Info color={colors.textMuted} size={14} />
+                  </TouchableOpacity>
+                </View>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, flexShrink: 0 }}>
+                  <Text style={[styles.sectionHeaderTotal, { color: totalEntriesVal > 0 ? '#10B981' : colors.textMuted }]}>{formatCurrency(totalEntriesVal)}</Text>
+                  <TouchableOpacity onPress={() => setAddModalType('entry')} style={[styles.addButton, { borderColor: colorScheme === 'dark' ? '#26334D' : colors.borderGlass }]}>
+                    <Plus color={colorScheme === 'dark' ? '#8B9BB4' : colors.textMuted} size={16} />
+                  </TouchableOpacity>
+                </View>
               </View>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, flexShrink: 0 }}>
-                <Text style={[styles.sectionHeaderTotal, { color: colors.text }]}>{formatCurrency(totalEntriesVal)}</Text>
-                <TouchableOpacity 
-                  onPress={() => setAddModalType('entry')} 
-                  style={styles.addButton}
-                >
-                  <PlusCircle color="#10B981" size={20} />
-                </TouchableOpacity>
-              </View>
-            </View>
 
-            {visibleInfos['entries'] && (
-              <View style={[styles.infoAlert, { backgroundColor: colorScheme === 'dark' ? 'rgba(255,255,255,0.05)' : '#E8F5E9', borderColor: colors.borderGlass }]}>
-                <Text style={[styles.infoAlertText, { color: colors.textMuted }]}>Destinado a pagamentos recebidos.</Text>
-              </View>
-            )}
-
-            <View style={styles.itemsListFlat}>
-              {currentEntries.length === 0 ? (
-                <Text style={[styles.noItemsText, { color: colors.textMuted }]}>Nenhuma entrada cadastrada neste mês.</Text>
-              ) : (
-                currentEntries.map((item, index) => {
-                  const isLast = index === currentEntries.length - 1;
-                  return (
-                    <View key={item.id} style={[styles.itemRowFlat, { borderBottomColor: colors.borderGlass }, isLast && styles.lastItemRowFlat]}>
-                      <Text style={[styles.itemDesc, { color: colors.text }]}>
-                        {item.description}
-                      </Text>
-                      <Text style={[styles.itemVal, { color: colors.text }]}>{formatCurrency(item.value)}</Text>
-                      <TouchableOpacity 
-                        onPress={() => {
-                          LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-                          deleteEntry(item.id);
-                          showToast('Entrada removida.', 'success');
-                        }} 
-                        style={styles.deleteBtn}
-                      >
-                        <Trash2 color="#DC3545" size={16} />
-                      </TouchableOpacity>
-                    </View>
-                  );
-                })
+              {visibleInfos['entries'] && (
+                <View style={[styles.infoAlert, { backgroundColor: colorScheme === 'dark' ? 'rgba(255,255,255,0.05)' : '#E8F5E9', borderColor: colors.borderGlass }]}>
+                  <Text style={[styles.infoAlertText, { color: colors.textMuted }]}>Destinado a pagamentos recebidos.</Text>
+                </View>
               )}
-            </View>
-          </View>
 
-          {/* Card 2: Despesas Fixas */}
-          <View style={[styles.sectionCard, { backgroundColor: colors.surface, borderColor: colors.borderGlass }, !isLargeScreen && styles.sectionCardMobile]}>
-            <View style={styles.sectionHeaderInside}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, flex: 1, paddingRight: 8 }}>
-                <Text style={[styles.sectionTitleInside, { color: colors.text, flexShrink: 1 }]} numberOfLines={2}>Despesas Fixas</Text>
-                <TouchableOpacity onPress={() => toggleInfo('fixed')}>
-                  <Info color={colors.text} size={16} />
-                </TouchableOpacity>
-              </View>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, flexShrink: 0 }}>
-                <Text style={[styles.sectionHeaderTotal, { color: colors.text }]}>{formatCurrency(totalFixedVal)}</Text>
-                <TouchableOpacity 
-                  onPress={() => setAddModalType('exit')} 
-                  style={styles.addButton}
-                >
-                  <PlusCircle color="#DC3545" size={20} />
-                </TouchableOpacity>
-              </View>
-            </View>
-
-            {visibleInfos['fixed'] && (
-              <View style={[styles.infoAlert, { backgroundColor: colorScheme === 'dark' ? 'rgba(255,255,255,0.05)' : '#E8F5E9', borderColor: colors.borderGlass }]}>
-                <Text style={[styles.infoAlertText, { color: colors.textMuted }]}>Destinado a contas fixas como aluguel, conta de água, conta de luz, conta de telefone.</Text>
-              </View>
-            )}
-
-            <View style={styles.itemsListFlat}>
-              {fixedOutflows.length === 0 ? (
-                <Text style={[styles.noItemsText, { color: colors.textMuted }]}>Nenhuma despesa fixa cadastrada neste mês.</Text>
-              ) : (
-                fixedOutflows.map((item, index) => {
-                  const isLast = index === fixedOutflows.length - 1;
-                  const cardType = detectCardTypeDynamic(item.description, creditCards);
-                  let cardSum = 0;
-                  if (cardType) {
-                    cardSum = installmentOutflows
-                      .filter(inst => inst.cardUsed === cardType)
-                      .reduce((sum, inst) => sum + inst.value, 0);
-                  }
-                  return (
-                    <View key={item.id} style={[styles.itemRowFlat, { borderBottomColor: colors.borderGlass }, isLast && styles.lastItemRowFlat, { flexDirection: 'column', alignItems: 'stretch', opacity: item.status === 'ok' ? 0.6 : 1.0 }]}>
-                      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                        <TouchableOpacity 
-                          onPress={() => {
-                            LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-                            toggleExitStatus(item.id as ExitId);
-                          }}
-                          style={styles.itemCheckBtn}
-                        >
-                          {item.status === 'ok' ? (
-                            <Check color="#10B981" size={20} />
-                          ) : (
-                            <Square color={colorScheme === 'dark' ? colors.textMuted : "#CED4DA"} size={20} />
-                          )}
-                        </TouchableOpacity>
-                        <Text style={[
-                          styles.itemDesc,
-                          { color: colors.text },
-                          item.status === 'ok' && styles.crossedText
-                        ]}>
-                          {item.description}
-                        </Text>
-                        <Text style={[styles.itemVal, { color: colors.text }]}>{formatCurrency(item.value)}</Text>
-                        <TouchableOpacity 
-                          onPress={() => {
-                            LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-                            deleteExit(item.id as ExitId);
-                            showToast('Despesa fixa removida.', 'success');
-                          }} 
-                          style={styles.deleteBtn}
-                        >
-                          <Trash2 color="#DC3545" size={16} />
-                        </TouchableOpacity>
-                      </View>
-                      {cardSum > 0 && (
-                        <View style={[styles.cardComparisonRowFlat, { backgroundColor: colorScheme === 'dark' ? 'rgba(255,255,255,0.02)' : '#F8F9FA' }]}>
-                          <Text style={[styles.cardComparisonTextFlat, { color: colors.textMuted }]}>
-                            Previsão de faturas: {formatCurrency(cardSum)} | Diferença: {formatCurrency(item.value - cardSum)}
-                          </Text>
+              <View style={styles.itemsListFlat}>
+                {currentEntries.length === 0 ? (
+                  <Text style={[styles.noItemsText, { color: colors.textMuted }]}>Nenhum registro cadastrado.</Text>
+                ) : (
+                  currentEntries.map((item, index) => {
+                    const isLast = index === currentEntries.length - 1;
+                    return (
+                      <View key={item.id} style={[styles.itemRowFlat, isLast && styles.lastItemRowFlat]}>
+                        <Text style={[styles.itemDesc, { color: colors.text }]}>{item.description}</Text>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+                          <Text style={[styles.itemVal, { color: colors.text }]}>{formatCurrency(item.value)}</Text>
+                          <TouchableOpacity 
+                            onPress={() => { LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut); deleteEntry(item.id); showToast('Entrada removida.', 'success'); }} 
+                            style={styles.deleteBtn}
+                          >
+                            <Trash2 color={colors.textMuted} size={14} />
+                          </TouchableOpacity>
                         </View>
-                      )}
-                    </View>
-                  );
-                })
-              )}
+                      </View>
+                    );
+                  })
+                )}
+              </View>
             </View>
+
+            {/* Card 5: Despesas Variadas (Movido para a coluna esquerda) */}
+            <View style={[styles.sectionCard, { backgroundColor: colorScheme === 'dark' ? '#182133' : colors.surface, borderColor: colorScheme === 'dark' ? '#26334D' : colors.borderGlass }]}>
+              <View style={[styles.sectionHeaderInside, { borderBottomColor: colorScheme === 'dark' ? 'rgba(255,255,255,0.05)' : colors.borderGlass }]}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, flex: 1, paddingRight: 8 }}>
+                  <Text style={[styles.sectionTitleInside, { color: colors.text, flexShrink: 1 }]} numberOfLines={2}>Despesas Variadas</Text>
+                  <TouchableOpacity onPress={() => toggleInfo('variables')}>
+                    <Info color={colors.textMuted} size={14} />
+                  </TouchableOpacity>
+                </View>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, flexShrink: 0 }}>
+                  <Text style={[styles.sectionHeaderTotal, { color: colors.text }]}>{formatCurrency(totalVariableVal)}</Text>
+                  <TouchableOpacity onPress={() => setAddModalType('variable')} style={[styles.addButton, { borderColor: colorScheme === 'dark' ? '#26334D' : colors.borderGlass }]}>
+                    <Plus color={colorScheme === 'dark' ? '#8B9BB4' : colors.textMuted} size={16} />
+                  </TouchableOpacity>
+                </View>
+              </View>
+
+              {visibleInfos['variables'] && (
+                <View style={[styles.infoAlert, { backgroundColor: colorScheme === 'dark' ? 'rgba(255,255,255,0.05)' : '#E8F5E9', borderColor: colors.borderGlass }]}>
+                  <Text style={[styles.infoAlertText, { color: colors.textMuted }]}>Destinado a gastos não previstos do dia a dia.</Text>
+                </View>
+              )}
+
+              <View style={styles.itemsListFlat}>
+                {variableOutflows.length === 0 ? (
+                  <Text style={[styles.noItemsText, { color: colors.textMuted }]}>Nenhum registro cadastrado.</Text>
+                ) : (
+                  variableOutflows.map((item, index) => {
+                    const isLast = index === variableOutflows.length - 1;
+                    return (
+                      <View key={item.id} style={[styles.itemRowFlat, isLast && styles.lastItemRowFlat, { opacity: item.status === 'ok' ? 0.6 : 1.0 }]}>
+                        <TouchableOpacity onPress={() => { LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut); toggleExitStatus(item.id as ExitId); }} style={styles.itemCheckBtn}>
+                          {item.status === 'ok' ? <Check color="#10B981" size={16} /> : <Square color={colorScheme === 'dark' ? colors.textMuted : "#CED4DA"} size={16} />}
+                        </TouchableOpacity>
+                        <Text style={[styles.itemDesc, { color: colors.text }, item.status === 'ok' && styles.crossedText]}>{item.description}</Text>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+                          <Text style={[styles.itemVal, { color: colors.text }]}>{formatCurrency(item.value)}</Text>
+                          <TouchableOpacity onPress={() => { LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut); deleteExit(item.id as ExitId); showToast('Despesa removida.', 'success'); }} style={styles.deleteBtn}>
+                            <Trash2 color={colors.textMuted} size={14} />
+                          </TouchableOpacity>
+                        </View>
+                      </View>
+                    );
+                  })
+                )}
+              </View>
+            </View>
+
           </View>
 
-          {/* Card 3: Recorrentes */}
-          <View style={[styles.sectionCard, { backgroundColor: colors.surface, borderColor: colors.borderGlass }, !isLargeScreen && styles.sectionCardMobile]}>
-            <View style={styles.sectionHeaderInside}>
+          {/* COLUNA DIREITA */}
+          <View style={[styles.masonryColumn, !isLargeScreen && styles.masonryColumnMobile]}>
+            
+            {/* Card 2: Despesas Fixas */}
+            <View style={[styles.sectionCard, { backgroundColor: colorScheme === 'dark' ? '#182133' : colors.surface, borderColor: colorScheme === 'dark' ? '#26334D' : colors.borderGlass }]}>
+              <View style={[styles.sectionHeaderInside, { borderBottomColor: colorScheme === 'dark' ? 'rgba(255,255,255,0.05)' : colors.borderGlass }]}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, flex: 1, paddingRight: 8 }}>
+                  <Text style={[styles.sectionTitleInside, { color: colors.text, flexShrink: 1 }]} numberOfLines={2}>Despesas Fixas</Text>
+                  <TouchableOpacity onPress={() => toggleInfo('fixed')}>
+                    <Info color={colors.textMuted} size={14} />
+                  </TouchableOpacity>
+                </View>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, flexShrink: 0 }}>
+                  <Text style={[styles.sectionHeaderTotal, { color: colors.text }]}>{formatCurrency(totalFixedVal)}</Text>
+                  <TouchableOpacity onPress={() => setAddModalType('exit')} style={[styles.addButton, { borderColor: colorScheme === 'dark' ? '#26334D' : colors.borderGlass }]}>
+                    <Plus color={colorScheme === 'dark' ? '#8B9BB4' : colors.textMuted} size={16} />
+                  </TouchableOpacity>
+                </View>
+              </View>
+
+              {visibleInfos['fixed'] && (
+                <View style={[styles.infoAlert, { backgroundColor: colorScheme === 'dark' ? 'rgba(255,255,255,0.05)' : '#E8F5E9', borderColor: colors.borderGlass }]}>
+                  <Text style={[styles.infoAlertText, { color: colors.textMuted }]}>Destinado a contas fixas como aluguel, conta de água, conta de luz, conta de telefone.</Text>
+                </View>
+              )}
+
+              <View style={styles.itemsListFlat}>
+                {fixedOutflows.length === 0 ? (
+                  <Text style={[styles.noItemsText, { color: colors.textMuted }]}>Nenhum registro cadastrado.</Text>
+                ) : (
+                  fixedOutflows.map((item, index) => {
+                    const isLast = index === fixedOutflows.length - 1;
+                    const cardType = detectCardTypeDynamic(item.description, creditCards);
+                    let cardSum = 0;
+                    if (cardType) {
+                      cardSum = installmentOutflows.filter(inst => inst.cardUsed === cardType).reduce((sum, inst) => sum + inst.value, 0);
+                    }
+                    return (
+                      <View key={item.id} style={[styles.itemRowFlat, isLast && styles.lastItemRowFlat, { flexDirection: 'column', alignItems: 'stretch', opacity: item.status === 'ok' ? 0.6 : 1.0 }]}>
+                        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                          <TouchableOpacity onPress={() => { LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut); toggleExitStatus(item.id as ExitId); }} style={styles.itemCheckBtn}>
+                            {item.status === 'ok' ? <Check color="#10B981" size={16} /> : <Square color={colorScheme === 'dark' ? colors.textMuted : "#CED4DA"} size={16} />}
+                          </TouchableOpacity>
+                          <Text style={[styles.itemDesc, { color: colors.text }, item.status === 'ok' && styles.crossedText]}>{item.description}</Text>
+                          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+                            <Text style={[styles.itemVal, { color: colors.text }]}>{formatCurrency(item.value)}</Text>
+                            <TouchableOpacity onPress={() => { LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut); deleteExit(item.id as ExitId); showToast('Despesa fixa removida.', 'success'); }} style={styles.deleteBtn}>
+                              <Trash2 color={colors.textMuted} size={14} />
+                            </TouchableOpacity>
+                          </View>
+                        </View>
+                        {cardSum > 0 && (
+                          <View style={[styles.cardComparisonRowFlat, { backgroundColor: colorScheme === 'dark' ? 'rgba(255,255,255,0.02)' : '#F8F9FA' }]}>
+                            <Text style={[styles.cardComparisonTextFlat, { color: colors.textMuted }]}>
+                              Previsão de faturas: {formatCurrency(cardSum)} | Diferença: {formatCurrency(item.value - cardSum)}
+                            </Text>
+                          </View>
+                        )}
+                      </View>
+                    );
+                  })
+                )}
+              </View>
+            </View>
+
+            {/* Card 4: Compras Parceladas */}
+            <View style={[styles.sectionCard, { backgroundColor: colorScheme === 'dark' ? '#182133' : colors.surface, borderColor: colorScheme === 'dark' ? '#26334D' : colors.borderGlass }]}>
+              <View style={[styles.sectionHeaderInside, { borderBottomColor: colorScheme === 'dark' ? 'rgba(255,255,255,0.05)' : colors.borderGlass }]}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, flex: 1, paddingRight: 8 }}>
+                  <Text style={[styles.sectionTitleInside, { color: colors.text, flexShrink: 1 }]} numberOfLines={2}>Compras Parceladas</Text>
+                  <TouchableOpacity onPress={() => toggleInfo('installments')}>
+                    <Info color={colors.textMuted} size={14} />
+                  </TouchableOpacity>
+                </View>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, flexShrink: 0 }}>
+                  <Text style={[styles.sectionHeaderTotal, { color: colors.text }]}>{formatCurrency(totalInstallmentsVal)}</Text>
+                  <TouchableOpacity onPress={handleOpenInstallmentModal} style={[styles.addButton, { borderColor: colorScheme === 'dark' ? '#26334D' : colors.borderGlass }]}>
+                    <Plus color={colorScheme === 'dark' ? '#8B9BB4' : colors.textMuted} size={16} />
+                  </TouchableOpacity>
+                </View>
+              </View>
+
+              {visibleInfos['installments'] && (
+                <View style={[styles.infoAlert, { backgroundColor: colorScheme === 'dark' ? 'rgba(255,255,255,0.05)' : '#E8F5E9', borderColor: colors.borderGlass }]}>
+                  <Text style={[styles.infoAlertText, { color: colors.textMuted }]}>Destinado a compras com cartões na forma de parcelamento.</Text>
+                </View>
+              )}
+
+              <View style={styles.itemsListFlat}>
+                {installmentOutflows.length === 0 ? (
+                  <Text style={[styles.noItemsText, { color: colors.textMuted }]}>Nenhum registro cadastrado.</Text>
+                ) : (
+                  installmentOutflows.map((item, index) => {
+                    const isLast = index === installmentOutflows.length - 1;
+                    const cardObj = creditCards.find(c => c.id === item.cardUsed);
+                    return (
+                      <View key={item.id} style={[styles.itemRowFlat, isLast && styles.lastItemRowFlat]}>
+                        <View style={{ flex: 1 }}>
+                          <Text style={[styles.itemDesc, { color: colors.text }]} numberOfLines={1}>{item.description}</Text>
+                          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 4 }}>
+                            {cardObj && (
+                              <View style={{ backgroundColor: `${cardObj.color}20`, paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4 }}>
+                                <Text style={{ color: cardObj.color, fontSize: 10, fontWeight: 'bold' }}>{cardObj.name}</Text>
+                              </View>
+                            )}
+                            <Text style={{ fontSize: 10, color: colors.textMuted, fontWeight: '500' }}>
+                              {(item as any).installmentNumber}/{(item as any).totalInstallments}
+                            </Text>
+                          </View>
+                        </View>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+                          <Text style={[styles.itemVal, { color: colors.text }]}>{formatCurrency(item.value)}</Text>
+                        </View>
+                      </View>
+                    );
+                  })
+                )}
+              </View>
+            </View>
+
+          </View>
+        </View>
+
+        {/* Card 3: Recorrentes (Centralizado no final) */}
+        <View style={{ width: isLargeScreen ? '49%' : '100%', alignSelf: 'center' }}>
+          <View style={[styles.sectionCard, { backgroundColor: colorScheme === 'dark' ? '#182133' : colors.surface, borderColor: colorScheme === 'dark' ? '#26334D' : colors.borderGlass }]}>
+            <View style={[styles.sectionHeaderInside, { borderBottomColor: colorScheme === 'dark' ? 'rgba(255,255,255,0.05)' : colors.borderGlass }]}>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, flex: 1, paddingRight: 8 }}>
                 <Text style={[styles.sectionTitleInside, { color: colors.text, flexShrink: 1 }]} numberOfLines={2}>{t('common.recurring')}</Text>
                 <TouchableOpacity onPress={() => toggleInfo('recurrent')}>
-                  <Info color={colors.text} size={16} />
+                  <Info color={colors.textMuted} size={14} />
                 </TouchableOpacity>
               </View>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, flexShrink: 0 }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, flexShrink: 0 }}>
                 <Text style={[styles.sectionHeaderTotal, { color: colors.text }]}>{formatCurrency(totalRecurringVal)}</Text>
-                <TouchableOpacity 
-                  onPress={() => setAddModalType('recurring')} 
-                  style={styles.addButton}
-                >
-                  <PlusCircle color={colorScheme === 'dark' ? colors.text : "#0F5132"} size={20} />
+                <TouchableOpacity onPress={() => setAddModalType('recurring')} style={[styles.addButton, { borderColor: colorScheme === 'dark' ? '#26334D' : colors.borderGlass }]}>
+                  <Plus color={colorScheme === 'dark' ? '#8B9BB4' : colors.textMuted} size={16} />
                 </TouchableOpacity>
               </View>
             </View>
@@ -499,154 +583,27 @@ export default function BudgetScreen() {
 
             <View style={styles.itemsListFlat}>
               {recurrings.length === 0 ? (
-                <Text style={[styles.noItemsText, { color: colors.textMuted }]}>Nenhuma despesa recorrente cadastrada.</Text>
+                <Text style={[styles.noItemsText, { color: colors.textMuted, paddingHorizontal: 8 }]}>Nenhum registro cadastrado.</Text>
               ) : (
                 recurrings.map((item, index) => {
                   const isLast = index === recurrings.length - 1;
                   return (
-                    <View key={item.id} style={[styles.itemRowFlat, { borderBottomColor: colors.borderGlass }, isLast && styles.lastItemRowFlat]}>
-                      <RefreshCw color={colorScheme === 'dark' ? colors.text : "#0F5132"} size={16} style={{ marginRight: 8 }} />
+                    <View key={item.id} style={[styles.itemRowFlat, isLast && styles.lastItemRowFlat]}>
+                      <RefreshCw color={colorScheme === 'dark' ? '#8B9BB4' : "#6C757D"} size={14} style={{ marginRight: 8 }} />
                       <Text style={[styles.itemDesc, { color: colors.text }]}>{item.description}</Text>
-                      <Text style={[styles.itemVal, { color: colors.text }]}>{formatCurrency(item.value)}</Text>
-                      <TouchableOpacity 
-                        onPress={() => {
-                          LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-                          deleteRecurring(item.id);
-                          showToast('Assinatura recorrente removida.', 'success');
-                        }} 
-                        style={styles.deleteBtn}
-                      >
-                        <Trash2 color="#DC3545" size={16} />
-                      </TouchableOpacity>
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+                        <Text style={[styles.itemVal, { color: colors.text }]}>{formatCurrency(item.value)}</Text>
+                        <TouchableOpacity onPress={() => { LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut); deleteRecurring(item.id); showToast('Assinatura recorrente removida.', 'success'); }} style={styles.deleteBtn}>
+                          <Trash2 color={colors.textMuted} size={14} />
+                        </TouchableOpacity>
+                      </View>
                     </View>
                   );
                 })
               )}
             </View>
           </View>
-
-          {/* Card 4: Compras Parceladas */}
-          <View style={[styles.sectionCard, { backgroundColor: colors.surface, borderColor: colors.borderGlass }, !isLargeScreen && styles.sectionCardMobile]}>
-            <View style={styles.sectionHeaderInside}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, flex: 1, paddingRight: 8 }}>
-                <Text style={[styles.sectionTitleInside, { color: colors.text, flexShrink: 1 }]} numberOfLines={2}>Compras Parceladas</Text>
-                <TouchableOpacity onPress={() => toggleInfo('installments')}>
-                  <Info color={colors.text} size={16} />
-                </TouchableOpacity>
-              </View>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, flexShrink: 0 }}>
-                <Text style={[styles.sectionHeaderTotal, { color: colors.text }]}>{formatCurrency(totalInstallmentsVal)}</Text>
-                <TouchableOpacity 
-                  onPress={handleOpenInstallmentModal} 
-                  style={styles.addButton}
-                >
-                  <PlusCircle color={colorScheme === 'dark' ? colors.text : "#0F5132"} size={20} />
-                </TouchableOpacity>
-              </View>
-            </View>
-
-            {visibleInfos['installments'] && (
-              <View style={[styles.infoAlert, { backgroundColor: colorScheme === 'dark' ? 'rgba(255,255,255,0.05)' : '#E8F5E9', borderColor: colors.borderGlass }]}>
-                <Text style={[styles.infoAlertText, { color: colors.textMuted }]}>Destinado a compras com cartões na forma de parcelamento.</Text>
-              </View>
-            )}
-
-            <View style={styles.itemsListFlat}>
-              {installmentOutflows.length === 0 ? (
-                <Text style={[styles.noItemsText, { color: colors.textMuted }]}>Nenhuma parcela de cartão vencendo neste mês.</Text>
-              ) : (
-                installmentOutflows.map((item, index) => {
-                  const isLast = index === installmentOutflows.length - 1;
-                  return (
-                    <View key={item.id} style={[styles.itemRowFlat, { borderBottomColor: colors.borderGlass }, isLast && styles.lastItemRowFlat]}>
-                      <Text style={[
-                        styles.itemDesc,
-                        { flex: 1, color: colors.text }
-                      ]} numberOfLines={1}>
-                        {item.description}
-                      </Text>
-                      <Text style={[styles.itemVal, { color: colors.text }]}>{formatCurrency(item.value)}</Text>
-                    </View>
-                  );
-                })
-              )}
-            </View>
-          </View>
-
-          {/* Card 5: Despesas Variadas */}
-          <View style={[styles.sectionCard, { backgroundColor: colors.surface, borderColor: colors.borderGlass }, !isLargeScreen && styles.sectionCardMobile]}>
-            <View style={styles.sectionHeaderInside}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, flex: 1, paddingRight: 8 }}>
-                <Text style={[styles.sectionTitleInside, { color: colors.text, flexShrink: 1 }]} numberOfLines={2}>Despesas Variadas</Text>
-                <TouchableOpacity onPress={() => toggleInfo('variables')}>
-                  <Info color={colors.text} size={16} />
-                </TouchableOpacity>
-              </View>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, flexShrink: 0 }}>
-                <Text style={[styles.sectionHeaderTotal, { color: colors.text }]}>{formatCurrency(totalVariableVal)}</Text>
-                <TouchableOpacity 
-                  onPress={() => setAddModalType('variable')} 
-                  style={styles.addButton}
-                >
-                  <PlusCircle color="#DC3545" size={20} />
-                </TouchableOpacity>
-              </View>
-            </View>
-
-            {visibleInfos['variables'] && (
-              <View style={[styles.infoAlert, { backgroundColor: colorScheme === 'dark' ? 'rgba(255,255,255,0.05)' : '#E8F5E9', borderColor: colors.borderGlass }]}>
-                <Text style={[styles.infoAlertText, { color: colors.textMuted }]}>Destinado a gastos não previstos do dia a dia.</Text>
-              </View>
-            )}
-
-            <View style={styles.itemsListFlat}>
-              {variableOutflows.length === 0 ? (
-                <Text style={[styles.noItemsText, { color: colors.textMuted }]}>Nenhuma despesa variada cadastrada neste mês.</Text>
-              ) : (
-                variableOutflows.map((item, index) => {
-                  const isLast = index === variableOutflows.length - 1;
-                  return (
-                    <View key={item.id} style={[styles.itemRowFlat, { borderBottomColor: colors.borderGlass }, isLast && styles.lastItemRowFlat, { opacity: item.status === 'ok' ? 0.6 : 1.0 }]}>
-                      <TouchableOpacity 
-                        onPress={() => {
-                          LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-                          toggleExitStatus(item.id as ExitId);
-                        }}
-                        style={styles.itemCheckBtn}
-                      >
-                        {item.status === 'ok' ? (
-                          <Check color="#10B981" size={20} />
-                        ) : (
-                          <Square color={colorScheme === 'dark' ? colors.textMuted : "#CED4DA"} size={20} />
-                        )}
-                      </TouchableOpacity>
-                      <Text style={[
-                        styles.itemDesc,
-                        { color: colors.text },
-                        item.status === 'ok' && styles.crossedText
-                      ]}>
-                        {item.description}
-                      </Text>
-                      <Text style={[styles.itemVal, { color: colors.text }]}>{formatCurrency(item.value)}</Text>
-                      <TouchableOpacity 
-                        onPress={() => {
-                          LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-                          deleteExit(item.id as ExitId);
-                          showToast('Despesa removida.', 'success');
-                        }} 
-                        style={styles.deleteBtn}
-                      >
-                        <Trash2 color="#DC3545" size={16} />
-                      </TouchableOpacity>
-                    </View>
-                  );
-                })
-              )}
-            </View>
-          </View>
-
         </View>
-
         </Animated.View>
       </ScrollView>
 
@@ -789,69 +746,60 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#F8F9FA',
   },
-  selectorBar: {
-    position: 'absolute',
-    top: 16,
-    zIndex: 10,
+  headerArea: {
     flexDirection: 'row',
-    alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
-    borderRadius: 24,
-    borderWidth: 1,
-    borderColor: '#E9ECEF',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.08,
-    shadowRadius: 10,
-    elevation: 4,
-    width: '92%',
-    maxWidth: 500,
+    alignItems: 'center',
+    paddingHorizontal: 24,
+    paddingTop: 16,
+    paddingBottom: 8,
+    width: '100%',
+    maxWidth: 1200,
     alignSelf: 'center',
   },
-  selectorBtn: {
-    padding: 6,
-    borderRadius: 18,
-    backgroundColor: '#F1F3F5',
-    width: 36,
-    height: 36,
+  headerAreaMobile: {
+    flexDirection: 'column',
     alignItems: 'center',
-    justifyContent: 'center',
+    gap: 16,
   },
-  selectorText: {
-    color: '#0F5132',
-    fontSize: 16,
-    fontWeight: 'bold',
+  headerTitles: {
+    gap: 2,
   },
-  sectionHeaderTotal: {
+  headerTitle: {
+    fontSize: 28,
+    fontWeight: '800',
+    letterSpacing: -0.5,
+  },
+  headerSubtitle: {
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  selectorPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderRadius: 999,
+    paddingHorizontal: 8,
+    paddingVertical: 6,
+    borderWidth: 1,
+    minWidth: 150,
+    justifyContent: 'space-between',
+  },
+  selectorBtnPill: {
+    padding: 4,
+  },
+  selectorTextPill: {
     fontSize: 14,
     fontWeight: 'bold',
-    color: '#0F5132',
+    letterSpacing: 0.5,
   },
   scrollContent: {
     padding: 24,
-    paddingTop: 90, // Leave space for floating selector
+    paddingTop: 24, 
     paddingBottom: 100,
     gap: 16,
     maxWidth: 1200,
     alignSelf: 'center',
     width: '100%',
-  },
-  summaryCard: {
-    backgroundColor: '#FFFFFF',
-    padding: 24,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: '#E9ECEF',
-    marginBottom: 16,
-  },
-  summaryTitle: {
-    color: '#0F5132',
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 16,
   },
   cardsRow: {
     gap: 16,
@@ -863,93 +811,105 @@ const styles = StyleSheet.create({
   columnLayout: {
     flexDirection: 'column',
   },
-  innerCard: {
+  summaryMetricCard: {
     flex: 1,
-    backgroundColor: '#F8F9FA',
-    borderRadius: 12,
-    padding: 16,
+    borderRadius: 16,
     borderWidth: 1,
-    borderColor: '#E9ECEF',
-    minHeight: 125,
-    justifyContent: 'flex-start',
+    padding: 20,
+    justifyContent: 'space-between',
+    minHeight: 120,
   },
-  innerCardMobile: {
-    width: '100%',
-  },
-  innerCardHighlighted: {
-    backgroundColor: '#EBF5EE',
-    borderColor: '#D1E7DD',
-  },
-  innerCardHeader: {
+  metricHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
     marginBottom: 12,
   },
-  innerCardLabel: {
-    color: '#495057',
-    fontSize: 13,
+  metricLabel: {
+    fontSize: 14,
     fontWeight: '600',
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
   },
-  innerCardVal: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    color: '#212529',
+  metricVal: {
+    fontSize: 28,
+    fontWeight: '800',
+    letterSpacing: -0.5,
   },
-  miniTable: {
-    gap: 6,
-    width: '100%',
+  summaryLedgerCard: {
+    flex: 1,
+    borderRadius: 16,
+    borderWidth: 1,
+    padding: 20,
+    position: 'relative',
+    overflow: 'hidden',
   },
-  miniTableRow: {
+  ledgerAccentTop: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 4,
+  },
+  ledgerContent: {
+    borderBottomWidth: 1,
+    paddingBottom: 12,
+    marginBottom: 12,
+    gap: 8,
+  },
+  ledgerRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
   },
-  miniTableLabel: {
-    color: '#495057',
-    fontSize: 12,
+  ledgerLabel: {
+    fontSize: 13,
     fontWeight: '500',
   },
-  miniTableVal: {
-    color: '#212529',
-    fontSize: 12,
-    fontWeight: '600',
+  ledgerVal: {
+    fontSize: 13,
+    fontWeight: '700',
   },
-  dividerMini: {
-    height: 1,
-    backgroundColor: '#D1E7DD',
-    marginVertical: 4,
+  ledgerValTotal: {
+    fontSize: 20,
+    fontWeight: '800',
   },
   sectionsGrid: {
-    gap: 20,
+    gap: 16,
     width: '100%',
     marginTop: 8,
   },
   sectionsGridRow: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'center',
+    alignItems: 'flex-start',
   },
   sectionsGridColumn: {
     flexDirection: 'column',
   },
+  masonryColumn: {
+    flex: 1,
+    flexDirection: 'column',
+    gap: 16,
+  },
+  masonryColumnMobile: {
+    width: '100%',
+  },
+  sectionHeaderTotal: {
+    fontSize: 14,
+    fontWeight: 'bold',
+  },
   sectionCard: {
     flexGrow: 1,
     flexShrink: 1,
-    minWidth: '45%',
-    maxWidth: '48%',
+    width: '100%',
     backgroundColor: '#FFFFFF',
     borderRadius: 16,
     borderWidth: 1,
     borderColor: '#E9ECEF',
-    padding: 20,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.03,
     shadowRadius: 8,
     elevation: 2,
+    overflow: 'hidden',
   },
   sectionCardMobile: {
     width: '100%',
@@ -959,10 +919,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 16,
     borderBottomWidth: 1,
     borderBottomColor: '#F1F3F5',
-    paddingBottom: 8,
+    padding: 20,
   },
   sectionTitleInside: {
     color: '#0F5132',
@@ -971,17 +930,17 @@ const styles = StyleSheet.create({
   },
 
   itemsListFlat: {
-    gap: 0,
+    gap: 4,
+    padding: 8,
   },
   itemRowFlat: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#F1F3F5',
+    padding: 12,
+    borderRadius: 8,
   },
   lastItemRowFlat: {
-    borderBottomWidth: 0,
+    // mantido vazio caso precise no futuro
   },
   itemCheckBtn: {
     marginRight: 12,
@@ -1061,11 +1020,15 @@ const styles = StyleSheet.create({
     marginVertical: 4,
   },
   addButton: {
-    padding: 4,
+    width: 28,
+    height: 28,
+    borderRadius: 6,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   cardComparisonRowFlat: {
     marginTop: 4,
-    marginLeft: 32,
   },
   cardComparisonTextFlat: {
     fontSize: 11,
@@ -1078,7 +1041,9 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     borderWidth: 1,
     borderColor: '#D1E7DD',
-    marginBottom: 14,
+    marginTop: 14,
+    marginBottom: 4,
+    marginHorizontal: 16,
   },
   infoAlertText: {
     color: '#0F5132',

@@ -563,7 +563,7 @@ export default function DashboardScreen() {
             const brandColor = card.color || '#64748B';
 
             return (
-              <View key={card.id} style={[styles.creditCardItem, { backgroundColor: colorScheme === 'dark' ? '#151D30' : '#F8F9FA', borderColor: colors.borderGlass, flex: isMediumScreen ? 1 : undefined, flexGrow: isMediumScreen ? 1 : 0, flexShrink: 1, width: isLargeScreen ? 220 : (isMediumScreen ? '48%' : '100%') }]}>
+              <View key={card.id} style={[styles.creditCardItem, { backgroundColor: colorScheme === 'dark' ? '#151D30' : '#F8F9FA', borderColor: colors.borderGlass, flexGrow: isMediumScreen ? 1 : 0, flexShrink: 1, width: isLargeScreen ? 220 : (isMediumScreen ? '48%' : '100%') }]}>
                 <View style={styles.cardItemNameRow}>
                   <View style={[styles.brandDot, { backgroundColor: brandColor }]} />
                   <Text style={[styles.cardItemName, { color: colors.text }]}>{card.name}</Text>
