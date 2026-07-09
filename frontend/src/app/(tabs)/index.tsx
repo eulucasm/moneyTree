@@ -68,6 +68,7 @@ export default function DashboardScreen() {
   const [selectedYearStr, selectedMonthStr] = selectedPeriod.split('-');
   const selectedYear = parseInt(selectedYearStr, 10);
   const selectedMonth = parseInt(selectedMonthStr, 10);
+  const [scrollProgress, setScrollProgress] = useState(0);
 
   const monthsNames = [
     'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
@@ -367,7 +368,12 @@ export default function DashboardScreen() {
           styles.cardMain, 
           { 
             backgroundColor: colors.surface,
-            borderColor: summary.forecastLeftover >= 0 ? colors.borderGlassActive : '#FECACA',
+            borderColor: summary.forecastLeftover >= 0 ? 'rgba(16,185,129,0.3)' : 'rgba(239,68,68,0.3)',
+            shadowColor: summary.forecastLeftover >= 0 ? '#10B981' : '#EF4444',
+            shadowOffset: { width: 0, height: 0 },
+            shadowOpacity: 0.15,
+            shadowRadius: 15,
+            elevation: 4,
             flex: 1,
             minWidth: isLargeScreen ? 200 : (isMediumScreen ? '47%' : '100%'),
           }
@@ -377,14 +383,14 @@ export default function DashboardScreen() {
             { backgroundColor: summary.forecastLeftover >= 0 ? '#10B981' : '#DC3545' }
           ]} />
           <View style={styles.cardHeader}>
-            <Text style={[styles.cardLabel, { color: colors.textMuted }]}>Balanço Projetado</Text>
+            <Text style={[styles.cardLabel, { color: summary.forecastLeftover >= 0 ? '#34D399' : '#F87171' }]}>Balanço Projetado</Text>
             <View style={[
               styles.badgeStatus,
-              { backgroundColor: summary.forecastLeftover >= 0 ? (colorScheme === 'dark' ? 'rgba(16,185,129,0.15)' : '#E8F5E9') : (colorScheme === 'dark' ? 'rgba(220,53,69,0.15)' : '#FCE8E6') }
+              { backgroundColor: summary.forecastLeftover >= 0 ? 'rgba(16,185,129,0.2)' : 'rgba(239,68,68,0.2)' }
             ]}>
               <Text style={[
                 styles.badgeStatusText,
-                { color: summary.forecastLeftover >= 0 ? (colorScheme === 'dark' ? '#10B981' : '#0F5132') : (colorScheme === 'dark' ? '#FCA5A5' : '#C53030') }
+                { color: summary.forecastLeftover >= 0 ? '#34D399' : '#F87171' }
               ]}>
                 {summary.forecastLeftover >= 0 ? 'Positivo' : 'Negativo'}
               </Text>
@@ -409,9 +415,9 @@ export default function DashboardScreen() {
         <View style={[styles.cardStandard, { backgroundColor: colors.surface, borderColor: colors.borderGlass, flex: 1, minWidth: isLargeScreen ? 200 : (isMediumScreen ? '47%' : '100%') }]}>
           <View style={styles.cardHeaderIcon}>
             <View style={[styles.iconWrapperSuccess, { backgroundColor: colorScheme === 'dark' ? 'rgba(16,185,129,0.1)' : '#E8F5E9' }]}>
-              <TrendingUp size={20} color="#10B981" />
+              <TrendingUp size={14} color="#10B981" />
             </View>
-            <Text style={[styles.cardLabelNormal, { color: colors.textMuted }]}>Total Entradas</Text>
+            <Text style={[styles.cardLabel, { color: colors.textMuted }]}>Total Entradas</Text>
           </View>
           <Text style={[styles.cardValueSuccess, { color: colorScheme === 'dark' ? '#10B981' : '#0F5132' }]}>
             {formatCurrency(summary.entriesTotal)}
@@ -423,9 +429,9 @@ export default function DashboardScreen() {
         <View style={[styles.cardStandard, { backgroundColor: colors.surface, borderColor: colors.borderGlass, flex: 1, minWidth: isLargeScreen ? 200 : (isMediumScreen ? '47%' : '100%') }]}>
           <View style={styles.cardHeaderIcon}>
             <View style={[styles.iconWrapperDanger, { backgroundColor: colorScheme === 'dark' ? 'rgba(220,53,69,0.1)' : '#FCE8E6' }]}>
-              <TrendingDown size={20} color="#DC3545" />
+              <TrendingDown size={14} color="#DC3545" />
             </View>
-            <Text style={[styles.cardLabelNormal, { color: colors.textMuted }]}>Total Saídas</Text>
+            <Text style={[styles.cardLabel, { color: colors.textMuted }]}>Total Saídas</Text>
           </View>
           <Text style={[styles.cardValueNormal, { color: colors.text }]}>
             {formatCurrency(summary.exitsTotal)}
@@ -437,9 +443,9 @@ export default function DashboardScreen() {
         <View style={[styles.cardStandard, { backgroundColor: colors.surface, borderColor: colors.borderGlass, flex: 1, minWidth: isLargeScreen ? 200 : (isMediumScreen ? '47%' : '100%') }]}>
           <View style={styles.cardHeaderIcon}>
             <View style={[styles.iconWrapperWarning, { backgroundColor: colorScheme === 'dark' ? 'rgba(245, 158, 11, 0.15)' : '#FFF3CD' }]}>
-              <CreditCard size={20} color={colorScheme === 'dark' ? '#F59E0B' : '#0F5132'} />
+              <CreditCard size={14} color={colorScheme === 'dark' ? '#F59E0B' : '#F59E0B'} />
             </View>
-            <Text style={[styles.cardLabelNormal, { color: colors.textMuted }]}>Cartão de Crédito</Text>
+            <Text style={[styles.cardLabel, { color: colors.textMuted }]}>Cartão de Crédito</Text>
           </View>
           <Text style={[styles.cardValueNormal, { color: colors.text }]}>
             {formatCurrency(creditCardTotal)}
@@ -454,8 +460,16 @@ export default function DashboardScreen() {
         <Text style={[styles.sectionHeading, { color: colors.text }]}>Previsão para os Próximos 6 Meses (Clique para ver detalhes)</Text>
         <ScrollView 
           horizontal 
-          showsHorizontalScrollIndicator={Platform.OS === 'web'} 
+          showsHorizontalScrollIndicator={false} 
           contentContainerStyle={styles.horizontalScrollContent}
+          scrollEventThrottle={16}
+          onScroll={(e) => {
+            const { contentOffset, contentSize, layoutMeasurement } = e.nativeEvent;
+            const maxScroll = contentSize.width - layoutMeasurement.width;
+            if (maxScroll > 0) {
+              setScrollProgress(Math.min(Math.max(contentOffset.x / maxScroll, 0), 1));
+            }
+          }}
         >
           {futureMonthsList.map((item, idx) => {
             const isFuturePositive = item.summary.forecastLeftover >= 0;
@@ -469,7 +483,8 @@ export default function DashboardScreen() {
                 <GlassCard 
                   style={[
                     styles.projectionMiniCard,
-                    isSelected && styles.projectionMiniCardActive
+                    { backgroundColor: isSelected ? (colorScheme === 'dark' ? 'rgba(16,185,129,0.05)' : 'rgba(16,185,129,0.05)') : colors.surface },
+                    { borderColor: isSelected ? '#10B981' : colors.borderGlass }
                   ]}
                 >
                   <View style={styles.miniCardHeader}>
@@ -503,6 +518,17 @@ export default function DashboardScreen() {
             );
           })}
         </ScrollView>
+        
+        {/* Custom Scrollbar visual */}
+        <View style={{ width: '100%', height: 12, backgroundColor: colorScheme === 'dark' ? '#182133' : '#E9ECEF', borderRadius: 6, marginTop: 16, flexDirection: 'row', overflow: 'hidden' }}>
+          <View style={{ 
+            width: '25%', 
+            height: '100%', 
+            backgroundColor: colorScheme === 'dark' ? '#3B4A6B' : '#ADB5BD', 
+            borderRadius: 6,
+            marginLeft: `${scrollProgress * 75}%`
+          }} />
+        </View>
       </View>
 
       {/* RESUMO DE CARTÕES DE CRÉDITO */}
@@ -690,7 +716,7 @@ export default function DashboardScreen() {
         {/* BOTÃO ÚNICO DE GERENCIAR - SUPER DESTACADO E VISÍVEL */}
         <View style={styles.unifiedManageButtonContainer}>
           <TouchableOpacity 
-            style={styles.unifiedManageButton}
+            style={[styles.unifiedManageButton, { shadowColor: '#10B981', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8, elevation: 6 }]}
             activeOpacity={0.8}
             onPress={() => router.push('/budget')}
           >
@@ -1063,12 +1089,12 @@ const styles = StyleSheet.create({
   badgePremium: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#E8F5E9',
+    backgroundColor: 'rgba(16,185,129,0.1)',
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#A7F3D0',
+    borderColor: 'rgba(16,185,129,0.3)',
   },
   badgePremiumText: {
     color: '#0F5132',
@@ -1112,15 +1138,15 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#6C757D',
     textTransform: 'uppercase',
-    letterSpacing: 0.5,
+    letterSpacing: 1,
   },
   badgeStatus: {
     paddingHorizontal: 8,
     paddingVertical: 2,
-    borderRadius: 12,
+    borderRadius: 4,
   },
   badgeStatusText: {
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: 'bold',
   },
   cardValueMain: {
@@ -1155,23 +1181,34 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   iconWrapperSuccess: {
-    padding: 8,
+    width: 24,
+    height: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
     backgroundColor: '#E8F5E9',
-    borderRadius: 8,
+    borderRadius: 6,
   },
   iconWrapperDanger: {
-    padding: 8,
+    width: 24,
+    height: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
     backgroundColor: '#FCE8E6',
-    borderRadius: 8,
+    borderRadius: 6,
   },
   iconWrapperWarning: {
-    padding: 8,
+    width: 24,
+    height: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
     backgroundColor: '#FFF3CD',
-    borderRadius: 8,
+    borderRadius: 6,
   },
   cardLabelNormal: {
-    fontSize: 14,
-    fontWeight: '600',
+    fontSize: 11,
+    fontWeight: '700',
+    textTransform: 'uppercase',
+    letterSpacing: 1,
     color: '#495057',
   },
   cardValueSuccess: {
@@ -1819,15 +1856,15 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   cardProgressBarTrack: {
-    height: 6,
+    height: 4,
     backgroundColor: '#E9ECEF',
-    borderRadius: 3,
+    borderRadius: 2,
     overflow: 'hidden',
     marginBottom: 8,
   },
   cardProgressBarFill: {
     height: '100%',
-    borderRadius: 3,
+    borderRadius: 2,
   },
   cardItemUsedStacked: {
     fontSize: 11,

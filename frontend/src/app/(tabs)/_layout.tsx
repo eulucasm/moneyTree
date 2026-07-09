@@ -139,7 +139,15 @@ function CustomHeader() {
 
         {/* Ações */}
         <View style={styles.actionsContainer}>
-          {/* O botão de Menu Hamburger foi removido, navegação no mobile é apenas via Tab Bar */}
+          {!isLargeScreen && (
+            <TouchableOpacity 
+              style={[styles.themeButton, { backgroundColor: colorScheme === 'dark' ? 'rgba(255, 255, 255, 0.05)' : '#F8F9FA' }]} 
+              activeOpacity={0.7}
+              onPress={() => setMenuOpen(!menuOpen)}
+            >
+              {menuOpen ? <X size={20} color={colors.textSecondary} /> : <MenuIcon size={20} color={colors.textSecondary} />}
+            </TouchableOpacity>
+          )}
 
           {/* Botão de Alternância de Tema Claro/Escuro */}
           <TouchableOpacity 
@@ -213,7 +221,32 @@ function CustomHeader() {
         </View>
       </View>
 
-      {/* O Dropdown Mobile foi removido, pois duplicava os links da Tab Bar */}
+      {!isLargeScreen && menuOpen && (
+        <View style={[styles.mobileMenu, { backgroundColor: colorScheme === 'dark' ? '#151D30' : '#FFFFFF', borderBottomColor: colors.borderGlass }]}>
+          {navLinks.map((link) => {
+            const isActive = pathname === link.path || (link.path === '/' && pathname === '/index');
+            return (
+              <TouchableOpacity 
+                key={link.path} 
+                activeOpacity={0.7}
+                onPress={() => {
+                  setMenuOpen(false);
+                  router.push(link.path as any);
+                }}
+                style={[styles.mobileMenuItem, isActive && { backgroundColor: colorScheme === 'dark' ? 'rgba(16, 185, 129, 0.1)' : '#E8F5E9' }]}
+              >
+                <Text style={[
+                  styles.mobileMenuText, 
+                  isActive && styles.mobileMenuTextActive,
+                  { color: isActive ? (colorScheme === 'dark' ? '#10B981' : '#0F5132') : colors.textMuted }
+                ]}>
+                  {link.label}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+        </View>
+      )}
       
       <NotificationModal visible={modalVisible} onClose={() => setModalVisible(false)} />
     </View>
@@ -535,7 +568,34 @@ const styles = StyleSheet.create({
   },
   userDropdownText: {
     fontSize: 14,
-    fontWeight: '600',
-    color: '#212529',
+    fontWeight: '500',
+  },
+  mobileMenu: {
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderBottomWidth: 1,
+    position: 'absolute',
+    top: 72,
+    left: 0,
+    right: 0,
+    zIndex: 90,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 10,
+    elevation: 5,
+  },
+  mobileMenuItem: {
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    marginBottom: 4,
+  },
+  mobileMenuText: {
+    fontSize: 15,
+    fontWeight: '500',
+  },
+  mobileMenuTextActive: {
+    fontWeight: '700',
   },
 });
