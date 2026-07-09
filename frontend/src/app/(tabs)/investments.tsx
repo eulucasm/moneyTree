@@ -9,6 +9,7 @@ import { useColorScheme } from '../../components/useColorScheme';
 import GlassCard from '../../components/GlassCard';
 import Theme from '../../constants/Colors';
 import { Lock, TrendingUp, Plus, Edit, X, Check, Search, PieChart, Target } from 'lucide-react-native';
+import PremiumGate from '../../components/PremiumGate';
 
 const ASSET_CLASSES: AssetClass[] = ['Ações', 'Exterior', 'ETFs', 'FIIs', 'Renda Fixa', 'Criptomoedas'];
 
@@ -138,13 +139,6 @@ export default function InvestmentsScreen() {
   const [targetsModalVisible, setTargetsModalVisible] = useState(false);
   const [tempTargets, setTempTargets] = useState({ ...portfolio });
 
-  const isPremium = userProfile?.activePlan === 'premium';
-
-  const handleUnlockPremium = async () => {
-    // Mock unlocking
-    await updateProfile({ activePlan: 'premium' });
-  };
-
   const handleAddAsset = () => {
     if (!assetTicker || !assetValue) return;
     addAsset({
@@ -187,30 +181,7 @@ export default function InvestmentsScreen() {
     }
   };
 
-  if (!isPremium) {
-    return (
-      <View style={[styles.paywallContainer, { backgroundColor: colors.background }]}>
-        <View style={styles.paywallContent}>
-          <View style={styles.paywallIcon}>
-            <Lock size={48} color="#F59E0B" />
-          </View>
-          <Text style={[styles.paywallTitle, { color: colors.text }]}>Módulo de Investimentos</Text>
-          <Text style={[styles.paywallSubtitle, { color: colors.textMuted }]}>
-            Assuma o controle total do seu patrimônio. Crie sua carteira ideal, descubra onde aportar seu dinheiro para manter o rebalanceamento perfeito e visualize sua evolução.
-          </Text>
-          
-          <TouchableOpacity 
-            style={styles.premiumButton}
-            onPress={handleUnlockPremium}
-            activeOpacity={0.8}
-          >
-            <Sparkles size={18} color="#FFFFFF" style={{ marginRight: 8 }} />
-            <Text style={styles.premiumButtonText}>Desbloquear Premium (Simulação)</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-    );
-  }
+
 
   const renderClassColor = (c: AssetClass | 'Reserva') => {
     switch(c) {
@@ -226,7 +197,11 @@ export default function InvestmentsScreen() {
   };
 
   return (
-    <ScrollView style={[styles.container, { backgroundColor: colors.background }]} contentContainerStyle={styles.content}>
+    <PremiumGate 
+      featureName="Módulo de Investimentos" 
+      description="Assuma o controle total do seu patrimônio. Crie sua carteira ideal, descubra onde aportar seu dinheiro para manter o rebalanceamento perfeito e visualize sua evolução."
+    >
+      <ScrollView style={[styles.container, { backgroundColor: colors.background }]} contentContainerStyle={styles.content}>
       <View style={styles.header}>
         <View>
           <Text style={[styles.pageTitle, { color: colors.text }]}>Meus Investimentos</Text>
@@ -613,6 +588,7 @@ export default function InvestmentsScreen() {
       </Modal>
 
     </ScrollView>
+    </PremiumGate>
   );
 }
 

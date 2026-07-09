@@ -54,6 +54,7 @@ export default function DashboardScreen() {
   
   const userProfile = useAuthStore(s => s.userProfile);
   const userCreatedAt = userProfile?.createdAt || '2025-06';
+  const isPremium = userProfile?.activePlan === 'premium';
   
   const router = useRouter();
 
@@ -151,6 +152,12 @@ export default function DashboardScreen() {
   ];
 
   const handleAddCreditCard = () => {
+    if (!isPremium && creditCards.length >= 1) {
+      setCardModalVisible(false);
+      router.push('/paywall');
+      return;
+    }
+
     if (!newCardName.trim()) {
       showToast('Por favor, informe o nome da instituição.', 'error');
       return;

@@ -16,6 +16,7 @@ import {
   Target,
   ChevronRight
 } from 'lucide-react-native';
+import PremiumGate from '../../components/PremiumGate';
 
 export default function ChartsScreen() {
   const { theme: colorScheme, colors } = useTheme();
@@ -170,6 +171,10 @@ export default function ChartsScreen() {
   const renderPercentageIndicator = (pct: number) => `${pct.toFixed(0)}%`;
 
   return (
+    <PremiumGate 
+      featureName="Gráficos Inteligentes" 
+      description="Veja projeções futuras do seu saldo e analise o rebalanceamento ideal da sua carteira de investimentos no plano Pro."
+    >
     <ScrollView style={[styles.container, { backgroundColor: colors.background }]} contentContainerStyle={[styles.content, { paddingBottom: width < 768 ? 110 : 24 }]}>
       <View style={styles.header}>
         <Activity color={colorScheme === 'dark' ? colors.text : "#0F5132"} size={32} />
@@ -423,6 +428,7 @@ export default function ChartsScreen() {
         </GlassCard>
       </View>
     </ScrollView>
+    </PremiumGate>
   );
 }
 

@@ -357,29 +357,35 @@ export default function InstallmentsScreen() {
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
-      {/* Month Selector Bar (Floating style matching budget.tsx) */}
-      <View style={[styles.selectorBar, { backgroundColor: colorScheme === 'dark' ? '#151D30' : '#E8F5E9', borderColor: colorScheme === 'dark' ? 'rgba(255,255,255,0.05)' : '#C8E6C9' }]}>
-        <TouchableOpacity onPress={handlePrevMonth} style={[styles.selectorBtn, { backgroundColor: colorScheme === 'dark' ? 'rgba(255,255,255,0.05)' : '#F1F3F5' }]}>
-          <ChevronLeft color={colorScheme === 'dark' ? colors.text : "#0F5132"} size={24} />
-        </TouchableOpacity>
-        <Text style={[styles.selectorText, { color: colors.text }]}>
-          {monthsNames[currentMonth - 1]} {currentYear}
-        </Text>
-        <TouchableOpacity onPress={handleNextMonth} style={[styles.selectorBtn, { backgroundColor: colorScheme === 'dark' ? 'rgba(255,255,255,0.05)' : '#F1F3F5' }]}>
-          <ChevronRight color={colorScheme === 'dark' ? colors.text : "#0F5132"} size={24} />
-        </TouchableOpacity>
+      {/* HEADER & MONTH SELECTOR (SaaS Layout) */}
+      <View style={[styles.headerArea, !isLargeScreen && styles.headerAreaMobile]}>
+        <View style={[styles.headerTitles, isLargeScreen && { flex: 1, alignItems: 'flex-start' }]}>
+          <Text style={[styles.headerTitle, { color: colors.text }]}>Faturas</Text>
+          <Text style={[styles.headerSubtitle, { color: colors.textMuted }]}>Gestão de cartões e parcelamentos</Text>
+        </View>
+
+        <View style={[styles.selectorPill, { backgroundColor: colorScheme === 'dark' ? '#151C2C' : '#FFFFFF', borderColor: colors.borderGlass }]}>
+          <TouchableOpacity onPress={handlePrevMonth} style={styles.selectorBtnPill}>
+            <ChevronLeft color={colorScheme === 'dark' ? '#8B9BB4' : "#64748B"} size={16} />
+          </TouchableOpacity>
+          <Text style={[styles.selectorTextPill, { color: colors.text }]}>
+            {monthsNames[currentMonth - 1]} {currentYear}
+          </Text>
+          <TouchableOpacity onPress={handleNextMonth} style={styles.selectorBtnPill}>
+            <ChevronRight color={colorScheme === 'dark' ? '#8B9BB4' : "#64748B"} size={16} />
+          </TouchableOpacity>
+        </View>
+
+        {isLargeScreen && <View style={{ flex: 1 }} />}
       </View>
 
       <ScrollView contentContainerStyle={[styles.scrollContent, { paddingBottom: width < 768 ? 110 : 24 }]}>
         <Animated.View style={{ opacity: contentOpacity, width: '100%', gap: 16 }}>
         
-        {/* Seção de Cartões e Faturas */}
-        <View style={styles.sectionHeaderWithAction}>
+        {/* Ações de Cartões */}
+        <View style={[styles.sectionHeaderWithAction, { borderBottomWidth: 0, paddingBottom: 0, marginBottom: 8 }]}>
           <View style={{ flex: 1 }}>
-            <Text style={[styles.sectionTitle, { color: colors.text }]}>Seus Cartões e Faturas</Text>
-            <Text style={[styles.sectionSubtitle, { color: colors.textMuted }]}>
-              Visão direta dos valores programados para {monthsNames[currentMonth - 1]}
-            </Text>
+            <Text style={[styles.sectionTitle, { color: colors.text, fontSize: 18 }]}>Meus Cartões</Text>
           </View>
           <View style={{ flexDirection: 'row', gap: 8 }}>
             <TouchableOpacity 
@@ -918,7 +924,52 @@ export default function InstallmentsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8F9FA',
+  },
+  headerArea: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 24,
+    paddingTop: 16,
+    paddingBottom: 8,
+    width: '100%',
+    maxWidth: 1200,
+    alignSelf: 'center',
+  },
+  headerAreaMobile: {
+    flexDirection: 'column',
+    alignItems: 'center',
+    gap: 16,
+  },
+  headerTitles: {
+    gap: 2,
+  },
+  headerTitle: {
+    fontSize: 28,
+    fontWeight: '800',
+    letterSpacing: -0.5,
+  },
+  headerSubtitle: {
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  selectorPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderRadius: 999,
+    paddingHorizontal: 8,
+    paddingVertical: 6,
+    borderWidth: 1,
+    minWidth: 150,
+    justifyContent: 'space-between',
+  },
+  selectorBtnPill: {
+    padding: 4,
+  },
+  selectorTextPill: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    letterSpacing: 0.5,
   },
   selectorBar: {
     position: 'absolute',
