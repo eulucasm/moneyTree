@@ -45,7 +45,12 @@ export const authMiddleware = async (req: AuthenticatedRequest, res: Response, n
       return next();
     }
 
-    console.warn('[Auth] Firebase Admin not ready — using unverified JWT decode as fallback.');
+    if (!isDev) {
+      console.error('[Auth] CRITICAL: Firebase Admin not ready in production. Rejecting unverified token.');
+      return res.status(500).json({ error: 'Internal Server Error: Auth service unavailable' });
+    }
+
+    console.warn('[Auth] DEV ONLY: Firebase Admin not ready — using unverified JWT decode as fallback.');
     const decoded = decodeJwtWithoutVerification(token);
     if (decoded && (decoded.sub || decoded.user_id)) {
       req.userId = decoded.sub || decoded.user_id;

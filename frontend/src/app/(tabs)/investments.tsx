@@ -56,7 +56,7 @@ export default function InvestmentsScreen() {
   const progressPercent = savingsGoal > 0 ? Math.min((totalSavings / savingsGoal) * 100, 100) : 0;
 
   const { portfolio, getTotalInvested, getRebalancingPlan, addAsset, updateTargets, deleteAsset } = useInvestmentStore();
-  const totalInvested = getTotalInvested() + totalSavings;
+  const totalInvested = getTotalInvested();
 
   const poupancaItems = savingsItemsList.filter(item => item.type === 'poupança');
   const caixinhaItems = savingsItemsList.filter(item => item.type === 'caixinha');
@@ -110,26 +110,7 @@ export default function InvestmentsScreen() {
   const [contributionInput, setContributionInput] = useState('');
   const contributionAmount = parseCurrencyInput(contributionInput);
   
-  const rebalancingPlanBase = getRebalancingPlan(contributionAmount);
-  
-  const rebalancingPlan = [...rebalancingPlanBase];
-  if (totalSavings > 0) {
-    rebalancingPlan.push({
-      assetClass: 'Reserva' as any,
-      currentValue: totalSavings,
-      currentPercentage: (totalSavings / totalInvested) * 100,
-      idealPercentage: 0,
-      suggestedContribution: 0,
-    });
-  }
-  
-  if (totalSavings > 0 && totalInvested > 0) {
-    rebalancingPlan.forEach(p => {
-      if (p.assetClass !== 'Reserva') {
-        p.currentPercentage = (p.currentValue / totalInvested) * 100;
-      }
-    });
-  }
+  const rebalancingPlan = getRebalancingPlan(contributionAmount);
   // Modals state
   const [addAssetModalVisible, setAddAssetModalVisible] = useState(false);
   const [assetClassTarget, setAssetClassTarget] = useState<AssetClass>('Ações');
