@@ -355,9 +355,8 @@ export default function DashboardScreen() {
           </View>
         </View>
         <View style={[styles.badgePremium, { backgroundColor: colorScheme === 'dark' ? 'rgba(16,185,129,0.1)' : '#E8F5E9', borderColor: colorScheme === 'dark' ? 'rgba(16,185,129,0.3)' : '#A7F3D0' }]}>
-          <Sparkles size={16} color={colorScheme === 'dark' ? '#10B981' : '#0F5132'} style={{ marginRight: 6 }} />
           <Text style={[styles.badgePremiumText, { color: colorScheme === 'dark' ? '#10B981' : '#0F5132' }]}>
-            verdeco. {userProfile?.activePlan ? userProfile.activePlan.toUpperCase() : 'FREE'}
+            {userProfile?.activePlan ? userProfile.activePlan.charAt(0).toUpperCase() + userProfile.activePlan.slice(1).toLowerCase() : 'Basic'}
           </Text>
         </View>
       </View>
