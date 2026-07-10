@@ -13,7 +13,7 @@ interface CardSelectorProps {
 
 export const CardSelector: React.FC<CardSelectorProps> = ({ selectedCard, onSelect, cards, label }) => {
   const { t } = useTranslation();
-  const { colors } = useTheme();
+  const { colors, theme: colorScheme } = useTheme();
 
   return (
     <View style={styles.container}>
@@ -33,7 +33,8 @@ export const CardSelector: React.FC<CardSelectorProps> = ({ selectedCard, onSele
               style={[
                 styles.cardMock,
                 { backgroundColor: card.color },
-                isSelected ? styles.selectedCard : styles.unselectedCard
+                isSelected ? styles.selectedCard : styles.unselectedCard,
+                isSelected && { borderColor: colorScheme === 'dark' ? 'rgba(255, 255, 255, 0.2)' : '#FFFFFF' }
               ]}
             >
               <View style={styles.cardHeader}>
@@ -64,7 +65,8 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   scrollContent: {
-    paddingRight: 16,
+    paddingLeft: 8,
+    paddingRight: 24,
     paddingVertical: 8,
     gap: 12,
   },
@@ -113,7 +115,6 @@ const styles = StyleSheet.create({
   },
   selectedCard: {
     borderWidth: 2,
-    borderColor: '#FFFFFF',
     transform: [{ scale: 1.05 }],
     shadowOpacity: 0.35,
     shadowRadius: 10,

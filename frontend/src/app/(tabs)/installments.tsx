@@ -357,31 +357,31 @@ export default function InstallmentsScreen() {
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
-      {/* HEADER & MONTH SELECTOR (SaaS Layout) */}
-      <View style={[styles.headerArea, !isLargeScreen && styles.headerAreaMobile]}>
-        <View style={[styles.headerTitles, isLargeScreen && { flex: 1, alignItems: 'flex-start' }]}>
-          <Text style={[styles.headerTitle, { color: colors.text }]}>Faturas</Text>
-          <Text style={[styles.headerSubtitle, { color: colors.textMuted }]}>Gestão de cartões e parcelamentos</Text>
-        </View>
 
-        <View style={[styles.selectorPill, { backgroundColor: colorScheme === 'dark' ? '#151C2C' : '#FFFFFF', borderColor: colors.borderGlass }]}>
-          <TouchableOpacity onPress={handlePrevMonth} style={styles.selectorBtnPill}>
-            <ChevronLeft color={colorScheme === 'dark' ? '#8B9BB4' : "#64748B"} size={16} />
-          </TouchableOpacity>
-          <Text style={[styles.selectorTextPill, { color: colors.text }]}>
-            {monthsNames[currentMonth - 1]} {currentYear}
-          </Text>
-          <TouchableOpacity onPress={handleNextMonth} style={styles.selectorBtnPill}>
-            <ChevronRight color={colorScheme === 'dark' ? '#8B9BB4' : "#64748B"} size={16} />
-          </TouchableOpacity>
-        </View>
-
-        {isLargeScreen && <View style={{ flex: 1 }} />}
-      </View>
-
-      <ScrollView contentContainerStyle={[styles.scrollContent, { paddingBottom: width < 768 ? 110 : 24 }]}>
+      <ScrollView contentContainerStyle={[styles.scrollContent, { paddingBottom: width < 768 ? 110 : 24, paddingTop: width < 1024 ? (Platform.OS === 'ios' ? 120 : 80) : 24 }]}>
         <Animated.View style={{ opacity: contentOpacity, width: '100%', gap: 16 }}>
-        
+          {/* HEADER & MONTH SELECTOR (SaaS Layout) */}
+          <View style={[styles.headerArea, !isLargeScreen && styles.headerAreaMobile]}>
+            <View style={[styles.headerTitles, isLargeScreen && { flex: 1, alignItems: 'flex-start' }]}>
+              <Text style={[styles.headerTitle, { color: colors.text }]}>Faturas</Text>
+              <Text style={[styles.headerSubtitle, { color: colors.textMuted }]}>Gestão de cartões e parcelamentos</Text>
+            </View>
+
+            <View style={[styles.selectorPill, { backgroundColor: colorScheme === 'dark' ? '#151C2C' : '#FFFFFF', borderColor: colors.borderGlass }]}>
+              <TouchableOpacity onPress={handlePrevMonth} style={styles.selectorBtnPill}>
+                <ChevronLeft color={colorScheme === 'dark' ? '#8B9BB4' : "#64748B"} size={16} />
+              </TouchableOpacity>
+              <Text style={[styles.selectorTextPill, { color: colors.text }]}>
+                {monthsNames[currentMonth - 1]} {currentYear}
+              </Text>
+              <TouchableOpacity onPress={handleNextMonth} style={styles.selectorBtnPill}>
+                <ChevronRight color={colorScheme === 'dark' ? '#8B9BB4' : "#64748B"} size={16} />
+              </TouchableOpacity>
+            </View>
+
+            {isLargeScreen && <View style={{ flex: 1 }} />}
+          </View>
+          
         {/* Ações de Cartões */}
         <View style={[styles.sectionHeaderWithAction, { borderBottomWidth: 0, paddingBottom: 0, marginBottom: 8 }]}>
           <View style={{ flex: 1 }}>
@@ -552,6 +552,9 @@ export default function InstallmentsScreen() {
             })
           )}
         </View>
+        
+        {/* Espaçador para garantir que o FAB não cubra o último item */}
+        <View style={{ height: 90 }} />
         </Animated.View>
       </ScrollView>
 
@@ -583,7 +586,7 @@ export default function InstallmentsScreen() {
               </TouchableOpacity>
             </View>
 
-            <ScrollView contentContainerStyle={styles.modalForm} showsVerticalScrollIndicator={false}>
+            <ScrollView style={{ flexShrink: 1 }} contentContainerStyle={styles.modalForm} showsVerticalScrollIndicator={false}>
               <FinancialInput
                 label={t('installments.productName')}
                 placeholder="Ex: Celular Novo, Computador"
@@ -613,11 +616,11 @@ export default function InstallmentsScreen() {
                   />
                 </View>
               </View>
-              {totalValue && installments && !isNaN(parseFloat(totalValue)) && !isNaN(parseInt(installments, 10)) && parseInt(installments, 10) > 0 && (
+              {(totalValue && installments && !isNaN(parseFloat(totalValue)) && !isNaN(parseInt(installments, 10)) && parseInt(installments, 10) > 0) ? (
                 <Text style={{ fontSize: 13, color: colors.textMuted, marginTop: -4, marginBottom: 8, paddingHorizontal: 4 }}>
                   Prévia por parcela: {formatCurrency(parseFloat(totalValue) / parseInt(installments, 10))}
                 </Text>
-              )}
+              ) : null}
 
               <FinancialInput
                 label={t('installments.startDate')}
@@ -659,7 +662,7 @@ export default function InstallmentsScreen() {
               </TouchableOpacity>
             </View>
 
-            <ScrollView contentContainerStyle={{ gap: 16 }} style={{ maxHeight: 400 }} showsVerticalScrollIndicator={true}>
+            <ScrollView contentContainerStyle={{ gap: 16 }} style={{ flexShrink: 1, maxHeight: 400 }} showsVerticalScrollIndicator={true}>
               <FinancialInput
                 label="Nome da Instituição"
                 placeholder="Ex: Banco do Brasil, C6 Bank"
@@ -759,7 +762,7 @@ export default function InstallmentsScreen() {
               </TouchableOpacity>
             </View>
 
-            <ScrollView contentContainerStyle={{ gap: 16 }} style={{ maxHeight: 400 }} showsVerticalScrollIndicator={true}>
+            <ScrollView contentContainerStyle={{ gap: 16 }} style={{ flexShrink: 1, maxHeight: 400 }} showsVerticalScrollIndicator={true}>
               {!editingCardId ? (
                 <>
                   <Text style={[styles.modalSubtitleSection, { color: colorScheme === 'dark' ? '#10B981' : '#0F5132' }]}>Selecione um cartão para editar</Text>
@@ -894,7 +897,7 @@ export default function InstallmentsScreen() {
               </TouchableOpacity>
             </View>
 
-            <ScrollView contentContainerStyle={{ gap: 16, paddingBottom: 16 }} showsVerticalScrollIndicator={false}>
+            <ScrollView style={{ flexShrink: 1 }} contentContainerStyle={{ gap: 16, paddingBottom: 16 }} showsVerticalScrollIndicator={false}>
               <View style={{ backgroundColor: colorScheme === 'dark' ? 'rgba(255,255,255,0.05)' : '#E8F5E9', borderColor: colors.borderGlass, padding: 12, borderRadius: 8, borderWidth: 1 }}>
                 <Text style={{ color: colors.textMuted, fontSize: 13, lineHeight: 20 }}>
                   O app calculou um total de <Text style={{ fontWeight: 'bold', color: colors.text }}>{formatCurrency(adjustCalculatedTotal)}</Text>. 
@@ -1220,6 +1223,7 @@ const styles = StyleSheet.create({
     width: '100%',
     maxWidth: 500,
     maxHeight: '90%',
+    flexShrink: 1,
     padding: 28,
     backgroundColor: '#FFFFFF',
     borderRadius: 24,
@@ -1252,7 +1256,6 @@ const styles = StyleSheet.create({
   closeModalBtn: {
     padding: 6,
     borderRadius: 18,
-    backgroundColor: '#F8F9FA',
   },
   modalForm: {
     gap: 12,

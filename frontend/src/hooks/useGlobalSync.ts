@@ -86,6 +86,7 @@ async function loadFromAsyncStorage(): Promise<Record<string, any> | null> {
 
 export function useGlobalSync() {
   const isSyncingFromCloud = useRef(false);
+  const hasHydrated = useRef(false); // Security lock to prevent accidental overwrites
   const pendingSyncTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   const periodicSyncInterval = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -95,7 +96,7 @@ export function useGlobalSync() {
 
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
       const uid = useAuthStore.getState().user?.uid;
-      if (!uid) return;
+      if (!uid || !hasHydrated.current) return;
 
       
       // Cancel any pending debounced sync
@@ -128,6 +129,7 @@ export function useGlobalSync() {
         if (activeUid !== currentUser.uid) {
            await clearFinance();
            await clearInvestments();
+           hasHydrated.current = false;
         }
         setActiveUid(currentUser.uid);
         
@@ -228,12 +230,14 @@ export function useGlobalSync() {
               // Wait for state to settle before pushing
               setTimeout(async () => {
                 isSyncingFromCloud.current = false;
+                hasHydrated.current = true;
                 await syncToBackendNow(currentUser.uid);
               }, 500);
             } else {
               // Extended delay to prevent accidental overwrites from state-change subscribers
               setTimeout(() => {
                 isSyncingFromCloud.current = false;
+                hasHydrated.current = true;
               }, 2000);
             }
 
@@ -291,11 +295,16 @@ export function useGlobalSync() {
               });
               setTimeout(() => {
                 isSyncingFromCloud.current = false;
+                hasHydrated.current = true;
               }, 2000);
+            } else {
+                hasHydrated.current = true;
             }
 
             // Create the cloud document with current state
-            await syncToBackendNow(currentUser.uid);
+            if (hasHydrated.current) {
+                await syncToBackendNow(currentUser.uid);
+            }
             setSyncStatus('synced');
           }
         } catch (err) {
@@ -321,8 +330,11 @@ export function useGlobalSync() {
             i18n.changeLanguage(localData.language || 'pt');
             setTimeout(() => {
               isSyncingFromCloud.current = false;
+              hasHydrated.current = true;
             }, 2000);
             console.log('[Sync] Successfully loaded from AsyncStorage fallback.');
+          } else {
+              hasHydrated.current = true;
           }
           
           setSyncStatus('error');
@@ -350,10 +362,14 @@ export function useGlobalSync() {
             i18n.changeLanguage(localData.language || 'pt');
             setTimeout(() => {
               isSyncingFromCloud.current = false;
+              hasHydrated.current = true;
             }, 2000);
+          } else {
+              hasHydrated.current = true;
           }
         }).catch(err => {
           console.error('[Sync] Error loading AsyncStorage for guest:', err);
+          hasHydrated.current = true;
         });
       }
       setAuthInitialized(true);
@@ -369,6 +385,8 @@ export function useGlobalSync() {
     let capturedUid: string | null = null;
 
     const handleStateChange = () => {
+      if (!hasHydrated.current) return; // SECURITY LOCK: Do not sync if we haven't loaded data from Cloud/AsyncStorage
+
       const user = useAuthStore.getState().user;
       if (!user) return;
       if (isSyncingFromCloud.current) return;
@@ -382,7 +400,7 @@ export function useGlobalSync() {
 
       // Reduced debounce from 500ms to 300ms for faster sync
       pendingSyncTimeout.current = setTimeout(async () => {
-        if (!capturedUid) return;
+        if (!capturedUid || !hasHydrated.current) return;
         
         const { setSyncStatus } = useSyncStore.getState();
         setSyncStatus('syncing');
@@ -395,7 +413,7 @@ export function useGlobalSync() {
 
     let prevFinanceState = useFinanceStore.getState();
     const unsubFinance = useFinanceStore.subscribe((state) => {
-      if (!isSyncingFromCloud.current && (
+      if (!isSyncingFromCloud.current && hasHydrated.current && (
         state.entries !== prevFinanceState.entries ||
         state.exits !== prevFinanceState.exits ||
         state.recurrings !== prevFinanceState.recurrings ||
@@ -413,7 +431,7 @@ export function useGlobalSync() {
 
     let prevAuthState = useAuthStore.getState();
     const unsubAuth = useAuthStore.subscribe((state) => {
-      if (state.userProfile !== prevAuthState.userProfile && !isSyncingFromCloud.current) {
+      if (state.userProfile !== prevAuthState.userProfile && !isSyncingFromCloud.current && hasHydrated.current) {
          handleStateChange();
       }
       prevAuthState = state;
@@ -422,7 +440,7 @@ export function useGlobalSync() {
     // SAFETY NET: Periodic sync every 30 seconds to catch any missed changes
     periodicSyncInterval.current = setInterval(() => {
       const user = useAuthStore.getState().user;
-      if (!user || isSyncingFromCloud.current) return;
+      if (!user || isSyncingFromCloud.current || !hasHydrated.current) return;
       
       // Only sync if there's no pending debounce (to avoid double-syncing)
       if (!pendingSyncTimeout.current) {

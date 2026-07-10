@@ -175,7 +175,7 @@ export default function ChartsScreen() {
       featureName="Gráficos Inteligentes" 
       description="Veja projeções futuras do seu saldo e analise o rebalanceamento ideal da sua carteira de investimentos no plano Pro."
     >
-    <ScrollView style={[styles.container, { backgroundColor: colors.background }]} contentContainerStyle={[styles.content, { paddingBottom: width < 768 ? 110 : 24 }]}>
+    <ScrollView style={[styles.container, { backgroundColor: colors.background }]} contentContainerStyle={[styles.content, { paddingBottom: width < 768 ? 110 : 24, paddingTop: width < 1024 ? (Platform.OS === 'ios' ? 120 : 80) : 24 }]}>
       <View style={styles.header}>
         <Activity color={colorScheme === 'dark' ? colors.text : "#0F5132"} size={32} />
         <Text style={[styles.headerText, { color: colors.text }]}>Relatórios Visuais</Text>
@@ -201,7 +201,7 @@ export default function ChartsScreen() {
         </View>
 
         {/* The bar chart container */}
-        <View style={styles.barChartWrapper}>
+        <View style={[styles.barChartWrapper, { borderBottomColor: colors.borderGlass }]}>
           <View style={styles.barChartGrid}>
             {timelineData.map((item) => {
               const isSelected = item.monthStr === selectedPeriod;
@@ -234,7 +234,7 @@ export default function ChartsScreen() {
           </View>
         </View>
 
-        <View style={[styles.periodQuickSummary, { borderTopColor: colors.borderGlass, backgroundColor: colorScheme === 'dark' ? 'rgba(255,255,255,0.01)' : '#F8F9FA' }]}>
+        <View style={[styles.periodQuickSummary, { borderColor: colors.borderGlass, backgroundColor: colorScheme === 'dark' ? 'rgba(255,255,255,0.02)' : colors.background }]}>
           <Text style={[styles.quickSummaryTitle, { color: colors.text }]}>
             Balanço de {selectedData.monthName} / {selectedData.year}:
           </Text>

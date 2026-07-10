@@ -130,6 +130,7 @@ export default function BudgetScreen() {
   };
 
   const [addModalType, setAddModalType] = useState<'entry' | 'exit' | 'variable' | 'recurring' | 'installment' | null>(null);
+  const [viewMoreModal, setViewMoreModal] = useState<'entries' | 'fixed' | 'variable' | 'recurring' | 'installment' | null>(null);
   const [desc, setDesc] = useState('');
   const [val, setVal] = useState('');
   const [installmentCount, setInstallmentCount] = useState('');
@@ -221,12 +222,12 @@ export default function BudgetScreen() {
     const trueCutoff = getEarliestDataMonth(baseUserCreatedAt, entries, exits, purchases);
     return getMonthlyOutflowsList(selectedPeriod, trueCutoff);
   }, [selectedPeriod, getMonthlyOutflowsList, userProfile, purchases, exits, recurrings, installmentStatusMap]);
-  const currentEntries = entries.filter(e => e.date === selectedPeriod);
+  const currentEntries = entries.filter(e => e.date === selectedPeriod).reverse();
 
-  const fixedOutflows = currentOutflows.filter(o => o.type === 'fixed');
-  const variableOutflows = currentOutflows.filter(o => o.type === 'variable');
-  const recurringOutflows = currentOutflows.filter(o => o.type === 'recurring');
-  const installmentOutflows = currentOutflows.filter(o => o.type === 'installment');
+  const fixedOutflows = currentOutflows.filter(o => o.type === 'fixed').reverse();
+  const variableOutflows = currentOutflows.filter(o => o.type === 'variable').reverse();
+  const recurringOutflows = currentOutflows.filter(o => o.type === 'recurring').reverse();
+  const installmentOutflows = currentOutflows.filter(o => o.type === 'installment').reverse();
 
   const totalEntriesVal = currentEntries.reduce((sum, e) => sum + e.value, 0);
   const totalFixedVal = fixedOutflows.reduce((sum, o) => sum + o.value, 0);
@@ -236,35 +237,36 @@ export default function BudgetScreen() {
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
-      {/* HEADER & MONTH SELECTOR (SaaS Layout) */}
-      <View style={[styles.headerArea, !isLargeScreen && styles.headerAreaMobile]}>
-        <View style={[styles.headerTitles, isLargeScreen && { flex: 1, alignItems: 'flex-start' }]}>
-          <Text style={[styles.headerTitle, { color: colors.text }]}>Orçamento</Text>
-          <Text style={[styles.headerSubtitle, { color: colors.textMuted }]}>Gestão detalhada do mês</Text>
-        </View>
 
-        <View style={[styles.selectorPill, { backgroundColor: colorScheme === 'dark' ? '#151C2C' : '#FFFFFF', borderColor: colors.borderGlass }]}>
-          <TouchableOpacity onPress={handlePrevMonth} style={styles.selectorBtnPill}>
-            <ChevronLeft color={colorScheme === 'dark' ? '#8B9BB4' : "#64748B"} size={16} />
-          </TouchableOpacity>
-          <Text style={[styles.selectorTextPill, { color: colors.text }]}>
-            {monthsNames[currentMonth - 1]} {currentYear}
-          </Text>
-          <TouchableOpacity onPress={handleNextMonth} style={styles.selectorBtnPill}>
-            <ChevronRight color={colorScheme === 'dark' ? '#8B9BB4' : "#64748B"} size={16} />
-          </TouchableOpacity>
-        </View>
-
-        {isLargeScreen && <View style={{ flex: 1 }} />}
-      </View>
-
-      <ScrollView contentContainerStyle={[styles.scrollContent, { paddingBottom: width < 768 ? 110 : 24 }]}>
+      <ScrollView contentContainerStyle={[styles.scrollContent, { paddingBottom: width < 768 ? 110 : 24, paddingTop: width < 1024 ? (Platform.OS === 'ios' ? 120 : 80) : 24 }]}>
         <Animated.View style={{ 
           opacity: contentOpacity, 
           transform: [{ translateY: contentTranslateY }],
           width: '100%', 
           gap: 16 
         }}>
+          {/* HEADER & MONTH SELECTOR (SaaS Layout) */}
+          <View style={[styles.headerArea, !isLargeScreen && styles.headerAreaMobile]}>
+            <View style={[styles.headerTitles, isLargeScreen && { flex: 1, alignItems: 'flex-start' }]}>
+              <Text style={[styles.headerTitle, { color: colors.text }]}>Orçamento</Text>
+              <Text style={[styles.headerSubtitle, { color: colors.textMuted }]}>Gestão detalhada do mês</Text>
+            </View>
+
+            <View style={[styles.selectorPill, { backgroundColor: colorScheme === 'dark' ? '#151C2C' : '#FFFFFF', borderColor: colors.borderGlass }]}>
+              <TouchableOpacity onPress={handlePrevMonth} style={styles.selectorBtnPill}>
+                <ChevronLeft color={colorScheme === 'dark' ? '#8B9BB4' : "#64748B"} size={16} />
+              </TouchableOpacity>
+              <Text style={[styles.selectorTextPill, { color: colors.text }]}>
+                {monthsNames[currentMonth - 1]} {currentYear}
+              </Text>
+              <TouchableOpacity onPress={handleNextMonth} style={styles.selectorBtnPill}>
+                <ChevronRight color={colorScheme === 'dark' ? '#8B9BB4' : "#64748B"} size={16} />
+              </TouchableOpacity>
+            </View>
+
+            {isLargeScreen && <View style={{ flex: 1 }} />}
+          </View>
+
         {/* SECTION 1: RESUMO ORÇAMENTÁRIO (3 Cards) */}
         <View style={[
           styles.cardsRow,
@@ -363,8 +365,9 @@ export default function BudgetScreen() {
                 {currentEntries.length === 0 ? (
                   <Text style={[styles.noItemsText, { color: colors.textMuted }]}>Nenhum registro cadastrado.</Text>
                 ) : (
-                  currentEntries.map((item, index) => {
-                    const isLast = index === currentEntries.length - 1;
+                  <>
+                  {currentEntries.slice(0, 3).map((item, index) => {
+                    const isLast = index === Math.min(currentEntries.length, 3) - 1;
                     return (
                       <View key={item.id} style={[styles.itemRowFlat, isLast && styles.lastItemRowFlat]}>
                         <Text style={[styles.itemDesc, { color: colors.text }]}>{item.description}</Text>
@@ -379,7 +382,13 @@ export default function BudgetScreen() {
                         </View>
                       </View>
                     );
-                  })
+                  })}
+                  {currentEntries.length > 3 && (
+                    <TouchableOpacity onPress={() => setViewMoreModal('entries')} style={styles.seeMoreBtn}>
+                      <Text style={[styles.seeMoreText, { color: colors.tint }]}>Ver todos os {currentEntries.length} registros...</Text>
+                    </TouchableOpacity>
+                  )}
+                  </>
                 )}
               </View>
             </View>
@@ -411,8 +420,9 @@ export default function BudgetScreen() {
                 {variableOutflows.length === 0 ? (
                   <Text style={[styles.noItemsText, { color: colors.textMuted }]}>Nenhum registro cadastrado.</Text>
                 ) : (
-                  variableOutflows.map((item, index) => {
-                    const isLast = index === variableOutflows.length - 1;
+                  <>
+                  {variableOutflows.slice(0, 3).map((item, index) => {
+                    const isLast = index === Math.min(variableOutflows.length, 3) - 1;
                     return (
                       <View key={item.id} style={[styles.itemRowFlat, isLast && styles.lastItemRowFlat, { opacity: item.status === 'ok' ? 0.6 : 1.0 }]}>
                         <TouchableOpacity onPress={() => { LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut); toggleExitStatus(item.id as ExitId); }} style={styles.itemCheckBtn}>
@@ -427,7 +437,13 @@ export default function BudgetScreen() {
                         </View>
                       </View>
                     );
-                  })
+                  })}
+                  {variableOutflows.length > 3 && (
+                    <TouchableOpacity onPress={() => setViewMoreModal('variable')} style={styles.seeMoreBtn}>
+                      <Text style={[styles.seeMoreText, { color: colors.tint }]}>Ver todas as {variableOutflows.length} despesas...</Text>
+                    </TouchableOpacity>
+                  )}
+                  </>
                 )}
               </View>
             </View>
@@ -464,8 +480,9 @@ export default function BudgetScreen() {
                 {fixedOutflows.length === 0 ? (
                   <Text style={[styles.noItemsText, { color: colors.textMuted }]}>Nenhum registro cadastrado.</Text>
                 ) : (
-                  fixedOutflows.map((item, index) => {
-                    const isLast = index === fixedOutflows.length - 1;
+                  <>
+                  {fixedOutflows.slice(0, 3).map((item, index) => {
+                    const isLast = index === Math.min(fixedOutflows.length, 3) - 1;
                     const cardType = detectCardTypeDynamic(item.description, creditCards);
                     let cardSum = 0;
                     if (cardType) {
@@ -494,7 +511,13 @@ export default function BudgetScreen() {
                         )}
                       </View>
                     );
-                  })
+                  })}
+                  {fixedOutflows.length > 3 && (
+                    <TouchableOpacity onPress={() => setViewMoreModal('fixed')} style={styles.seeMoreBtn}>
+                      <Text style={[styles.seeMoreText, { color: colors.tint }]}>Ver todas as {fixedOutflows.length} despesas...</Text>
+                    </TouchableOpacity>
+                  )}
+                  </>
                 )}
               </View>
             </View>
@@ -526,8 +549,9 @@ export default function BudgetScreen() {
                 {installmentOutflows.length === 0 ? (
                   <Text style={[styles.noItemsText, { color: colors.textMuted }]}>Nenhum registro cadastrado.</Text>
                 ) : (
-                  installmentOutflows.map((item, index) => {
-                    const isLast = index === installmentOutflows.length - 1;
+                  <>
+                  {installmentOutflows.slice(0, 3).map((item, index) => {
+                    const isLast = index === Math.min(installmentOutflows.length, 3) - 1;
                     const cardObj = creditCards.find(c => c.id === item.cardUsed);
                     return (
                       <View key={item.id} style={[styles.itemRowFlat, isLast && styles.lastItemRowFlat]}>
@@ -549,7 +573,66 @@ export default function BudgetScreen() {
                         </View>
                       </View>
                     );
-                  })
+                  })}
+                  {installmentOutflows.length > 3 && (
+                    <TouchableOpacity onPress={() => setViewMoreModal('installment')} style={styles.seeMoreBtn}>
+                      <Text style={[styles.seeMoreText, { color: colors.tint }]}>Ver todas as {installmentOutflows.length} parcelas...</Text>
+                    </TouchableOpacity>
+                  )}
+                  </>
+                )}
+              </View>
+            </View>
+
+            {/* Card 3: Recorrentes (Movido para a coluna direita para balanço masonry) */}
+            <View style={[styles.sectionCard, { backgroundColor: colorScheme === 'dark' ? '#182133' : colors.surface, borderColor: colorScheme === 'dark' ? '#26334D' : colors.borderGlass }]}>
+              <View style={[styles.sectionHeaderInside, { borderBottomColor: colorScheme === 'dark' ? 'rgba(255,255,255,0.05)' : colors.borderGlass }]}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, flex: 1, paddingRight: 8 }}>
+                  <Text style={[styles.sectionTitleInside, { color: colors.text, flexShrink: 1 }]} numberOfLines={2}>{t('common.recurring')}</Text>
+                  <TouchableOpacity onPress={() => toggleInfo('recurrent')}>
+                    <Info color={colors.textMuted} size={14} />
+                  </TouchableOpacity>
+                </View>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, flexShrink: 0 }}>
+                  <Text style={[styles.sectionHeaderTotal, { color: colors.text }]}>{formatCurrency(totalRecurringVal)}</Text>
+                  <TouchableOpacity onPress={() => setAddModalType('recurring')} style={[styles.addButton, { borderColor: colorScheme === 'dark' ? '#26334D' : colors.borderGlass }]}>
+                    <Plus color={colorScheme === 'dark' ? '#8B9BB4' : colors.textMuted} size={16} />
+                  </TouchableOpacity>
+                </View>
+              </View>
+
+              {visibleInfos['recurrent'] && (
+                <View style={[styles.infoAlert, { backgroundColor: colorScheme === 'dark' ? 'rgba(255,255,255,0.05)' : '#E8F5E9', borderColor: colors.borderGlass }]}>
+                  <Text style={[styles.infoAlertText, { color: colors.textMuted }]}>Destinado a assinaturas (ex: Netflix, Prime Video, Google, Spotify).</Text>
+                </View>
+              )}
+
+              <View style={styles.itemsListFlat}>
+                {recurrings.length === 0 ? (
+                  <Text style={[styles.noItemsText, { color: colors.textMuted, paddingHorizontal: 8 }]}>Nenhum registro cadastrado.</Text>
+                ) : (
+                  <>
+                  {recurrings.slice(0, 3).map((item, index) => {
+                    const isLast = index === Math.min(recurrings.length, 3) - 1;
+                    return (
+                      <View key={item.id} style={[styles.itemRowFlat, isLast && styles.lastItemRowFlat]}>
+                        <RefreshCw color={colorScheme === 'dark' ? '#8B9BB4' : "#6C757D"} size={14} style={{ marginRight: 8 }} />
+                        <Text style={[styles.itemDesc, { color: colors.text }]}>{item.description}</Text>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+                          <Text style={[styles.itemVal, { color: colors.text }]}>{formatCurrency(item.value)}</Text>
+                          <TouchableOpacity onPress={() => { LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut); deleteRecurring(item.id); showToast('Assinatura recorrente removida.', 'success'); }} style={styles.deleteBtn}>
+                            <Trash2 color={colors.textMuted} size={14} />
+                          </TouchableOpacity>
+                        </View>
+                      </View>
+                    );
+                  })}
+                  {recurrings.length > 3 && (
+                    <TouchableOpacity onPress={() => setViewMoreModal('recurring')} style={styles.seeMoreBtn}>
+                      <Text style={[styles.seeMoreText, { color: colors.tint }]}>Ver todas as {recurrings.length} assinaturas...</Text>
+                    </TouchableOpacity>
+                  )}
+                  </>
                 )}
               </View>
             </View>
@@ -557,53 +640,6 @@ export default function BudgetScreen() {
           </View>
         </View>
 
-        {/* Card 3: Recorrentes (Centralizado no final) */}
-        <View style={{ width: isLargeScreen ? '49%' : '100%', alignSelf: 'center' }}>
-          <View style={[styles.sectionCard, { backgroundColor: colorScheme === 'dark' ? '#182133' : colors.surface, borderColor: colorScheme === 'dark' ? '#26334D' : colors.borderGlass }]}>
-            <View style={[styles.sectionHeaderInside, { borderBottomColor: colorScheme === 'dark' ? 'rgba(255,255,255,0.05)' : colors.borderGlass }]}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, flex: 1, paddingRight: 8 }}>
-                <Text style={[styles.sectionTitleInside, { color: colors.text, flexShrink: 1 }]} numberOfLines={2}>{t('common.recurring')}</Text>
-                <TouchableOpacity onPress={() => toggleInfo('recurrent')}>
-                  <Info color={colors.textMuted} size={14} />
-                </TouchableOpacity>
-              </View>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, flexShrink: 0 }}>
-                <Text style={[styles.sectionHeaderTotal, { color: colors.text }]}>{formatCurrency(totalRecurringVal)}</Text>
-                <TouchableOpacity onPress={() => setAddModalType('recurring')} style={[styles.addButton, { borderColor: colorScheme === 'dark' ? '#26334D' : colors.borderGlass }]}>
-                  <Plus color={colorScheme === 'dark' ? '#8B9BB4' : colors.textMuted} size={16} />
-                </TouchableOpacity>
-              </View>
-            </View>
-
-            {visibleInfos['recurrent'] && (
-              <View style={[styles.infoAlert, { backgroundColor: colorScheme === 'dark' ? 'rgba(255,255,255,0.05)' : '#E8F5E9', borderColor: colors.borderGlass }]}>
-                <Text style={[styles.infoAlertText, { color: colors.textMuted }]}>Destinado a assinaturas (ex: Netflix, Prime Video, Google, Spotify).</Text>
-              </View>
-            )}
-
-            <View style={styles.itemsListFlat}>
-              {recurrings.length === 0 ? (
-                <Text style={[styles.noItemsText, { color: colors.textMuted, paddingHorizontal: 8 }]}>Nenhum registro cadastrado.</Text>
-              ) : (
-                recurrings.map((item, index) => {
-                  const isLast = index === recurrings.length - 1;
-                  return (
-                    <View key={item.id} style={[styles.itemRowFlat, isLast && styles.lastItemRowFlat]}>
-                      <RefreshCw color={colorScheme === 'dark' ? '#8B9BB4' : "#6C757D"} size={14} style={{ marginRight: 8 }} />
-                      <Text style={[styles.itemDesc, { color: colors.text }]}>{item.description}</Text>
-                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-                        <Text style={[styles.itemVal, { color: colors.text }]}>{formatCurrency(item.value)}</Text>
-                        <TouchableOpacity onPress={() => { LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut); deleteRecurring(item.id); showToast('Assinatura recorrente removida.', 'success'); }} style={styles.deleteBtn}>
-                          <Trash2 color={colors.textMuted} size={14} />
-                        </TouchableOpacity>
-                      </View>
-                    </View>
-                  );
-                })
-              )}
-            </View>
-          </View>
-        </View>
         </Animated.View>
       </ScrollView>
 
@@ -655,7 +691,7 @@ export default function BudgetScreen() {
               </TouchableOpacity>
             </View>
 
-            <ScrollView contentContainerStyle={{ gap: 12 }} showsVerticalScrollIndicator={false}>
+            <ScrollView style={{ flexShrink: 1 }} contentContainerStyle={{ gap: 12 }} showsVerticalScrollIndicator={false}>
               <FinancialInput
                 label={addModalType === 'installment' ? 'Nome do Produto' : 'Descrição'}
                 placeholder={
@@ -726,6 +762,63 @@ export default function BudgetScreen() {
                 onPress={handleAddSubmit}
                 style={{ marginTop: 12 }}
               />
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
+
+      <Modal
+        animationType="fade"
+        transparent={true}
+        visible={viewMoreModal !== null}
+        onRequestClose={() => setViewMoreModal(null)}
+      >
+        <View style={[styles.modalBg, { backgroundColor: colorScheme === 'dark' ? 'rgba(0,0,0,0.6)' : 'rgba(33, 37, 41, 0.4)' }]}>
+          <View style={[styles.modalContainer, { backgroundColor: colors.surface, borderColor: colors.borderGlass, borderWidth: 1, maxHeight: '80%' }]}>
+            <View style={[styles.modalHeader, { borderBottomColor: colors.borderGlass }]}>
+              <View style={styles.modalTitleContainer}>
+                <Text style={[styles.modalTitle, { color: colors.text }]}>
+                  {viewMoreModal === 'entries' ? 'Todas as Entradas' : 
+                   viewMoreModal === 'fixed' ? 'Todas Despesas Fixas' : 
+                   viewMoreModal === 'variable' ? 'Todas Despesas Variadas' : 
+                   viewMoreModal === 'recurring' ? 'Todas Assinaturas' : 'Todas Parcelas'}
+                </Text>
+              </View>
+              <TouchableOpacity onPress={() => setViewMoreModal(null)} style={[styles.closeModalBtn, { backgroundColor: colorScheme === 'dark' ? 'rgba(255,255,255,0.05)' : '#F8F9FA' }]}>
+                <X color={colors.textMuted} size={20} />
+              </TouchableOpacity>
+            </View>
+            <ScrollView style={{ flexShrink: 1 }} contentContainerStyle={{ paddingBottom: 24, gap: 12 }} showsVerticalScrollIndicator={false}>
+              {viewMoreModal === 'entries' && currentEntries.map(item => (
+                <View key={item.id} style={[styles.itemRowFlat, { backgroundColor: colorScheme === 'dark' ? 'rgba(255,255,255,0.03)' : '#F8F9FA' }]}>
+                  <Text style={[styles.itemDesc, { color: colors.text }]}>{item.description}</Text>
+                  <Text style={[styles.itemVal, { color: colors.text }]}>{formatCurrency(item.value)}</Text>
+                </View>
+              ))}
+              {viewMoreModal === 'fixed' && fixedOutflows.map(item => (
+                <View key={item.id} style={[styles.itemRowFlat, { backgroundColor: colorScheme === 'dark' ? 'rgba(255,255,255,0.03)' : '#F8F9FA' }]}>
+                  <Text style={[styles.itemDesc, { color: colors.text }]}>{item.description}</Text>
+                  <Text style={[styles.itemVal, { color: colors.text }]}>{formatCurrency(item.value)}</Text>
+                </View>
+              ))}
+              {viewMoreModal === 'variable' && variableOutflows.map(item => (
+                <View key={item.id} style={[styles.itemRowFlat, { backgroundColor: colorScheme === 'dark' ? 'rgba(255,255,255,0.03)' : '#F8F9FA' }]}>
+                  <Text style={[styles.itemDesc, { color: colors.text }]}>{item.description}</Text>
+                  <Text style={[styles.itemVal, { color: colors.text }]}>{formatCurrency(item.value)}</Text>
+                </View>
+              ))}
+              {viewMoreModal === 'installment' && installmentOutflows.map(item => (
+                <View key={item.id} style={[styles.itemRowFlat, { backgroundColor: colorScheme === 'dark' ? 'rgba(255,255,255,0.03)' : '#F8F9FA' }]}>
+                  <Text style={[styles.itemDesc, { color: colors.text }]}>{item.description}</Text>
+                  <Text style={[styles.itemVal, { color: colors.text }]}>{formatCurrency(item.value)}</Text>
+                </View>
+              ))}
+              {viewMoreModal === 'recurring' && recurrings.map(item => (
+                <View key={item.id} style={[styles.itemRowFlat, { backgroundColor: colorScheme === 'dark' ? 'rgba(255,255,255,0.03)' : '#F8F9FA' }]}>
+                  <Text style={[styles.itemDesc, { color: colors.text }]}>{item.description}</Text>
+                  <Text style={[styles.itemVal, { color: colors.text }]}>{formatCurrency(item.value)}</Text>
+                </View>
+              ))}
             </ScrollView>
           </View>
         </View>
@@ -980,6 +1073,8 @@ const styles = StyleSheet.create({
   modalContainer: {
     width: '100%',
     maxWidth: 500,
+    maxHeight: '90%',
+    flexShrink: 1,
     padding: 28,
     backgroundColor: '#FFFFFF',
     borderRadius: 24,
@@ -1050,5 +1145,17 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '500',
     lineHeight: 16,
+  },
+  seeMoreBtn: {
+    paddingVertical: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 4,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(150, 150, 150, 0.15)',
+  },
+  seeMoreText: {
+    fontSize: 13,
+    fontWeight: '600',
   },
 });

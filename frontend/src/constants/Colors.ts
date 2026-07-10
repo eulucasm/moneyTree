@@ -1,16 +1,16 @@
-// Design System Theme constants for FinanciLife (inspired by REFCORES and glassmorphism layouts)
+// Design System Theme constants for FinanciLife (Premium Fintech 2026)
 
 export const Theme = {
   light: {
     // Backgrounds - Off-white Minimalist Tech
-    background: '#F8F9FA', // Off-white principal
-    surface: '#FFFFFF',    // Card/surface background puro
-    surfaceGlass: 'rgba(255, 255, 255, 0.95)',
-    borderGlass: '#E5E7EB',  // Card border sutil
-    borderGlassActive: '#10B981', // Selected/Active card border
+    background: '#F8F9FA', 
+    surface: '#FFFFFF',    
+    surfaceGlass: 'rgba(255, 255, 255, 0.85)',
+    borderGlass: '#E2E8F0',  
+    borderGlassActive: '#10B981', 
     
     // Typography
-    text: '#0F5132',
+    text: '#064E3B', // Deep Emerald
     textMuted: '#64748B',
     textSecondary: '#334155',
     
@@ -28,25 +28,26 @@ export const Theme = {
       caixaOrange: '#f29100',
       bradesco: '#cc092f',
       vale: '#facc15',
-      other: '#0F5132',
+      other: '#064E3B',
     },
 
     // UI Accents
     tint: '#10B981',
+    tintGradient: ['#10B981', '#059669'],
     tabIconDefault: '#94A3B8',
     tabIconSelected: '#10B981',
   },
   dark: {
-    // Premium Deep Navy Dark
-    background: '#0F1523', // Fundo profundo
-    surface: '#182133',    // Card escuro
-    surfaceGlass: 'rgba(255, 255, 255, 0.03)',
-    borderGlass: '#26334D',
+    // Premium OLED Black & Dark Zinc
+    background: '#000000', // Absolute Black (OLED)
+    surface: '#09090B',    // Dark Zinc
+    surfaceGlass: 'rgba(9, 9, 11, 0.7)',
+    borderGlass: '#27272A',
     borderGlassActive: '#10B981',
     
-    text: '#FFFFFF',
-    textMuted: '#8B9BB4',
-    textSecondary: '#CBD5E1',
+    text: '#FAFAFA',
+    textMuted: '#A1A1AA',
+    textSecondary: '#E4E4E7',
     
     entry: '#10B981',
     exit: '#EF4444',
@@ -64,7 +65,8 @@ export const Theme = {
     },
 
     tint: '#10B981',
-    tabIconDefault: '#475569',
+    tintGradient: ['#34D399', '#10B981'],
+    tabIconDefault: '#52525B',
     tabIconSelected: '#10B981',
   }
 };

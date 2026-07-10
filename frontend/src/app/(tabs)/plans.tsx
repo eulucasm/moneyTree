@@ -75,7 +75,7 @@ export default function PlansScreen() {
     <View style={{ flex: 1, backgroundColor: colors.background }}>
       <ScrollView
         style={[styles.container, { backgroundColor: colors.background }]}
-        contentContainerStyle={[styles.content, { paddingBottom: width < 768 ? 110 : 24 }]}
+        contentContainerStyle={[styles.content, { paddingBottom: width < 768 ? 110 : 24, paddingTop: width < 1024 ? (Platform.OS === 'ios' ? 120 : 80) : 24 }]}
       >
         <View style={styles.header}>
           <Sparkles color={colorScheme === 'dark' ? colors.text : "#0F5132"} size={32} />

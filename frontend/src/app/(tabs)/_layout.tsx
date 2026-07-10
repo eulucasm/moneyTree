@@ -1,22 +1,10 @@
 import React, { useRef, useState } from 'react';
 import { Tabs, useRouter, usePathname, Redirect } from 'expo-router';
-import { View, Text, StyleSheet, TouchableOpacity, Platform, Animated, useWindowDimensions } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Platform, Animated, useWindowDimensions, ScrollView } from 'react-native';
 import { 
-  Bell, 
-  LayoutDashboard, 
-  Coins, 
-  CreditCard, 
-  History as HistoryIcon, 
-  BarChart3, 
-  Settings as SettingsIcon,
-  Menu as MenuIcon,
-  X,
-  Sparkles,
-  Sun,
-  Moon,
-  LogOut,
-  TrendingUp,
-  Target
+  Bell, LayoutDashboard, Coins, CreditCard, History as HistoryIcon, 
+  BarChart3, Settings as SettingsIcon, Menu as MenuIcon, X, Sparkles, 
+  Sun, Moon, LogOut, TrendingUp, Target
 } from 'lucide-react-native';
 import { useFinancials } from '../../context/FinancialContext';
 import { useThemeStore } from '../../stores/useThemeStore';
@@ -24,68 +12,28 @@ import { useColorScheme } from '../../components/useColorScheme';
 import Theme from '../../constants/Colors';
 import NotificationModal from '../../components/NotificationModal';
 import { useNotifications } from '../../hooks/useNotifications';
+import { LinearGradient } from 'expo-linear-gradient';
 
-function CustomHeader() {
+const NAV_LINKS = [
+  { label: 'Dashboard', path: '/', icon: LayoutDashboard },
+  { label: 'Contas', path: '/budget', icon: Coins },
+  { label: 'Faturas', path: '/installments', icon: CreditCard },
+  { label: 'Histórico', path: '/history', icon: HistoryIcon },
+  { label: 'Investimentos', path: '/investments', icon: TrendingUp },
+  { label: 'Gráficos', path: '/charts', icon: BarChart3 },
+];
+
+function DesktopSidebar() {
   const router = useRouter();
   const pathname = usePathname();
   const { userProfile, logout } = useFinancials();
-  const avatarScale = useRef(new Animated.Value(1)).current;
-  const { width } = useWindowDimensions();
-  const isLargeScreen = width >= 1100;
-  const [menuOpen, setMenuOpen] = useState(false);
-  const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
   const notifications = useNotifications();
-
-  const theme = useThemeStore((state) => state.theme);
   const toggleTheme = useThemeStore((state) => state.toggleTheme);
   const colorScheme = useColorScheme();
   const colors = Theme[colorScheme];
 
-  const navLinks = [
-    { label: 'Dashboard', path: '/' },
-    { label: 'Contas e Orçamento', path: '/budget' },
-    { label: 'Faturas', path: '/installments' },
-    { label: 'Histórico', path: '/history' },
-    { label: 'Investimentos', path: '/investments' },
-    { label: 'Gráficos', path: '/charts' },
-  ];
-
-  const handleMouseEnter = () => {
-    Animated.timing(avatarScale, {
-      toValue: 1.15,
-      duration: 150,
-      useNativeDriver: Platform.OS !== 'web',
-    }).start();
-  };
-
-  const handleMouseLeave = () => {
-    Animated.timing(avatarScale, {
-      toValue: 1.0,
-      duration: 150,
-      useNativeDriver: Platform.OS !== 'web',
-    }).start();
-  };
-
-  const handlePress = () => {
-    // Abre ou fecha o menu imediatamente, sem esperar a animação
-    setUserMenuOpen(!userMenuOpen);
-
-    Animated.sequence([
-      Animated.spring(avatarScale, {
-        toValue: 0.9,
-        useNativeDriver: Platform.OS !== 'web',
-      }),
-      Animated.spring(avatarScale, {
-        toValue: 1.0,
-        friction: 3,
-        useNativeDriver: Platform.OS !== 'web',
-      })
-    ]).start();
-  };
-
   const handleLogout = async () => {
-    setUserMenuOpen(false);
     try {
       await logout();
       router.replace('/login');
@@ -94,160 +42,169 @@ function CustomHeader() {
     }
   };
 
-  const initials = (
-    (userProfile?.firstName?.slice(0, 1) || '') +
-    (userProfile?.lastName?.slice(0, 1) || '')
-  ).toUpperCase() || 'LM';
+  const initials = ((userProfile?.firstName?.slice(0, 1) || '') + (userProfile?.lastName?.slice(0, 1) || '')).toUpperCase() || 'LM';
 
   return (
-    <View style={[styles.headerContainer, { backgroundColor: colors.background, borderBottomColor: colors.borderGlass }]}>
-      <View style={styles.headerContent}>
-        {/* Logo */}
-        <View style={styles.logoContainer}>
-          <View style={styles.logoIcon}>
+    <View style={[styles.sidebarContainer, { backgroundColor: colors.surface, borderRightColor: colors.borderGlass }]}>
+      <View style={styles.sidebarTop}>
+        <View style={styles.logoContainerSidebar}>
+          <LinearGradient colors={colors.tintGradient || [colors.tint, colors.tint]} style={styles.logoIcon}>
             <Target size={18} color="#FFFFFF" />
-          </View>
-          <Text style={[styles.logoText, { color: colors.text }]}>
-            Money Tree
-          </Text>
+          </LinearGradient>
+          <Text style={[styles.logoText, { color: colors.text, fontFamily: 'Inter_700Bold' }]}>Money Tree</Text>
         </View>
 
-        {/* Navegação Desktop */}
-        {isLargeScreen && (
-          <View style={styles.navLinks}>
-            {navLinks.map((link) => {
-              const isActive = pathname === link.path || (link.path === '/' && pathname === '/index');
-              return (
-                <TouchableOpacity 
-                  key={link.path} 
-                  activeOpacity={0.7}
-                  onPress={() => router.push(link.path as any)}
-                  style={styles.navItem}
-                >
-                  <Text style={[
-                    styles.navText, 
-                    isActive && styles.navTextActive,
-                    { color: isActive ? colors.text : colors.textMuted }
-                  ]}>
-                    {link.label}
-                  </Text>
-                </TouchableOpacity>
-              );
-            })}
-          </View>
-        )}
-
-        {/* Ações */}
-        <View style={styles.actionsContainer}>
-          {!isLargeScreen && (
-            <TouchableOpacity 
-              style={[styles.themeButton, { backgroundColor: colorScheme === 'dark' ? 'rgba(255, 255, 255, 0.05)' : '#F8F9FA' }]} 
-              activeOpacity={0.7}
-              onPress={() => setMenuOpen(!menuOpen)}
-            >
-              {menuOpen ? <X size={20} color={colors.textSecondary} /> : <MenuIcon size={20} color={colors.textSecondary} />}
-            </TouchableOpacity>
-          )}
-
-          {/* Botão de Alternância de Tema Claro/Escuro */}
-          <TouchableOpacity 
-            style={[styles.themeButton, { backgroundColor: colorScheme === 'dark' ? 'rgba(255, 255, 255, 0.05)' : '#F8F9FA' }]} 
-            activeOpacity={0.7}
-            onPress={toggleTheme}
-          >
-            {colorScheme === 'dark' ? <Sun size={20} color="#F59E0B" /> : <Moon size={20} color="#495057" />}
-          </TouchableOpacity>
-
-          <TouchableOpacity 
-            style={[styles.bellButton, { backgroundColor: colorScheme === 'dark' ? 'rgba(255, 255, 255, 0.05)' : '#F8F9FA' }]} 
-            activeOpacity={0.7}
-            onPress={() => setModalVisible(true)}
-          >
-            <Bell size={20} color={colors.textSecondary} />
-            {notifications.length > 0 && <View style={styles.notificationBadge} />}
-          </TouchableOpacity>
-          <View style={{ position: 'relative', zIndex: 99 }}>
-            <TouchableOpacity 
-              activeOpacity={0.8}
-              onPress={handlePress}
-              // @ts-ignore
-              onMouseEnter={handleMouseEnter}
-              onMouseLeave={handleMouseLeave}
-            >
-              <Animated.View style={[
-                styles.avatar, 
-                { transform: [{ scale: avatarScale }] },
-                colorScheme === 'dark' ? { backgroundColor: 'rgba(16, 185, 129, 0.1)', borderColor: 'rgba(16, 185, 129, 0.3)' } : null,
-                userProfile?.activePlan === 'premium' && {
-                  backgroundColor: colorScheme === 'dark' ? '#78350F' : '#FEF3C7',
-                  borderColor: '#F59E0B'
-                }
-              ]}>
-                <Text style={[
-                  styles.avatarText,
-                  { color: colorScheme === 'dark' ? '#10B981' : '#0F5132' },
-                  userProfile?.activePlan === 'premium' && { color: colorScheme === 'dark' ? '#FBBF24' : '#B45309' }
-                ]}>
-                  {initials}
-                </Text>
-              </Animated.View>
-            </TouchableOpacity>
-
-            {userMenuOpen && (
-              <View style={[
-                styles.userDropdownMenu, 
-                { backgroundColor: colorScheme === 'dark' ? '#151D30' : '#FFFFFF', borderColor: colors.borderGlass }
-              ]}>
-                <TouchableOpacity 
-                  style={[styles.userDropdownItem, { borderBottomColor: colors.borderGlass }]} 
-                  onPress={() => {
-                    setUserMenuOpen(false);
-                    router.push('/settings');
-                  }}
-                >
-                  <SettingsIcon size={18} color={colors.text} style={{ marginRight: 10 }} />
-                  <Text style={[styles.userDropdownText, { color: colors.text }]}>Configurações</Text>
-                </TouchableOpacity>
-                <TouchableOpacity 
-                  style={styles.userDropdownItem} 
-                  onPress={handleLogout}
-                >
-                  <LogOut size={18} color="#DC3545" style={{ marginRight: 10 }} />
-                  <Text style={[styles.userDropdownText, { color: '#DC3545' }]}>Sair</Text>
-                </TouchableOpacity>
-              </View>
-            )}
-          </View>
-        </View>
-      </View>
-
-      {!isLargeScreen && menuOpen && (
-        <View style={[styles.mobileMenu, { backgroundColor: colorScheme === 'dark' ? '#151D30' : '#FFFFFF', borderBottomColor: colors.borderGlass }]}>
-          {navLinks.map((link) => {
+        <ScrollView style={styles.sidebarNav}>
+          {NAV_LINKS.map((link) => {
             const isActive = pathname === link.path || (link.path === '/' && pathname === '/index');
+            const Icon = link.icon;
             return (
               <TouchableOpacity 
-                key={link.path} 
-                activeOpacity={0.7}
-                onPress={() => {
-                  setMenuOpen(false);
-                  router.push(link.path as any);
-                }}
-                style={[styles.mobileMenuItem, isActive && { backgroundColor: colorScheme === 'dark' ? 'rgba(16, 185, 129, 0.1)' : '#E8F5E9' }]}
+                key={link.path}
+                activeOpacity={0.8}
+                style={[
+                  styles.sidebarNavItem, 
+                  isActive && { 
+                    backgroundColor: colorScheme === 'dark' ? 'rgba(16,185,129,0.06)' : '#F4FBF7',
+                    borderLeftWidth: 3,
+                    borderLeftColor: colors.tint,
+                    paddingLeft: 13, // compensate for 3px border to keep alignment
+                  }
+                ]}
+                onPress={() => router.push(link.path as any)}
               >
-                <Text style={[
-                  styles.mobileMenuText, 
-                  isActive && styles.mobileMenuTextActive,
-                  { color: isActive ? (colorScheme === 'dark' ? '#10B981' : '#0F5132') : colors.textMuted }
-                ]}>
+                <Icon size={18} color={isActive ? colors.tint : colors.textMuted} />
+                <Text style={[styles.sidebarNavText, { color: isActive ? colors.tint : colors.textMuted, fontFamily: isActive ? 'Inter_600SemiBold' : 'Inter_500Medium' }]}>
                   {link.label}
                 </Text>
               </TouchableOpacity>
             );
           })}
+        </ScrollView>
+      </View>
+
+      <View style={styles.sidebarBottom}>
+        <View style={styles.sidebarActions}>
+          <TouchableOpacity style={[styles.sidebarIconBtn, { backgroundColor: colorScheme === 'dark' ? '#18181B' : '#F1F5F9' }]} onPress={toggleTheme}>
+            {colorScheme === 'dark' ? <Sun size={18} color="#F59E0B" /> : <Moon size={18} color="#475569" />}
+          </TouchableOpacity>
+          <TouchableOpacity style={[styles.sidebarIconBtn, { backgroundColor: colorScheme === 'dark' ? '#18181B' : '#F1F5F9' }]} onPress={() => setModalVisible(true)}>
+            <Bell size={18} color={colors.textSecondary} />
+            {notifications.length > 0 && <View style={styles.notificationBadge} />}
+          </TouchableOpacity>
+          <TouchableOpacity style={[styles.sidebarIconBtn, { backgroundColor: colorScheme === 'dark' ? '#18181B' : '#F1F5F9' }]} onPress={() => router.push('/settings')}>
+            <SettingsIcon size={18} color={colors.textSecondary} />
+          </TouchableOpacity>
+        </View>
+
+        <View style={[styles.sidebarUserCard, { borderTopColor: colors.borderGlass }]}>
+          <View style={[styles.avatar, colorScheme === 'dark' && { backgroundColor: 'rgba(16,185,129,0.1)', borderColor: colors.tint }]}>
+            <Text style={[styles.avatarText, { color: colors.tint, fontFamily: 'Inter_700Bold' }]}>{initials}</Text>
+          </View>
+          <View style={{ flex: 1, paddingLeft: 10 }}>
+            <Text style={{ color: colors.text, fontFamily: 'Inter_600SemiBold', fontSize: 14 }}>{userProfile?.firstName}</Text>
+            <Text style={{ color: colors.textMuted, fontFamily: 'Inter_400Regular', fontSize: 12, textTransform: 'capitalize' }}>{userProfile?.activePlan}</Text>
+          </View>
+          <TouchableOpacity onPress={handleLogout}>
+            <LogOut size={18} color="#EF4444" />
+          </TouchableOpacity>
+        </View>
+      </View>
+      <NotificationModal visible={modalVisible} onClose={() => setModalVisible(false)} />
+    </View>
+  );
+}
+
+function MobileHeader() {
+  const router = useRouter();
+  const pathname = usePathname();
+  const { userProfile, logout } = useFinancials();
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [modalVisible, setModalVisible] = useState(false);
+  const notifications = useNotifications();
+  const toggleTheme = useThemeStore((state) => state.toggleTheme);
+  const colorScheme = useColorScheme();
+  const colors = Theme[colorScheme];
+
+  const initials = ((userProfile?.firstName?.slice(0, 1) || '') + (userProfile?.lastName?.slice(0, 1) || '')).toUpperCase() || 'LM';
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      router.replace('/login');
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  return (
+    <View style={[
+      styles.mobileHeaderContainer, 
+      { backgroundColor: colorScheme === 'dark' ? 'rgba(24, 33, 51, 0.8)' : 'rgba(255, 255, 255, 0.85)' }
+    ]}>
+      <View style={styles.mobileHeaderContent}>
+        <TouchableOpacity style={styles.mobileThemeBtn} onPress={() => setMenuOpen(!menuOpen)}>
+          {menuOpen ? <X size={20} color={colors.textSecondary} /> : <MenuIcon size={20} color={colors.textSecondary} />}
+        </TouchableOpacity>
+
+        <View style={[styles.logoContainerSidebar, { marginBottom: 0 }]}>
+          <LinearGradient colors={colors.tintGradient || [colors.tint, colors.tint]} style={[styles.logoIcon, { width: 28, height: 28, borderRadius: 6 }]}>
+            <Target size={14} color="#FFFFFF" />
+          </LinearGradient>
+          <Text style={[styles.logoText, { color: colors.text, fontFamily: 'Inter_700Bold', fontSize: 18 }]}>Money Tree</Text>
+        </View>
+
+        <View style={styles.mobileHeaderActions}>
+          <TouchableOpacity style={styles.mobileThemeBtn} onPress={toggleTheme}>
+            {colorScheme === 'dark' ? <Sun size={18} color="#F59E0B" /> : <Moon size={18} color="#475569" />}
+          </TouchableOpacity>
+          <View style={[styles.avatar, { width: 32, height: 32, borderRadius: 16 }, colorScheme === 'dark' && { backgroundColor: 'rgba(16,185,129,0.1)', borderColor: colors.tint }]}>
+            <Text style={[styles.avatarText, { fontSize: 12, color: colors.tint, fontFamily: 'Inter_700Bold' }]}>{initials}</Text>
+          </View>
+        </View>
+      </View>
+
+      {menuOpen && (
+        <View style={[styles.mobileMenu, { backgroundColor: colors.surface, borderBottomColor: colors.borderGlass }]}>
+          {NAV_LINKS.map((link) => {
+            const isActive = pathname === link.path || (link.path === '/' && pathname === '/index');
+            return (
+              <TouchableOpacity 
+                key={link.path} 
+                activeOpacity={0.7}
+                onPress={() => { setMenuOpen(false); router.push(link.path as any); }}
+                style={[styles.mobileMenuItem, isActive && { backgroundColor: colorScheme === 'dark' ? 'rgba(16, 185, 129, 0.1)' : '#F0FDF4' }]}
+              >
+                <Text style={[styles.mobileMenuText, isActive && styles.mobileMenuTextActive, { color: isActive ? colors.tint : colors.textMuted, fontFamily: isActive ? 'Inter_600SemiBold' : 'Inter_500Medium' }]}>
+                  {link.label}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+          
+          <View style={{ height: 1, backgroundColor: colors.borderGlass, marginVertical: 8 }} />
+          
+          <TouchableOpacity 
+            activeOpacity={0.7}
+            onPress={() => { setMenuOpen(false); router.push('/settings'); }}
+            style={styles.mobileMenuItem}
+          >
+            <Text style={[styles.mobileMenuText, { color: colors.textMuted, fontFamily: 'Inter_500Medium' }]}>
+              Configurações
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity 
+            activeOpacity={0.7}
+            onPress={() => { setMenuOpen(false); handleLogout(); }}
+            style={styles.mobileMenuItem}
+          >
+            <Text style={[styles.mobileMenuText, { color: '#EF4444', fontFamily: 'Inter_500Medium' }]}>
+              Sair
+            </Text>
+          </TouchableOpacity>
         </View>
       )}
-      
       <NotificationModal visible={modalVisible} onClose={() => setModalVisible(false)} />
     </View>
   );
@@ -256,14 +213,14 @@ function CustomHeader() {
 export default function TabLayout() {
   const { user, authInitialized } = useFinancials();
   const { width } = useWindowDimensions();
-  const isLargeScreen = width >= 768;
+  const isLargeScreen = width >= 1024;
   const colorScheme = useColorScheme();
   const colors = Theme[colorScheme];
 
   if (!authInitialized) {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.background }}>
-        <Text style={{ fontSize: 16, color: colors.text, fontWeight: 'bold' }}>Carregando...</Text>
+        <Text style={{ fontSize: 16, color: colors.text, fontFamily: 'Inter_600SemiBold' }}>Carregando...</Text>
       </View>
     );
   }
@@ -273,170 +230,142 @@ export default function TabLayout() {
   }
 
   return (
-    <Tabs
-      screenOptions={{
-        tabBarStyle: isLargeScreen ? { display: 'none' } : {
-          ...styles.bottomTabBar,
-          backgroundColor: colorScheme === 'dark' ? 'rgba(21, 29, 48, 0.95)' : 'rgba(255, 255, 255, 0.95)',
-          borderColor: colorScheme === 'dark' ? 'rgba(255,255,255,0.08)' : 'rgba(15, 81, 50, 0.08)',
-        },
-        tabBarActiveTintColor: colorScheme === 'dark' ? '#10B981' : '#0F5132',
-        tabBarInactiveTintColor: colorScheme === 'dark' ? '#475569' : '#6C757D',
-        tabBarLabelStyle: { fontSize: 11, fontWeight: '600', marginBottom: 4 },
-        header: () => <CustomHeader />,
-      }}>
-      <Tabs.Screen 
-        name="index" 
-        options={{ 
-          title: 'Início',
-          tabBarIcon: ({ color, size }) => <LayoutDashboard color={color} size={size} />
-        }} 
-      />
-      <Tabs.Screen 
-        name="budget" 
-        options={{ 
-          title: 'Contas',
-          tabBarIcon: ({ color, size }) => <Coins color={color} size={size} />
-        }} 
-      />
-      <Tabs.Screen 
-        name="installments" 
-        options={{ 
-          title: 'Faturas',
-          tabBarIcon: ({ color, size }) => <CreditCard color={color} size={size} />
-        }} 
-      />
-      <Tabs.Screen 
-        name="history" 
-        options={{ 
-          title: 'Histórico',
-          tabBarIcon: ({ color, size }) => <HistoryIcon color={color} size={size} />
-        }} 
-      />
-      <Tabs.Screen 
-        name="investments" 
-        options={{ 
-          title: 'Investir',
-          tabBarIcon: ({ color, size }) => <TrendingUp color={color} size={size} />
-        }} 
-      />
-      <Tabs.Screen 
-        name="charts" 
-        options={{ 
-          title: 'Gráficos',
-          tabBarIcon: ({ color, size }) => <BarChart3 color={color} size={size} />
-        }} 
-      />
-      <Tabs.Screen 
-        name="plans" 
-        options={{ 
-          href: null,
-          title: 'Planos',
-          tabBarIcon: ({ color, size }) => <Sparkles color={color} size={size} />
-        }} 
-      />
-      <Tabs.Screen 
-        name="settings" 
-        options={{ 
-          title: 'Ajustes',
-          tabBarIcon: ({ color, size }) => <SettingsIcon color={color} size={size} />
-        }} 
-      />
-    </Tabs>
+    <View style={{ flex: 1, flexDirection: isLargeScreen ? 'row' : 'column', backgroundColor: colors.background }}>
+      {Platform.OS === 'web' && (
+        <style type="text/css">{`
+          ::-webkit-scrollbar {
+            width: 14px;
+            background: ${colorScheme === 'dark' ? '#09090B' : '#FFFFFF'};
+          }
+          ::-webkit-scrollbar-thumb {
+            background: ${colorScheme === 'dark' ? '#27272A' : '#E4E4E7'};
+            border-radius: 7px;
+            border: 3px solid ${colorScheme === 'dark' ? '#09090B' : '#FFFFFF'};
+          }
+          ::-webkit-scrollbar-thumb:hover {
+            background: ${colorScheme === 'dark' ? '#3F3F46' : '#D4D4D8'};
+          }
+        `}</style>
+      )}
+      
+      {isLargeScreen && <DesktopSidebar />}
+      
+      <View style={{ flex: 1 }}>
+        <Tabs
+          screenOptions={{
+            header: () => isLargeScreen ? null : <MobileHeader />,
+            headerTransparent: true,
+            tabBarStyle: (isLargeScreen || Platform.OS === 'web') ? { display: 'none' } : {
+              ...styles.bottomTabBar,
+              backgroundColor: colorScheme === 'dark' ? 'rgba(9, 9, 11, 0.9)' : 'rgba(255, 255, 255, 0.9)',
+              borderColor: colors.borderGlass,
+            },
+            tabBarActiveTintColor: colors.tint,
+            tabBarInactiveTintColor: colors.textMuted,
+            tabBarLabelStyle: { fontFamily: 'Inter_600SemiBold', fontSize: 10, marginBottom: 4 },
+          }}>
+          {NAV_LINKS.map(link => {
+            const name = link.path === '/' ? 'index' : link.path.replace('/', '');
+            const Icon = link.icon;
+            return (
+              <Tabs.Screen 
+                key={name}
+                name={name} 
+                options={{ 
+                  title: link.label,
+                  tabBarIcon: ({ color, size }) => <Icon color={color} size={size} />
+                }} 
+              />
+            );
+          })}
+          <Tabs.Screen name="plans" options={{ href: null }} />
+          <Tabs.Screen name="settings" options={{ href: null }} />
+        </Tabs>
+      </View>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  headerContainer: {
-    backgroundColor: '#FFFFFF',
-    borderBottomWidth: 1,
-    borderBottomColor: '#E9ECEF',
-    ...Platform.select({
-      web: {
-        position: 'sticky',
-        top: 0,
-        zIndex: 50,
-      } as any,
-    }),
-  },
-  headerContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  sidebarContainer: {
+    width: 230,
+    height: '100%',
+    borderRightWidth: 1,
+    display: 'flex',
+    flexDirection: 'column',
     justifyContent: 'space-between',
-    height: 64,
-    maxWidth: 1200,
-    alignSelf: 'center',
-    width: '100%',
-    paddingHorizontal: 24,
   },
-  logoContainer: {
+  sidebarTop: {
+    padding: 24,
+    flex: 1,
+  },
+  logoContainerSidebar: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: 12,
+    marginBottom: 40,
   },
   logoIcon: {
     width: 32,
     height: 32,
-    backgroundColor: '#10B981',
     borderRadius: 8,
     alignItems: 'center',
     justifyContent: 'center',
     shadowColor: '#10B981',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 6,
-    elevation: 4,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 3,
   },
   logoText: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#0F5132',
+    fontSize: 19,
     letterSpacing: -0.5,
   },
-  navLinks: {
+  sidebarNav: {
+    flex: 1,
+  },
+  sidebarNavItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 24,
-    // Em telas mobile reais, poderíamos criar um menu sanduíche.
-    // Mas focando na interface Web requisitada:
-    display: 'flex', 
+    gap: 12,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    marginBottom: 4,
   },
-  navItem: {
-    paddingVertical: 8,
+  sidebarNavText: {
+    fontSize: 13,
+    letterSpacing: 0.2,
   },
-  navText: {
-    color: '#6C757D',
-    fontWeight: '500',
-    fontSize: 15,
+  sidebarBottom: {
+    padding: 24,
   },
-  navTextActive: {
-    color: '#0F5132',
-    fontWeight: '600',
-  },
-  actionsContainer: {
+  sidebarActions: {
     flexDirection: 'row',
-    alignItems: 'center',
-    gap: 16,
+    justifyContent: 'space-between',
+    marginBottom: 24,
   },
-  bellButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#F8F9FA',
+  sidebarIconBtn: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     alignItems: 'center',
     justifyContent: 'center',
-    position: 'relative',
+  },
+  sidebarUserCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingTop: 24,
+    borderTopWidth: 1,
   },
   notificationBadge: {
     position: 'absolute',
-    top: 8,
-    right: 8,
-    width: 10,
-    height: 10,
-    backgroundColor: '#DC3545',
-    borderRadius: 5,
-    borderWidth: 2,
-    borderColor: 'transparent',
+    top: 10,
+    right: 12,
+    width: 8,
+    height: 8,
+    backgroundColor: '#EF4444',
+    borderRadius: 4,
   },
   avatar: {
     width: 40,
@@ -449,138 +378,53 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   avatarText: {
-    fontWeight: 'bold',
-    color: '#0F5132',
+    fontSize: 14,
   },
-  bottomTabBar: {
-    backgroundColor: 'rgba(255, 255, 255, 0.95)',
-    borderRadius: 24,
-    borderWidth: 1,
-    borderColor: 'rgba(15, 81, 50, 0.08)',
-    height: 68,
-    paddingBottom: 6,
-    paddingTop: 6,
+  mobileHeaderContainer: {
+    borderRadius: Platform.OS === 'web' ? 16 : 0,
+    marginTop: Platform.OS === 'web' ? 12 : 0,
+    marginHorizontal: Platform.OS === 'web' ? 16 : 0,
+    paddingTop: Platform.OS === 'ios' ? 40 : 12,
+    paddingBottom: 12,
+    paddingHorizontal: 20,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.06,
-    shadowRadius: 20,
-    elevation: 8,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.04,
+    shadowRadius: 16,
+    elevation: 3,
     ...Platform.select({
-      web: {
-        position: 'fixed',
-        bottom: 20,
-        left: 0,
-        right: 0,
-        width: '90%',
-        maxWidth: 480,
-        marginLeft: 'auto',
-        marginRight: 'auto',
-        zIndex: 50,
-        backdropFilter: 'blur(10px)',
-        WebkitBackdropFilter: 'blur(10px)',
-      } as any,
-      default: {
-        position: 'absolute',
-        bottom: 20,
-        left: 16,
-        right: 16,
-      }
-    })
+      web: { position: 'sticky', top: 12, zIndex: 50, backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)' } as any,
+    }),
   },
-  hamburgerButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#F8F9FA',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  themeButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  mobileDropdown: {
-    backgroundColor: '#FFFFFF',
-    borderBottomWidth: 1,
-    borderBottomColor: '#E9ECEF',
-    paddingVertical: 8,
-    paddingHorizontal: 24,
-    gap: 4,
-    ...Platform.select({
-      web: {
-        position: 'absolute',
-        top: 64,
-        left: 0,
-        right: 0,
-        zIndex: 49,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 10 },
-        shadowOpacity: 0.05,
-        shadowRadius: 10,
-        elevation: 4,
-      }
-    })
-  },
-  mobileDropdownItem: {
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#F8F9FA',
-  },
-  mobileDropdownItemActive: {
-    borderBottomColor: '#E8F5E9',
-  },
-  mobileDropdownText: {
-    color: '#6C757D',
-    fontSize: 15,
-    fontWeight: '500',
-  },
-  mobileDropdownTextActive: {
-    color: '#0F5132',
-    fontWeight: '700',
-  },
-  userDropdownMenu: {
-    position: 'absolute',
-    top: 50,
-    right: 0,
-    width: 200,
-    backgroundColor: '#FFFFFF',
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#E9ECEF',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 12,
-    elevation: 5,
-    overflow: 'hidden',
-    zIndex: 100,
-  },
-  userDropdownItem: {
+  mobileHeaderContent: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#F8F9FA',
+    justifyContent: 'space-between',
   },
-  userDropdownText: {
-    fontSize: 14,
-    fontWeight: '500',
+  mobileHeaderActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  mobileThemeBtn: {
+    width: 36,
+    height: 36,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   mobileMenu: {
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    borderBottomWidth: 1,
     position: 'absolute',
-    top: 72,
-    left: 0,
-    right: 0,
-    zIndex: 90,
+    top: '100%',
+    marginTop: 8,
+    left: Platform.OS === 'web' ? 16 : 0,
+    right: Platform.OS === 'web' ? 16 : 0,
+    borderWidth: Platform.OS === 'web' ? 1 : 0,
+    borderBottomWidth: 1,
+    borderRadius: Platform.OS === 'web' ? 12 : 0,
+    padding: 16,
+    zIndex: 100,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
+    shadowOffset: { width: 0, height: 10 },
     shadowOpacity: 0.1,
     shadowRadius: 10,
     elevation: 5,
@@ -593,9 +437,42 @@ const styles = StyleSheet.create({
   },
   mobileMenuText: {
     fontSize: 15,
-    fontWeight: '500',
   },
   mobileMenuTextActive: {
     fontWeight: '700',
+  },
+  bottomTabBar: {
+    borderTopWidth: 0,
+    borderRadius: 24,
+    borderWidth: 1,
+    height: 62,
+    paddingBottom: 6,
+    paddingTop: 6,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.05,
+    shadowRadius: 10,
+    elevation: 5,
+    ...Platform.select({
+      web: {
+        position: 'fixed',
+        bottom: 20,
+        left: 0,
+        right: 0,
+        width: '90%',
+        maxWidth: 480,
+        marginLeft: 'auto',
+        marginRight: 'auto',
+        zIndex: 50,
+        backdropFilter: 'blur(16px)',
+        WebkitBackdropFilter: 'blur(16px)',
+      } as any,
+      default: {
+        position: 'absolute',
+        bottom: 20,
+        left: 16,
+        right: 16,
+      }
+    })
   },
 });

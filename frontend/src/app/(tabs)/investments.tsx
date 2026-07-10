@@ -182,7 +182,7 @@ export default function InvestmentsScreen() {
       featureName="Módulo de Investimentos" 
       description="Assuma o controle total do seu patrimônio. Crie sua carteira ideal, descubra onde aportar seu dinheiro para manter o rebalanceamento perfeito e visualize sua evolução."
     >
-      <ScrollView style={[styles.container, { backgroundColor: colors.background }]} contentContainerStyle={styles.content}>
+      <ScrollView style={[styles.container, { backgroundColor: colors.background }]} contentContainerStyle={[styles.content, { paddingTop: width < 1024 ? (Platform.OS === 'ios' ? 120 : 80) : 24 }]}>
       <View style={styles.header}>
         <View>
           <Text style={[styles.pageTitle, { color: colors.text }]}>Meus Investimentos</Text>
