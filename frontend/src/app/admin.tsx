@@ -142,7 +142,7 @@ export default function AdminScreen() {
         />
 
         <View style={[styles.columnsContainer, { flexDirection: isLargeScreen ? 'row' : 'column' }]}>
-          <View style={{ flex: 2, gap: 16 }}>
+          <View style={[{ gap: 16, width: '100%' }, isLargeScreen && { flex: 2 }]}>
             <UserList 
               searchQuery={searchQuery}
               setSearchQuery={setSearchQuery}
@@ -152,7 +152,7 @@ export default function AdminScreen() {
               setConfirmModal={setConfirmModal}
             />
           </View>
-          <View style={{ flex: 1, gap: 16 }}>
+          <View style={[{ gap: 16, width: '100%' }, isLargeScreen && { flex: 1 }]}>
             <GrowthCard sortedMonths={sortedMonths} growthByMonth={growthByMonth} />
           </View>
         </View>
