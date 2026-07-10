@@ -7,7 +7,7 @@ import Toast from '../../components/Toast';
 import { useTheme } from '../../hooks/useTheme';
 
 export default function PlansScreen() {
-  const { theme: colorScheme, colors } = useTheme();
+  const { colorScheme, colors } = useTheme();
   const { width } = useWindowDimensions();
   const isLargeScreen = width >= 768;
 

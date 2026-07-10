@@ -18,7 +18,7 @@ export default function NotificationModal({ visible, onClose }: NotificationModa
   const dismissNotification = useNotificationUIStore(s => s.dismiss);
   const fadeAnim = React.useRef(new Animated.Value(0)).current;
   const slideAnim = React.useRef(new Animated.Value(20)).current;
-  const { theme: colorScheme, colors } = useTheme();
+  const { colorScheme, colors } = useTheme();
 
   useEffect(() => {
     if (visible) {

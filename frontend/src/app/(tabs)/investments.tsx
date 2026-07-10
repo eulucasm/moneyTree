@@ -5,9 +5,8 @@ import { useFinancials } from '../../context/FinancialContext';
 import { useInvestmentStore, AssetClass } from '../../stores/useInvestmentStore';
 import { useFinanceStore } from '../../stores/useFinanceStore';
 import { useThemeStore } from '../../stores/useThemeStore';
-import { useColorScheme } from '../../components/useColorScheme';
+import { useTheme } from '../../hooks/useTheme';
 import GlassCard from '../../components/GlassCard';
-import Theme from '../../constants/Colors';
 import { Lock, TrendingUp, Plus, Edit, X, Check, Search, PieChart, Target } from 'lucide-react-native';
 import PremiumGate from '../../components/PremiumGate';
 
@@ -31,11 +30,10 @@ const parseCurrencyInput = (text: string) => {
 
 export default function InvestmentsScreen() {
   const router = useRouter();
-  const { userProfile, updateProfile } = useFinancials();
+  const { userProfile, updateUserProfile } = useFinancials();
   const { width } = useWindowDimensions();
   const isLargeScreen = width >= 768;
-  const colorScheme = useColorScheme();
-  const colors = Theme[colorScheme];
+  const { colorScheme, colors } = useTheme();
 
   // Savings State
   const savingsGoal = useFinanceStore(s => s.savingsGoal);
@@ -183,8 +181,8 @@ export default function InvestmentsScreen() {
       description="Assuma o controle total do seu patrimônio. Crie sua carteira ideal, descubra onde aportar seu dinheiro para manter o rebalanceamento perfeito e visualize sua evolução."
     >
       <ScrollView style={[styles.container, { backgroundColor: colors.background }]} contentContainerStyle={[styles.content, { paddingTop: width < 1024 ? (Platform.OS === 'ios' ? 120 : 80) : 24 }]}>
-      <View style={styles.header}>
-        <View>
+      <View style={[styles.header, { flexDirection: isLargeScreen ? 'row' : 'column', gap: isLargeScreen ? 0 : 16 }]}>
+        <View style={{ flexShrink: 1 }}>
           <Text style={[styles.pageTitle, { color: colors.text }]}>Meus Investimentos</Text>
           <Text style={[styles.pageSubtitle, { color: colors.textMuted }]}>Gerencie seu patrimônio e rebalanceie sua carteira</Text>
         </View>
@@ -201,12 +199,17 @@ export default function InvestmentsScreen() {
       </View>
 
       <View style={[styles.topCards, { flexDirection: isLargeScreen ? 'row' : 'column' }]}>
-        <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.borderGlass, flex: 1 }]}>
+        <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.borderGlass, flex: isLargeScreen ? 1 : undefined }]}>
           <Text style={[styles.cardLabel, { color: colors.textMuted }]}>Patrimônio Atual</Text>
           <Text style={[styles.cardValue, { color: colors.text }]}>{formatCurrency(totalInvested)}</Text>
         </View>
         
-        <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.borderGlass, flex: 1 }]}>
+        <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.borderGlass, flex: isLargeScreen ? 1 : undefined }]}>
+          <Text style={[styles.cardLabel, { color: colors.textMuted }]}>Minha Reserva</Text>
+          <Text style={[styles.cardValue, { color: colors.text }]}>{formatCurrency(totalSavings)}</Text>
+        </View>
+
+        <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.borderGlass, flex: isLargeScreen ? 1 : undefined }]}>
           <Text style={[styles.cardLabel, { color: colors.textMuted }]}>Quanto vou aportar hoje?</Text>
           <View style={styles.inputRow}>
             <Text style={[styles.currencySymbol, { color: colors.textMuted }]}>R$</Text>
@@ -219,6 +222,9 @@ export default function InvestmentsScreen() {
               onChangeText={t => setContributionInput(formatCurrencyInput(t))}
             />
           </View>
+          <Text style={{ fontSize: 12, color: colors.textMuted, marginTop: 12, lineHeight: 16 }}>
+            Insira o valor que deseja investir hoje para o app sugerir onde comprar e manter sua carteira equilibrada.
+          </Text>
         </View>
       </View>
 
@@ -233,7 +239,9 @@ export default function InvestmentsScreen() {
           <Text style={[styles.colHeader, { flex: 2, color: colors.textMuted }]}>Classe</Text>
           <Text style={[styles.colHeader, { flex: 1, textAlign: 'center', color: colors.textMuted }]}>Atual</Text>
           <Text style={[styles.colHeader, { flex: 1, textAlign: 'center', color: colors.textMuted }]}>Ideal</Text>
-          <Text style={[styles.colHeader, { flex: 1.5, textAlign: 'right', color: colors.textMuted }]}>Sugestão</Text>
+          <Text style={[styles.colHeader, { flex: 1.5, textAlign: 'right', color: colors.textMuted }]}>
+            {parseCurrencyInput(contributionInput) > 0 ? 'Aporte Sugerido' : 'Falta p/ Ideal'}
+          </Text>
         </View>
 
         {rebalancingPlan.map(plan => {

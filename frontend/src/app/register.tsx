@@ -29,7 +29,7 @@ export default function RegisterScreen() {
         style={styles.container}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
-        <ScrollView contentContainerStyle={styles.scrollContainer} showsVerticalScrollIndicator={false}>
+        <ScrollView contentContainerStyle={styles.scrollContainer} style={{ paddingRight: 4 }} showsVerticalScrollIndicator={true}>
           <View style={styles.content}>
             
             <View style={styles.header}>

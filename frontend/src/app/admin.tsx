@@ -4,8 +4,7 @@ import { useRouter, Stack } from 'expo-router';
 import { useFinancials } from '../context/FinancialContext';
 import { ArrowLeft } from 'lucide-react-native';
 import Toast from '../components/Toast';
-import { useColorScheme } from '../components/useColorScheme';
-import Theme from '../constants/Colors';
+import { useTheme } from '../hooks/useTheme';
 
 import AdminKPIs from '../components/admin/AdminKPIs';
 import UserList from '../components/admin/UserList';
@@ -122,8 +121,7 @@ export default function AdminScreen() {
     }
   };
 
-  const colorScheme = useColorScheme();
-  const colors = Theme[colorScheme];
+  const { colorScheme, colors } = useTheme();
 
   return (
     <View style={[styles.outerContainer, { backgroundColor: colors.background }]}>

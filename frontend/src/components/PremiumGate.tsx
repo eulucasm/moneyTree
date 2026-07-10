@@ -16,7 +16,7 @@ export default function PremiumGate({ children, featureName, description }: Prem
   const userProfile = useAuthStore(s => s.userProfile);
   const isPremium = userProfile?.activePlan === 'premium';
   const router = useRouter();
-  const { colors, theme: colorScheme } = useTheme();
+  const { colors, colorScheme } = useTheme();
 
   if (isPremium) {
     return <>{children}</>;
@@ -68,7 +68,7 @@ const styles = StyleSheet.create({
     opacity: 0.5, // Reduz a opacidade para reforçar o bloqueio
   },
   overlayContent: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     justifyContent: 'center',
     alignItems: 'center',
     padding: 24,

@@ -30,7 +30,7 @@ import { useTheme } from '../../hooks/useTheme';
 import { getEarliestDataMonth } from '../../services/summaryCalculator';
 
 export default function DashboardScreen() {
-  const { theme: colorScheme, colors } = useTheme();
+  const { colorScheme, colors } = useTheme();
   const { width } = useWindowDimensions();
   const isLargeScreen = width >= 900;
   const isMediumScreen = width >= 600;
@@ -69,7 +69,7 @@ export default function DashboardScreen() {
   const [selectedYearStr, selectedMonthStr] = selectedPeriod.split('-');
   const selectedYear = parseInt(selectedYearStr, 10);
   const selectedMonth = parseInt(selectedMonthStr, 10);
-  const [scrollProgress, setScrollProgress] = useState(0);
+
 
   const monthsNames = [
     'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
@@ -356,7 +356,9 @@ export default function DashboardScreen() {
         </View>
         <View style={[styles.badgePremium, { backgroundColor: colorScheme === 'dark' ? 'rgba(16,185,129,0.1)' : '#E8F5E9', borderColor: colorScheme === 'dark' ? 'rgba(16,185,129,0.3)' : '#A7F3D0' }]}>
           <Sparkles size={16} color={colorScheme === 'dark' ? '#10B981' : '#0F5132'} style={{ marginRight: 6 }} />
-          <Text style={[styles.badgePremiumText, { color: colorScheme === 'dark' ? '#10B981' : '#0F5132' }]}>verdeco. PRO</Text>
+          <Text style={[styles.badgePremiumText, { color: colorScheme === 'dark' ? '#10B981' : '#0F5132' }]}>
+            verdeco. {userProfile?.activePlan ? userProfile.activePlan.toUpperCase() : 'FREE'}
+          </Text>
         </View>
       </View>
 
@@ -374,7 +376,7 @@ export default function DashboardScreen() {
             shadowOpacity: 0.15,
             shadowRadius: 15,
             elevation: 4,
-            flex: 1,
+            flex: isMediumScreen ? 1 : undefined,
             minWidth: isLargeScreen ? 200 : (isMediumScreen ? '47%' : '100%'),
           }
         ]}>
@@ -412,7 +414,7 @@ export default function DashboardScreen() {
         </View>
 
         {/* Card: Entradas */}
-        <View style={[styles.cardStandard, { backgroundColor: colors.surface, borderColor: colors.borderGlass, flex: 1, minWidth: isLargeScreen ? 200 : (isMediumScreen ? '47%' : '100%') }]}>
+        <View style={[styles.cardStandard, { backgroundColor: colors.surface, borderColor: colors.borderGlass, flex: isMediumScreen ? 1 : undefined, minWidth: isLargeScreen ? 200 : (isMediumScreen ? '47%' : '100%') }]}>
           <View style={styles.cardHeaderIcon}>
             <View style={[styles.iconWrapperSuccess, { backgroundColor: colorScheme === 'dark' ? 'rgba(16,185,129,0.1)' : '#E8F5E9' }]}>
               <TrendingUp size={14} color="#10B981" />
@@ -426,7 +428,7 @@ export default function DashboardScreen() {
         </View>
 
         {/* Card: Saídas */}
-        <View style={[styles.cardStandard, { backgroundColor: colors.surface, borderColor: colors.borderGlass, flex: 1, minWidth: isLargeScreen ? 200 : (isMediumScreen ? '47%' : '100%') }]}>
+        <View style={[styles.cardStandard, { backgroundColor: colors.surface, borderColor: colors.borderGlass, flex: isMediumScreen ? 1 : undefined, minWidth: isLargeScreen ? 200 : (isMediumScreen ? '47%' : '100%') }]}>
           <View style={styles.cardHeaderIcon}>
             <View style={[styles.iconWrapperDanger, { backgroundColor: colorScheme === 'dark' ? 'rgba(220,53,69,0.1)' : '#FCE8E6' }]}>
               <TrendingDown size={14} color="#DC3545" />
@@ -460,16 +462,8 @@ export default function DashboardScreen() {
         <Text style={[styles.sectionHeading, { color: colors.text }]}>Previsão para os Próximos 6 Meses (Clique para ver detalhes)</Text>
         <ScrollView 
           horizontal 
-          showsHorizontalScrollIndicator={false} 
+          showsHorizontalScrollIndicator={true} 
           contentContainerStyle={styles.horizontalScrollContent}
-          scrollEventThrottle={16}
-          onScroll={(e) => {
-            const { contentOffset, contentSize, layoutMeasurement } = e.nativeEvent;
-            const maxScroll = contentSize.width - layoutMeasurement.width;
-            if (maxScroll > 0) {
-              setScrollProgress(Math.min(Math.max(contentOffset.x / maxScroll, 0), 1));
-            }
-          }}
         >
           {futureMonthsList.map((item, idx) => {
             const isFuturePositive = item.summary.forecastLeftover >= 0;
@@ -518,17 +512,6 @@ export default function DashboardScreen() {
             );
           })}
         </ScrollView>
-        
-        {/* Custom Scrollbar visual */}
-        <View style={{ width: '100%', height: 12, backgroundColor: colorScheme === 'dark' ? '#182133' : '#E9ECEF', borderRadius: 6, marginTop: 16, flexDirection: 'row', overflow: 'hidden' }}>
-          <View style={{ 
-            width: '25%', 
-            height: '100%', 
-            backgroundColor: colorScheme === 'dark' ? '#3B4A6B' : '#ADB5BD', 
-            borderRadius: 6,
-            marginLeft: `${scrollProgress * 75}%`
-          }} />
-        </View>
       </View>
 
       {/* RESUMO DE CARTÕES DE CRÉDITO */}
@@ -568,9 +551,14 @@ export default function DashboardScreen() {
                   <View style={[styles.brandDot, { backgroundColor: brandColor }]} />
                   <Text style={[styles.cardItemName, { color: colors.text }]}>{card.name}</Text>
                 </View>
-                <Text style={[styles.cardItemAvailableStacked, { color: colors.text }]}>
-                  Disp: {formatCurrency(available)}
-                </Text>
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <Text style={[styles.cardItemAvailableStacked, { color: colors.text }]}>
+                    Disp: {formatCurrency(available)}
+                  </Text>
+                  <Text style={{ fontSize: 11, color: colors.textMuted, fontWeight: '500', marginBottom: 4 }}>
+                    Limite Total: {formatCurrency(card.limit)}
+                  </Text>
+                </View>
 
                 {/* Progress bar */}
                 <View style={[styles.cardProgressBarTrack, { backgroundColor: colorScheme === 'dark' ? 'rgba(255,255,255,0.05)' : '#E9ECEF' }]}>
@@ -745,7 +733,7 @@ export default function DashboardScreen() {
                 <X color={colors.textMuted} size={20} />
               </TouchableOpacity>
             </View>
-            <ScrollView contentContainerStyle={{ gap: 12 }} showsVerticalScrollIndicator={false}>
+            <ScrollView style={{ paddingRight: 4 }} contentContainerStyle={{ gap: 12 }} showsVerticalScrollIndicator={true}>
               <FinancialInput
                 label="Valor da Meta (R$)"
                 isCurrency={true}
@@ -781,7 +769,7 @@ export default function DashboardScreen() {
               </TouchableOpacity>
             </View>
             
-            <ScrollView contentContainerStyle={{ gap: 12 }} style={{ maxHeight: 400 }} showsVerticalScrollIndicator={false}>
+            <ScrollView contentContainerStyle={{ gap: 12 }} style={{ maxHeight: 400, paddingRight: 4 }} showsVerticalScrollIndicator={true}>
               <Text style={[styles.modalSubtitle, { color: colors.textMuted }]}>
                 Adicione um valor para guardar neste mês de {monthsNames[currentMonth - 1]}.
               </Text>
@@ -1235,6 +1223,7 @@ const styles = StyleSheet.create({
   horizontalScrollContent: {
     gap: 16,
     paddingRight: 16,
+    paddingBottom: 16,
   },
   projectionMiniCard: {
     width: Platform.OS === 'web' ? 180 : 160,

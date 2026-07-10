@@ -13,7 +13,7 @@ interface CardSelectorProps {
 
 export const CardSelector: React.FC<CardSelectorProps> = ({ selectedCard, onSelect, cards, label }) => {
   const { t } = useTranslation();
-  const { colors, theme: colorScheme } = useTheme();
+  const { colors, colorScheme } = useTheme();
 
   return (
     <View style={styles.container}>

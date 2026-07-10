@@ -73,7 +73,7 @@ const formatDateMask = (value: string) => {
 };
 
 export default function SettingsScreen() {
-  const { theme: colorScheme, colors } = useTheme();
+  const { colorScheme, colors } = useTheme();
   const { width } = useWindowDimensions();
   const isLargeScreen = width >= 768;
 

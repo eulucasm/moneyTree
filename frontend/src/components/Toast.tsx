@@ -14,7 +14,7 @@ interface ToastProps {
 export const Toast: React.FC<ToastProps> = ({ message, type, visible, onHide }) => {
   const slideAnim = useRef(new Animated.Value(-100)).current;
   const opacityAnim = useRef(new Animated.Value(0)).current;
-  const { theme: colorScheme } = useTheme();
+  const { colorScheme } = useTheme();
 
   useEffect(() => {
     if (visible) {

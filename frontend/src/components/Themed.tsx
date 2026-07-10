@@ -4,9 +4,9 @@
  */
 import { Text as DefaultText, View as DefaultView } from 'react-native';
 
-import { useColorScheme } from './useColorScheme';
+import { useTheme } from '../hooks/useTheme';
 
-import Colors from '@/constants/Colors';
+import Colors from '../theme/Colors';
 
 type ThemeProps = {
   lightColor?: string;
@@ -20,7 +20,7 @@ export function useThemeColor(
   props: { light?: string; dark?: string },
   colorName: Exclude<keyof typeof Colors.light & keyof typeof Colors.dark, 'brands'>
 ): string {
-  const theme = useColorScheme() as 'light' | 'dark';
+  const { colorScheme: theme } = useTheme();
   const colorFromProps = props[theme];
 
   if (colorFromProps) {

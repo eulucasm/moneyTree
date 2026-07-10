@@ -25,7 +25,7 @@ import {
 } from 'lucide-react-native';
 
 export default function InstallmentsScreen() {
-  const { theme: colorScheme, colors } = useTheme();
+  const { colorScheme, colors } = useTheme();
   const { width } = useWindowDimensions();
   const isLargeScreen = width >= 800;
 
@@ -586,7 +586,7 @@ export default function InstallmentsScreen() {
               </TouchableOpacity>
             </View>
 
-            <ScrollView style={{ flexShrink: 1 }} contentContainerStyle={styles.modalForm} showsVerticalScrollIndicator={false}>
+            <ScrollView style={{ flexShrink: 1, paddingRight: 4 }} contentContainerStyle={styles.modalForm} showsVerticalScrollIndicator={true}>
               <FinancialInput
                 label={t('installments.productName')}
                 placeholder="Ex: Celular Novo, Computador"
@@ -897,7 +897,7 @@ export default function InstallmentsScreen() {
               </TouchableOpacity>
             </View>
 
-            <ScrollView style={{ flexShrink: 1 }} contentContainerStyle={{ gap: 16, paddingBottom: 16 }} showsVerticalScrollIndicator={false}>
+            <ScrollView style={{ flexShrink: 1, paddingRight: 4 }} contentContainerStyle={{ gap: 16, paddingBottom: 16 }} showsVerticalScrollIndicator={true}>
               <View style={{ backgroundColor: colorScheme === 'dark' ? 'rgba(255,255,255,0.05)' : '#E8F5E9', borderColor: colors.borderGlass, padding: 12, borderRadius: 8, borderWidth: 1 }}>
                 <Text style={{ color: colors.textMuted, fontSize: 13, lineHeight: 20 }}>
                   O app calculou um total de <Text style={{ fontWeight: 'bold', color: colors.text }}>{formatCurrency(adjustCalculatedTotal)}</Text>. 

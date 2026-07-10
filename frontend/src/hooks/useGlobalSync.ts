@@ -163,6 +163,15 @@ export function useGlobalSync() {
               cloudUserProfile.role = 'admin';
             }
 
+            // AUTO-PATCH Google Display Name if missing in backend
+            if (!cloudUserProfile.firstName && currentUser.displayName) {
+              const names = currentUser.displayName.trim().split(/\s+/);
+              if (names.length > 0) {
+                cloudUserProfile.firstName = names[0];
+                cloudUserProfile.lastName = names.slice(1).join(' ');
+              }
+            }
+
             const cloudTime = cloudData.updatedAt || 0;
             
             // Load local data to compare timestamps

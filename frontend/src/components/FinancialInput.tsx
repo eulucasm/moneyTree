@@ -20,7 +20,7 @@ export const FinancialInput: React.FC<FinancialInputProps> = ({
   ...props
 }) => {
   const [isFocused, setIsFocused] = useState(false);
-  const { theme: colorScheme, colors } = useTheme();
+  const { colorScheme, colors } = useTheme();
 
   const formatDisplayValue = (val: string | undefined): string => {
     if (val === undefined || val === null || val === '') return '';

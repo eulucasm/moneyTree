@@ -30,7 +30,7 @@ interface MonthItem {
 }
 
 export default function HistoryScreen() {
-  const { theme: colorScheme, colors } = useTheme();
+  const { colorScheme, colors } = useTheme();
   const { width } = useWindowDimensions();
   const getMonthlySummary = useFinanceStore(s => s.getMonthlySummary);
   const getMonthlyOutflowsList = useFinanceStore(s => s.getMonthlyOutflowsList);

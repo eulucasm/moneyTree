@@ -33,7 +33,7 @@ const detectCardTypeDynamic = (desc: string, cards: any[]): string | null => {
 };
 
 export default function BudgetScreen() {
-  const { theme: colorScheme, colors } = useTheme();
+  const { colorScheme, colors } = useTheme();
   const { width } = useWindowDimensions();
   const isLargeScreen = width >= 800;
 
@@ -273,7 +273,7 @@ export default function BudgetScreen() {
           isLargeScreen ? styles.rowLayout : styles.columnLayout
         ]}>
           {/* Card 1: Entradas */}
-          <View style={[styles.summaryMetricCard, { backgroundColor: colors.surface, borderColor: colors.borderGlass }]}>
+          <View style={[styles.summaryMetricCard, isLargeScreen && { flex: 1 }, { backgroundColor: colors.surface, borderColor: colors.borderGlass }]}>
             <View style={styles.metricHeader}>
               <ArrowUpRight color="#10B981" size={16} />
               <Text style={[styles.metricLabel, { color: colors.textMuted }]}>{t('common.entries')}</Text>
@@ -284,7 +284,7 @@ export default function BudgetScreen() {
           </View>
 
           {/* Card 2: Saídas */}
-          <View style={[styles.summaryMetricCard, { backgroundColor: colors.surface, borderColor: colors.borderGlass }]}>
+          <View style={[styles.summaryMetricCard, isLargeScreen && { flex: 1 }, { backgroundColor: colors.surface, borderColor: colors.borderGlass }]}>
             <View style={styles.metricHeader}>
               <ArrowDownRight color="#DC3545" size={16} />
               <Text style={[styles.metricLabel, { color: colors.textMuted }]}>{t('common.exits')}</Text>
@@ -297,6 +297,7 @@ export default function BudgetScreen() {
           {/* Card 3: Balanço Geral (Ledger Style) */}
           <View style={[
             styles.summaryLedgerCard, 
+            isLargeScreen && { flex: 1 },
             { backgroundColor: colors.surface, borderColor: colorScheme === 'dark' ? (summary.forecastLeftover >= 0 ? 'rgba(16,185,129,0.2)' : 'rgba(239,68,68,0.2)') : (summary.forecastLeftover >= 0 ? 'rgba(16,185,129,0.3)' : 'rgba(239,68,68,0.3)') }
           ]}>
             <View style={[styles.ledgerAccentTop, { backgroundColor: summary.forecastLeftover >= 0 ? '#10B981' : '#DC3545' }]} />
@@ -336,7 +337,7 @@ export default function BudgetScreen() {
         ]}>
           
           {/* COLUNA ESQUERDA */}
-          <View style={[styles.masonryColumn, !isLargeScreen && styles.masonryColumnMobile]}>
+          <View style={[styles.masonryColumn, isLargeScreen && { flex: 1 }, !isLargeScreen && styles.masonryColumnMobile]}>
             
             {/* Card 1: Entradas */}
             <View style={[styles.sectionCard, { backgroundColor: colorScheme === 'dark' ? '#182133' : colors.surface, borderColor: colorScheme === 'dark' ? '#26334D' : colors.borderGlass }]}>
@@ -451,7 +452,7 @@ export default function BudgetScreen() {
           </View>
 
           {/* COLUNA DIREITA */}
-          <View style={[styles.masonryColumn, !isLargeScreen && styles.masonryColumnMobile]}>
+          <View style={[styles.masonryColumn, isLargeScreen && { flex: 1 }, !isLargeScreen && styles.masonryColumnMobile]}>
             
             {/* Card 2: Despesas Fixas */}
             <View style={[styles.sectionCard, { backgroundColor: colorScheme === 'dark' ? '#182133' : colors.surface, borderColor: colorScheme === 'dark' ? '#26334D' : colors.borderGlass }]}>
@@ -691,7 +692,7 @@ export default function BudgetScreen() {
               </TouchableOpacity>
             </View>
 
-            <ScrollView style={{ flexShrink: 1 }} contentContainerStyle={{ gap: 12 }} showsVerticalScrollIndicator={false}>
+            <ScrollView style={{ flexShrink: 1, paddingRight: 4 }} contentContainerStyle={{ gap: 12 }} showsVerticalScrollIndicator={true}>
               <FinancialInput
                 label={addModalType === 'installment' ? 'Nome do Produto' : 'Descrição'}
                 placeholder={
@@ -788,7 +789,7 @@ export default function BudgetScreen() {
                 <X color={colors.textMuted} size={20} />
               </TouchableOpacity>
             </View>
-            <ScrollView style={{ flexShrink: 1 }} contentContainerStyle={{ paddingBottom: 24, gap: 12 }} showsVerticalScrollIndicator={false}>
+            <ScrollView style={{ flexShrink: 1, paddingRight: 4 }} contentContainerStyle={{ paddingBottom: 24, gap: 12 }} showsVerticalScrollIndicator={true}>
               {viewMoreModal === 'entries' && currentEntries.map(item => (
                 <View key={item.id} style={[styles.itemRowFlat, { backgroundColor: colorScheme === 'dark' ? 'rgba(255,255,255,0.03)' : '#F8F9FA' }]}>
                   <Text style={[styles.itemDesc, { color: colors.text }]}>{item.description}</Text>
@@ -905,7 +906,6 @@ const styles = StyleSheet.create({
     flexDirection: 'column',
   },
   summaryMetricCard: {
-    flex: 1,
     borderRadius: 16,
     borderWidth: 1,
     padding: 20,
@@ -928,7 +928,6 @@ const styles = StyleSheet.create({
     letterSpacing: -0.5,
   },
   summaryLedgerCard: {
-    flex: 1,
     borderRadius: 16,
     borderWidth: 1,
     padding: 20,
@@ -978,7 +977,6 @@ const styles = StyleSheet.create({
     flexDirection: 'column',
   },
   masonryColumn: {
-    flex: 1,
     flexDirection: 'column',
     gap: 16,
   },
@@ -990,8 +988,6 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   sectionCard: {
-    flexGrow: 1,
-    flexShrink: 1,
     width: '100%',
     backgroundColor: '#FFFFFF',
     borderRadius: 16,

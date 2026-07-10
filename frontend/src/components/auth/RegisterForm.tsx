@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
 import { router } from 'expo-router';
-import { Theme } from '@/constants/Colors';
+import Theme from '../../theme/Colors';
 import { User, Calendar, Phone, Mail, Key } from 'lucide-react-native';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../../services/firebase';

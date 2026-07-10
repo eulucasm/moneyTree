@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator, Platform } from 'react-native';
 import { router } from 'expo-router';
-import { Theme } from '@/constants/Colors';
+import Theme from '../../theme/Colors';
 import { Mail, Key } from 'lucide-react-native';
 import { signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
 import { auth } from '../../services/firebase';

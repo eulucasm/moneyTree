@@ -1,6 +1,50 @@
 // Design System Theme constants for FinanciLife (Premium Fintech 2026)
 
-export const Theme = {
+export interface ThemeBrandColors {
+  nubank: string;
+  mercadopago: string;
+  caixa: string;
+  caixaOrange: string;
+  bradesco: string;
+  vale: string;
+  other: string;
+}
+
+export interface ThemeColors {
+  // Backgrounds
+  background: string;
+  surface: string;
+  surfaceGlass: string;
+  borderGlass: string;
+  borderGlassActive: string;
+
+  // Typography
+  text: string;
+  textMuted: string;
+  textSecondary: string;
+
+  // Financial Status
+  entry: string;
+  exit: string;
+  saving: string;
+  forecast: string;
+
+  // Brands
+  brands: ThemeBrandColors;
+
+  // UI Accents
+  tint: string;
+  tintGradient: [string, string];
+  tabIconDefault: string;
+  tabIconSelected: string;
+}
+
+export interface ThemeConfig {
+  light: ThemeColors;
+  dark: ThemeColors;
+}
+
+export const Theme: ThemeConfig = {
   light: {
     // Backgrounds - Off-white Minimalist Tech
     background: '#F8F9FA', 

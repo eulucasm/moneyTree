@@ -4,8 +4,7 @@ import { Stack } from 'expo-router';
 import { X, TrendingUp } from 'lucide-react-native';
 import { useInvestmentStore, AssetClass } from '../stores/useInvestmentStore';
 import { useThemeStore } from '../stores/useThemeStore';
-import { useColorScheme } from '../components/useColorScheme';
-import Theme from '../constants/Colors';
+import { useTheme } from '../hooks/useTheme';
 
 const ASSET_CLASSES: AssetClass[] = ['Ações', 'Exterior', 'ETFs', 'FIIs', 'Renda Fixa', 'Criptomoedas'];
 
@@ -14,8 +13,7 @@ const formatCurrency = (value: number) => {
 };
 
 export default function AllAssetsScreen() {
-  const colorScheme = useColorScheme();
-  const colors = Theme[colorScheme];
+  const { colorScheme, colors } = useTheme();
   const { portfolio, deleteAsset } = useInvestmentStore();
   
   const [activeFilter, setActiveFilter] = useState<AssetClass | 'Todos'>('Todos');

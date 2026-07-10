@@ -8,8 +8,7 @@ import {
 } from 'lucide-react-native';
 import { useFinancials } from '../../context/FinancialContext';
 import { useThemeStore } from '../../stores/useThemeStore';
-import { useColorScheme } from '../../components/useColorScheme';
-import Theme from '../../constants/Colors';
+import { useTheme } from '../../hooks/useTheme';
 import NotificationModal from '../../components/NotificationModal';
 import { useNotifications } from '../../hooks/useNotifications';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -30,8 +29,7 @@ function DesktopSidebar() {
   const [modalVisible, setModalVisible] = useState(false);
   const notifications = useNotifications();
   const toggleTheme = useThemeStore((state) => state.toggleTheme);
-  const colorScheme = useColorScheme();
-  const colors = Theme[colorScheme];
+  const { colorScheme, colors } = useTheme();
 
   const handleLogout = async () => {
     try {
@@ -123,8 +121,7 @@ function MobileHeader() {
   const [modalVisible, setModalVisible] = useState(false);
   const notifications = useNotifications();
   const toggleTheme = useThemeStore((state) => state.toggleTheme);
-  const colorScheme = useColorScheme();
-  const colors = Theme[colorScheme];
+  const { colorScheme, colors } = useTheme();
 
   const initials = ((userProfile?.firstName?.slice(0, 1) || '') + (userProfile?.lastName?.slice(0, 1) || '')).toUpperCase() || 'LM';
 
@@ -214,8 +211,7 @@ export default function TabLayout() {
   const { user, authInitialized } = useFinancials();
   const { width } = useWindowDimensions();
   const isLargeScreen = width >= 1024;
-  const colorScheme = useColorScheme();
-  const colors = Theme[colorScheme];
+  const { colorScheme, colors } = useTheme();
 
   if (!authInitialized) {
     return (

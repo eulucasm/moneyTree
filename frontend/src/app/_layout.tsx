@@ -7,7 +7,7 @@ import '../i18n';
 import "../../global.css";
 
 
-import { useColorScheme } from '@/components/useColorScheme';
+import { useTheme } from '../hooks/useTheme';
 import { GlobalSyncProvider } from '../hooks/GlobalSyncProvider';
 
 export {
@@ -51,7 +51,7 @@ export default function RootLayout() {
 }
 
 function RootLayoutNav() {
-  const colorScheme = useColorScheme();
+  const { colorScheme } = useTheme();
 
   return (
     <GlobalSyncProvider>

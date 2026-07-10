@@ -19,7 +19,7 @@ import {
 import PremiumGate from '../../components/PremiumGate';
 
 export default function ChartsScreen() {
-  const { theme: colorScheme, colors } = useTheme();
+  const { colorScheme, colors } = useTheme();
   const { width } = useWindowDimensions();
   const isLargeScreen = width >= 900;
 
@@ -145,13 +145,14 @@ export default function ChartsScreen() {
       currentValue: totalSavings,
       currentPercentage: (totalSavings / totalInvested) * 100,
       idealPercentage: 0,
+      idealValue: 0,
       suggestedContribution: 0,
     });
   }
   
   if (totalSavings > 0 && totalInvested > 0) {
     rebalancingPlan.forEach(p => {
-      if (p.assetClass !== 'Reserva') {
+      if (p.assetClass !== ('Reserva' as any)) {
         p.currentPercentage = (p.currentValue / totalInvested) * 100;
       }
     });

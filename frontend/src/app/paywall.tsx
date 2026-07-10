@@ -8,7 +8,7 @@ import Toast from '../components/Toast';
 
 export default function PaywallScreen() {
   const router = useRouter();
-  const { colors, theme: colorScheme } = useTheme();
+  const { colors, colorScheme } = useTheme();
   const setUserProfile = useAuthStore(s => s.setUserProfile);
 
   const handleSubscribe = (plan: 'monthly' | 'quarterly') => {
@@ -17,7 +17,7 @@ export default function PaywallScreen() {
     
     // Por enquanto, apenas mockamos o sucesso
     setUserProfile({ activePlan: 'premium' });
-    Toast.show({
+    (Toast as any).show({
       type: 'success',
       text1: 'Parabéns!',
       text2: 'Você agora é um assinante Pro do MoneyTree.',

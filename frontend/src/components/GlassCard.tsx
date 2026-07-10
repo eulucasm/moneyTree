@@ -1,7 +1,6 @@
 import React from 'react';
 import { StyleSheet, View, ViewStyle, StyleProp } from 'react-native';
-import { useColorScheme } from './useColorScheme';
-import Theme from '../constants/Colors';
+import { useTheme } from '../hooks/useTheme';
 
 interface GlassCardProps {
   children: React.ReactNode;
@@ -14,8 +13,7 @@ export const GlassCard: React.FC<GlassCardProps> = ({
   style,
   borderActive = false,
 }) => {
-  const colorScheme = useColorScheme();
-  const colors = Theme[colorScheme];
+  const { colorScheme, colors } = useTheme();
 
   return (
     <View style={[
