@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { StyleSheet, Text, View, ScrollView, TouchableOpacity, ActivityIndicator, useWindowDimensions } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useRouter, Stack } from 'expo-router';
 import { useFinancials } from '../context/FinancialContext';
 import { ArrowLeft } from 'lucide-react-native';
 import Toast from '../components/Toast';
+import { useColorScheme } from '../components/useColorScheme';
+import Theme from '../constants/Colors';
 
 import AdminKPIs from '../components/admin/AdminKPIs';
 import UserList from '../components/admin/UserList';
@@ -120,15 +122,19 @@ export default function AdminScreen() {
     }
   };
 
+  const colorScheme = useColorScheme();
+  const colors = Theme[colorScheme];
+
   return (
-    <View style={styles.outerContainer}>
-      <View style={styles.header}>
+    <View style={[styles.outerContainer, { backgroundColor: colors.background }]}>
+      <Stack.Screen options={{ headerShown: false }} />
+      <View style={[styles.header, { backgroundColor: colors.surface, borderColor: colors.borderGlass }]}>
         <TouchableOpacity style={styles.backButton} onPress={() => router.push('/settings')}>
-          <ArrowLeft color="#0F5132" size={20} />
-          <Text style={styles.backButtonText}>Configurações</Text>
+          <ArrowLeft color={colors.text} size={20} />
+          <Text style={[styles.backButtonText, { color: colors.text }]}>Configurações</Text>
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Painel de Controle Admin</Text>
-        <Text style={styles.headerSubtitle}>Administração de Contas, Assinaturas e Estatísticas Financeiras</Text>
+        <Text style={[styles.headerTitle, { color: colors.text }]}>Painel de Controle Admin</Text>
+        <Text style={[styles.headerSubtitle, { color: colors.textMuted }]}>Administração de Contas, Assinaturas e Estatísticas Financeiras</Text>
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContent}>
