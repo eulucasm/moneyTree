@@ -30,7 +30,7 @@ app.use(cors({
     
     const isLocal = origin.startsWith('http://localhost:') || 
                     origin.startsWith('http://127.0.0.1:') || 
-                    origin.includes('192.168.');
+                    /^http:\/\/192\.168\.\d{1,3}\.\d{1,3}:\d+$/.test(origin);
                     
     if (isLocal || allowedOrigins.includes(origin)) {
       return callback(null, true);
@@ -55,7 +55,7 @@ app.use(express.json({ limit: '10mb' }));
 app.use((req, res, next) => {
   const authHeader = req.headers.authorization;
   const authLog = authHeader 
-    ? (authHeader.startsWith('Bearer ') ? `Bearer ${authHeader.substring(7, 18)}...` : '[INVALID]') 
+    ? (authHeader.startsWith('Bearer ') ? '[PRESENT]' : '[INVALID]') 
     : '[NONE]';
   console.log(`[HTTP] ${req.method} ${req.url} - Auth: ${authLog}`);
   next();
