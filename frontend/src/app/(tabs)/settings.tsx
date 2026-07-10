@@ -194,6 +194,9 @@ export default function SettingsScreen() {
   const [showOldPassword, setShowOldPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
 
+  const isGoogleLogin = user?.providerData?.some(p => p.providerId === 'google.com') ?? (loginType === 'google');
+
+
   // Backup states
   const [backupInput, setBackupInput] = useState('');
   const [isImportVisible, setIsImportVisible] = useState(false);
@@ -243,7 +246,7 @@ export default function SettingsScreen() {
     let finalPassword = userProfile?.password || '';
 
     // If newPassword is provided, attempt reauthentication and change password
-    if (loginType === 'email' && newPassword.trim()) {
+    if (!isGoogleLogin && newPassword.trim()) {
       if (!oldPassword.trim()) {
         showAlert('Erro', 'Para alterar a senha, você deve informar a senha antiga.');
         return;
@@ -673,49 +676,8 @@ export default function SettingsScreen() {
               </View>
             </View>
 
-            {/* Login Type Selector */}
-            <View style={styles.loginTypeContainer}>
-              <Text style={[styles.label, { color: colors.text }]}>Método de Login</Text>
-              <View style={styles.selectorPills}>
-                <TouchableOpacity
-                  activeOpacity={0.8}
-                  disabled={!isEditing}
-                  onPress={() => setLoginType('google')}
-                  style={[
-                    styles.pill,
-                    { borderColor: colors.borderGlass },
-                    loginType === 'google' ? [styles.pillActive, colorScheme === 'dark' && { backgroundColor: 'rgba(16, 185, 129, 0.15)' }] : { backgroundColor: colorScheme === 'dark' ? 'rgba(255,255,255,0.02)' : '#F8F9FA' }
-                  ]}
-                >
-                  <Text style={[
-                    styles.pillText,
-                    loginType === 'google' ? [styles.pillTextActive, colorScheme === 'dark' && { color: '#10B981' }] : [styles.pillTextInactive, { color: colors.textMuted }]
-                  ]}>
-                    Google OAuth
-                  </Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  activeOpacity={0.8}
-                  disabled={!isEditing}
-                  onPress={() => setLoginType('email')}
-                  style={[
-                    styles.pill,
-                    { borderColor: colors.borderGlass },
-                    loginType === 'email' ? [styles.pillActive, colorScheme === 'dark' && { backgroundColor: 'rgba(16, 185, 129, 0.15)' }] : { backgroundColor: colorScheme === 'dark' ? 'rgba(255,255,255,0.02)' : '#F8F9FA' }
-                  ]}
-                >
-                  <Text style={[
-                    styles.pillText,
-                    loginType === 'email' ? [styles.pillTextActive, colorScheme === 'dark' && { color: '#10B981' }] : [styles.pillTextInactive, { color: colors.textMuted }]
-                  ]}>
-                    E-mail e Senha
-                  </Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-
             {/* Password Section (Only visible for Email Login) */}
-            {loginType === 'email' && (
+            {!isGoogleLogin && (
               <View style={{ width: '100%', gap: 16, marginTop: 16 }}>
                 {!isEditing ? (
                   // Read-only view

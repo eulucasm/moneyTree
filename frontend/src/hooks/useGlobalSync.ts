@@ -27,6 +27,8 @@ export const useSyncStore = create<SyncState>((set) => ({
  */
 async function loadFromAsyncStorage(): Promise<Record<string, any> | null> {
   try {
+    const { useAuthStore } = require('../stores/useAuthStore');
+    const uid = useAuthStore.getState().activeUid || 'guest';
     const keys = [
       FINANCE_STORAGE_KEYS.ENTRIES,
       FINANCE_STORAGE_KEYS.EXITS,
@@ -41,7 +43,8 @@ async function loadFromAsyncStorage(): Promise<Record<string, any> | null> {
     ];
 
     const promises = keys.map(async (key) => {
-      const val = await AsyncStorage.getItem(key);
+      const scopedKey = `${uid}:${key}`;
+      const val = await AsyncStorage.getItem(scopedKey);
       return [key, val] as [string, string | null];
     });
     const pairs = await Promise.all(promises);
@@ -114,13 +117,20 @@ export function useGlobalSync() {
   // Main auth state listener — loads data from backend (or AsyncStorage fallback) on login
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
-      const { setUser, setUserProfile, setAuthInitialized, setSuspendedMsg, logout } = useAuthStore.getState();
-      const { setFinanceData } = useFinanceStore.getState();
+      const { setUser, setUserProfile, setAuthInitialized, setSuspendedMsg, logout, setActiveUid, activeUid } = useAuthStore.getState();
+      const { setFinanceData, clearAllData: clearFinance } = useFinanceStore.getState();
+      const { clearAllData: clearInvestments } = require('../stores/useInvestmentStore').useInvestmentStore.getState();
       const { setSyncStatus } = useSyncStore.getState();
 
       setUser(currentUser);
       
       if (currentUser) {
+        if (activeUid !== currentUser.uid) {
+           await clearFinance();
+           await clearInvestments();
+        }
+        setActiveUid(currentUser.uid);
+        
         setSyncStatus('syncing');
 
         // Self-heal local state instantly for admins, in case they are offline
@@ -240,6 +250,7 @@ export function useGlobalSync() {
             initialProfile.createdAt = currentPeriod;
             initialProfile.status = 'active';
             initialProfile.email = currentUser.email || '';
+            initialProfile.activePlan = 'free'; // enforce free
 
             const emailLower = currentUser.email?.trim().toLowerCase();
             if (emailLower === 'lucaspoletis@gmail.com') {
@@ -255,11 +266,10 @@ export function useGlobalSync() {
                 initialProfile.firstName = names[0];
                 initialProfile.lastName = names.slice(1).join(' ');
               }
-              const isGoogleProvider = currentUser.providerData.some(p => p.providerId === 'google.com');
-              if (isGoogleProvider) {
-                initialProfile.loginType = 'google';
-              }
             }
+            
+            const isGoogleProvider = currentUser.providerData.some(p => p.providerId === 'google.com');
+            initialProfile.loginType = isGoogleProvider ? 'google' : 'email';
 
             setUserProfile(initialProfile);
 
@@ -318,6 +328,7 @@ export function useGlobalSync() {
           setSyncStatus('error');
         }
       } else {
+        setActiveUid(null);
         setSyncStatus('offline');
         
         // Hydrate from AsyncStorage fallback for guest/offline users

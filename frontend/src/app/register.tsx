@@ -3,8 +3,11 @@ import { View, Text, StyleSheet, KeyboardAvoidingView, Platform, SafeAreaView, S
 import { UserPlus, Sparkles } from 'lucide-react-native';
 import Toast from '../components/Toast';
 import RegisterForm from '../components/auth/RegisterForm';
+import { useFinancials } from '../context/FinancialContext';
+import { Redirect } from 'expo-router';
 
 export default function RegisterScreen() {
+  const { user, authInitialized } = useFinancials();
   const [toastVisible, setToastVisible] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
   const [toastType, setToastType] = useState<'success' | 'error'>('success');
@@ -14,6 +17,11 @@ export default function RegisterScreen() {
     setToastType(type);
     setToastVisible(true);
   };
+
+  // When Firebase auth state changes (user just registered), redirect to tabs automatically
+  if (authInitialized && user) {
+    return <Redirect href="/(tabs)" />;
+  }
 
   return (
     <SafeAreaView style={styles.safeArea}>

@@ -62,7 +62,11 @@ const defaultPortfolio: InvestmentPortfolio = {
 
 const persist = async (data: InvestmentPortfolio) => {
   try {
-    await AsyncStorage.setItem(INVESTMENT_STORAGE_KEYS.PORTFOLIO, JSON.stringify(data));
+    const { useAuthStore } = require('./useAuthStore');
+    const uid = useAuthStore.getState().activeUid || 'guest';
+    const scopedKey = `${uid}:${INVESTMENT_STORAGE_KEYS.PORTFOLIO}`;
+
+    await AsyncStorage.setItem(scopedKey, JSON.stringify(data));
     // Trigger sync globally by updating lastUpdatedAt in FinanceStore (or we can handle it in useGlobalSync)
     const { useFinanceStore } = require('./useFinanceStore');
     useFinanceStore.setState({ lastUpdatedAt: Date.now() });
@@ -119,7 +123,10 @@ export const useInvestmentStore = create<InvestmentState>((set, get) => ({
   clearAllData: async () => {
     set({ portfolio: defaultPortfolio });
     try {
-      await AsyncStorage.removeItem(INVESTMENT_STORAGE_KEYS.PORTFOLIO);
+      const { useAuthStore } = require('./useAuthStore');
+      const uid = useAuthStore.getState().activeUid || 'guest';
+      const scopedKey = `${uid}:${INVESTMENT_STORAGE_KEYS.PORTFOLIO}`;
+      await AsyncStorage.removeItem(scopedKey);
     } catch (err) {
       console.error('Error clearing Investment AsyncStorage:', err);
     }

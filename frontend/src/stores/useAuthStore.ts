@@ -10,6 +10,7 @@ export const ASYNC_STORAGE_KEYS = {
 
 interface AuthState {
   user: User | null;
+  activeUid: string | null;
   userProfile: UserProfile;
   authInitialized: boolean;
   allUsers: any[];
@@ -17,6 +18,7 @@ interface AuthState {
 
   // Actions
   setUser: (user: User | null) => void;
+  setActiveUid: (uid: string | null) => void;
   setUserProfile: (profile: Partial<UserProfile>) => void;
   setAuthInitialized: (initialized: boolean) => void;
   clearSuspendedMsg: () => void;
@@ -47,12 +49,14 @@ const defaultProfile: UserProfile = {
 
 export const useAuthStore = create<AuthState>((set, get) => ({
   user: null,
+  activeUid: null,
   userProfile: defaultProfile,
   authInitialized: false,
   allUsers: [],
   suspendedMsg: null,
 
   setUser: (user) => set({ user }),
+  setActiveUid: (uid) => set({ activeUid: uid }),
   
   setUserProfile: (profile) => {
     const updated = { ...get().userProfile, ...profile };
@@ -98,7 +102,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         }
       }
       await signOut(auth);
-      set({ user: null });
+      set({ user: null, activeUid: null, userProfile: defaultProfile });
 
       // Wipe local state and AsyncStorage keys to prevent data leakage to the next user
       try {
@@ -122,7 +126,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       // Delete user data on Vercel backend
       await apiFetch('/api/user/profile', { method: 'DELETE' });
       await user.delete();
-      set({ user: null });
+      set({ user: null, activeUid: null, userProfile: defaultProfile });
     } catch (err: any) {
       if (err.code === 'auth/requires-recent-login') {
         throw new Error('reauth_required');

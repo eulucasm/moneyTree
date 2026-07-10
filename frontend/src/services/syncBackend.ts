@@ -36,12 +36,8 @@ export async function syncToBackendNow(capturedUid?: string, retries = 3): Promi
   const fState = useFinanceStore.getState();
   const aState = useAuthStore.getState();
 
-  // GUARD: Never push an empty state that would overwrite real data in the DB
-  if (!hasFinancialData(fState)) {
-    console.warn('[Sync] Skipping sync — local state has no financial data (would overwrite DB).');
-    useSyncStore.getState().setSyncStatus('synced');
-    return;
-  }
+  // GUARD: The backend handles EMPTY_OVERWRITE_BLOCKED to prevent accidental data loss.
+  // We allow sending empty financial states so that profile updates (like new user creation) can be synced.
 
   const newTimestamp = Date.now();
   const iState = require('../stores/useInvestmentStore').useInvestmentStore.getState();

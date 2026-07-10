@@ -94,17 +94,10 @@ export default function DashboardScreen() {
   const [newCardBestDay, setNewCardBestDay] = useState('');
 
   // Welcome Modal state
-  const [welcomeModalVisible, setWelcomeModalVisible] = useState(false);
   const setUserProfile = useAuthStore(s => s.setUserProfile);
-
-  useEffect(() => {
-    if (userProfile && userProfile.hasSeenWelcome === false) {
-      setWelcomeModalVisible(true);
-    }
-  }, [userProfile]);
+  const hasSeenWelcome = userProfile?.hasSeenWelcome;
 
   const handleCloseWelcome = () => {
-    setWelcomeModalVisible(false);
     setUserProfile({ hasSeenWelcome: true });
   };
 
@@ -346,7 +339,7 @@ export default function DashboardScreen() {
       {/* SAUDAÇÃO */}
       <View style={styles.greetingSection}>
         <View style={{ flex: 1 }}>
-          <Text style={[styles.greetingTitle, { color: colors.text }]}>Olá, Lucas!</Text>
+          <Text style={[styles.greetingTitle, { color: colors.text }]}>Olá, {userProfile?.firstName || 'Visitante'}!</Text>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
             <Text style={[styles.greetingSubtitle, { color: colors.textMuted }]}>
               Aqui está o panorama financeiro de {monthsNames[selectedMonth - 1]} de {selectedYear}.
@@ -1027,7 +1020,7 @@ export default function DashboardScreen() {
       </Modal>
 
       {/* Welcome Modal */}
-      <Modal visible={welcomeModalVisible} animationType="fade" transparent>
+      <Modal visible={hasSeenWelcome === false} animationType="fade" transparent>
         <View style={{ flex: 1, backgroundColor: colorScheme === 'dark' ? 'rgba(0,0,0,0.7)' : 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center', padding: 16 }}>
           <View style={{ width: '100%', maxWidth: 420 }}>
             <GlassCard style={{ padding: 32, borderRadius: 24, alignItems: 'center' }}>

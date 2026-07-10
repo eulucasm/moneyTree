@@ -83,9 +83,14 @@ interface FinanceState {
 // in useGlobalSync.ts which debounces, retries, and validates before sending.
 const persist = async (key: string, data: any) => {
   try {
-    await AsyncStorage.setItem(key, JSON.stringify(data));
+    const { useAuthStore } = require('./useAuthStore');
+    const uid = useAuthStore.getState().activeUid || 'guest';
+    const scopedKey = `${uid}:${key}`;
+    const scopedLastUpdateKey = `${uid}:${FINANCE_STORAGE_KEYS.LAST_UPDATED}`;
+
+    await AsyncStorage.setItem(scopedKey, JSON.stringify(data));
     const newTimestamp = Date.now();
-    await AsyncStorage.setItem(FINANCE_STORAGE_KEYS.LAST_UPDATED, String(newTimestamp));
+    await AsyncStorage.setItem(scopedLastUpdateKey, String(newTimestamp));
     useFinanceStore.setState({ lastUpdatedAt: newTimestamp });
   } catch (err) {
     console.error(`Error saving key ${key}:`, err);
@@ -123,7 +128,9 @@ export const useFinanceStore = create<FinanceState>((set, get) => ({
     i18n.changeLanguage('pt');
     // Also clear AsyncStorage to prevent stale local data from being restored on next boot
     try {
-      const keysToRemove = Object.values(FINANCE_STORAGE_KEYS);
+      const { useAuthStore } = require('./useAuthStore');
+      const uid = useAuthStore.getState().activeUid || 'guest';
+      const keysToRemove = Object.values(FINANCE_STORAGE_KEYS).map(key => `${uid}:${key}`);
       await AsyncStorage.removeMany(keysToRemove);
     } catch (err) {
       console.error('Error clearing AsyncStorage during clearAllData:', err);

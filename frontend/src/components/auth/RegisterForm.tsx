@@ -104,12 +104,13 @@ export default function RegisterForm({ showToast }: RegisterFormProps) {
         loginType: 'email',
         createdAt: currentPeriod,
         role: (email.trim().toLowerCase() === 'lucaspoletis@gmail.com') ? 'admin' : 'user',
+        activePlan: (email.trim().toLowerCase() === 'lucaspoletis@gmail.com') ? 'premium' : 'free',
         status: 'active',
         hasSeenWelcome: false,
       });
 
       showToast('Conta criada com sucesso!', 'success');
-      setTimeout(() => { router.replace('/(tabs)'); }, 1000);
+      // Navigation is handled automatically by onAuthStateChanged + TabLayout's Redirect
     } catch (err: any) {
       console.error(err);
       let errMsg = 'Ocorreu um erro ao criar a conta. Tente novamente.';
