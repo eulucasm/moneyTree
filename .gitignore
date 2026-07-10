@@ -50,3 +50,6 @@ skill/
 
 # Package da IDE
 .vscode/
+
+# Package da ECC
+.agent/
