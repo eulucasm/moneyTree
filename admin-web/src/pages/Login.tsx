@@ -40,7 +40,7 @@ export default function Login() {
   };
 
   return (
-    <div className="app-container" style={{ alignItems: 'center', justifyContent: 'center', minHeight: '100vh' }}>
+    <div className="app-container" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', padding: '20px' }}>
       <div className="glass-panel" style={{ width: '100%', maxWidth: '400px', textAlign: 'center' }}>
         <ShieldAlert size={48} color="var(--color-primary)" style={{ marginBottom: 16 }} />
         <h2 style={{ marginBottom: 8, color: 'var(--color-primary)' }}>VerdeCo Admin</h2>
