@@ -32,9 +32,10 @@ app.use(cors({
                     origin.startsWith('http://127.0.0.1:') || 
                     /^http:\/\/192\.168\.\d{1,3}\.\d{1,3}:\d+$/.test(origin);
                     
-    const isVercel = origin.endsWith('.vercel.app');
+    // Obter domínios permitidos do .env (separados por vírgula)
+    const envOrigins = process.env.ALLOWED_ORIGINS ? process.env.ALLOWED_ORIGINS.split(',') : [];
                     
-    if (isLocal || isVercel || allowedOrigins.includes(origin)) {
+    if (isLocal || allowedOrigins.includes(origin) || envOrigins.includes(origin)) {
       return callback(null, true);
     }
     
