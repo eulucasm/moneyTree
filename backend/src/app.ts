@@ -32,7 +32,9 @@ app.use(cors({
                     origin.startsWith('http://127.0.0.1:') || 
                     /^http:\/\/192\.168\.\d{1,3}\.\d{1,3}:\d+$/.test(origin);
                     
-    if (isLocal || allowedOrigins.includes(origin)) {
+    const isVercel = origin.endsWith('.vercel.app');
+                    
+    if (isLocal || isVercel || allowedOrigins.includes(origin)) {
       return callback(null, true);
     }
     
