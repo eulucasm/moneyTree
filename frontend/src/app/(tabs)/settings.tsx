@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { StyleSheet, Text, View, Alert, TouchableOpacity, ScrollView, TextInput, Platform, useWindowDimensions } from 'react-native';
+import { StyleSheet, Text, View, Alert, TouchableOpacity, ScrollView, TextInput, Platform, useWindowDimensions, Linking } from 'react-native';
 import { useFinancials, UserProfile } from '../../context/FinancialContext';
 import { useTranslation } from 'react-i18next';
 import GlassCard from '../../components/GlassCard';
@@ -505,7 +505,7 @@ export default function SettingsScreen() {
                 {userProfile?.role === 'admin' && (
                   <TouchableOpacity 
                     activeOpacity={0.8}
-                    onPress={() => router.push('/admin' as any)}
+                    onPress={() => Linking.openURL('http://localhost:5173')}
                     style={[styles.logoutButton, { backgroundColor: colorScheme === 'dark' ? '#10B981' : '#0F5132', borderColor: colorScheme === 'dark' ? '#10B981' : '#0F5132', marginBottom: 10 }]}
                   >
                     <Text style={[styles.logoutButtonText, { color: '#FFFFFF' }]}>Painel Admin</Text>
