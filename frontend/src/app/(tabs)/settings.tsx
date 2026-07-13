@@ -505,7 +505,10 @@ export default function SettingsScreen() {
                 {userProfile?.role === 'admin' && (
                   <TouchableOpacity 
                     activeOpacity={0.8}
-                    onPress={() => Linking.openURL('http://localhost:5173')}
+                    onPress={() => {
+                      const adminUrl = process.env.EXPO_PUBLIC_ADMIN_URL || 'https://moneytree-admin.vercel.app';
+                      Linking.openURL(adminUrl);
+                    }}
                     style={[styles.logoutButton, { backgroundColor: colorScheme === 'dark' ? '#10B981' : '#0F5132', borderColor: colorScheme === 'dark' ? '#10B981' : '#0F5132', marginBottom: 10 }]}
                   >
                     <Text style={[styles.logoutButtonText, { color: '#FFFFFF' }]}>Painel Admin</Text>
