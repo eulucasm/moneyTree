@@ -10,6 +10,13 @@ export default function Login() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { isAdmin } = useAuthStore();
+
+  React.useEffect(() => {
+    if (isAdmin) {
+      navigate('/');
+    }
+  }, [isAdmin, navigate]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();

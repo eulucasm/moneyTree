@@ -20,6 +20,7 @@ export const useAuthStore = create<AuthState>((set) => ({
     onAuthStateChanged(auth, async (user) => {
       console.log('AuthStateChanged:', user?.uid);
       if (user) {
+        set({ loading: true });
         try {
           // Verify if user is admin via our backend
           const res = await apiClient.get('/api/user/profile');
